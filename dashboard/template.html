@@ -1,0 +1,1147 @@
+<title>Group 20 Mitigation Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: an instrument rack. Faceplate header, one readout strip, a sticky control rail,
+   a two-column bay of chart panels, then the verdict board and the run sheet. */
+:root {
+  --ground: #0B1426;      /* deep ink navy */
+  --panel: #111D33;       /* raised panel */
+  --panel-2: #172540;
+  --line: #21304D;        /* hairline */
+  --line-2: #34466C;
+  --text: #E9EEF7;        /* frost white */
+  --muted: #98A5BF;
+  --faint: #66748F;
+  --gold: #E8A93A;        /* gold-plated copper: the one accent */
+  --gold-ink: #1C1305;
+  --gold-wash: rgba(232, 169, 58, 0.055);
+  --cryo: #43D3EA;        /* cryogenic cyan: focus and selection */
+  --tip: #0E1930;
+  --m-none: #7A7F89;
+  --m-rem: #3E8BFF;
+  --m-zne: #E0682A;
+  --m-zne_rem: #23A86A;
+  --gate: #239CB5;
+  --readout: #BC8724;
+  --div-neg: #C4532E;
+  --div-mid: #3A4052;
+  --div-pos: #2BB3CC;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font: 400 15px/1.55 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p, ol, dl, dd { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--cryo); outline-offset: 2px; }
+
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: 32px 72px;
+  display: grid;
+  gap: 26px;
+}
+
+/* faceplate */
+.plate {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 28px 40px;
+  align-items: end;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+}
+.eyebrow {
+  font: 500 12px/1.4 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+h1 {
+  font: 600 clamp(2.5rem, 5.4vw, 3.9rem)/0.98 var(--font-display);
+  letter-spacing: -0.012em;
+  margin-block: 12px 14px;
+  text-wrap: balance;
+}
+.lede { color: var(--muted); max-width: 58ch; font-size: 16px; }
+.spec {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 7px 18px;
+  font: 400 13px/1.45 var(--font-mono);
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel);
+}
+.spec dt { color: var(--faint); text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; padding-top: 2px; }
+.spec dd { color: var(--text); min-width: 0; }
+
+/* readout strip */
+.readouts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ro { background: var(--panel); padding: 18px 20px 17px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.ro-label { font: 500 11.5px/1.3 var(--font-mono); letter-spacing: 0.11em; text-transform: uppercase; color: var(--muted); }
+.ro-value {
+  font: 600 46px/1 var(--font-display);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.ro-value .unit { font-size: 0.48em; color: var(--muted); margin-left: 4px; letter-spacing: 0; font-weight: 500; }
+.ro-meta { color: var(--muted); font-size: 13.5px; line-height: 1.45; }
+
+/* method chips and swatches */
+.mchip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 500 12.5px/1 var(--font-mono);
+  color: var(--text);
+  white-space: nowrap;
+}
+.sw { display: inline-block; width: 10px; height: 10px; flex: none; }
+.sw.none { background: var(--m-none); border-radius: 50%; }
+.sw.rem { background: var(--m-rem); width: 9px; height: 9px; }
+.sw.zne { background: var(--m-zne); clip-path: polygon(50% 0, 100% 92%, 0 92%); width: 11px; height: 11px; }
+.sw.zne_rem { background: var(--m-zne_rem); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); width: 11px; height: 11px; }
+.sw.gate { background: var(--gate); width: 12px; height: 9px; }
+.sw.readout { background: var(--readout); width: 12px; height: 9px; }
+
+/* control rail */
+.rail {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 5;
+  display: flex; flex-wrap: wrap; align-items: end;
+  gap: 14px 26px;
+  padding-block: 12px;
+  background: var(--ground);
+  border-bottom: 1px solid var(--line);
+}
+.ctl { display: grid; gap: 6px; }
+.ctl-label { font: 500 11px/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 3px; overflow: hidden; }
+.seg button {
+  display: grid; gap: 1px; justify-items: start;
+  padding: 6px 13px 6px 11px;
+  background: transparent; border: 0; border-right: 1px solid var(--line-2);
+  cursor: pointer; text-align: left;
+}
+.seg button:last-child { border-right: 0; }
+.seg .s-name { font: 600 14px/1.15 var(--font-display); letter-spacing: 0.02em; }
+.seg .s-sub { font: 400 10.5px/1.2 var(--font-mono); color: var(--faint); }
+.seg button[aria-checked="true"] { background: var(--gold); color: var(--gold-ink); }
+.seg button[aria-checked="true"] .s-sub { color: rgba(28, 19, 5, 0.72); }
+.seg button:not([aria-checked="true"]):hover { background: var(--panel-2); }
+.chips { display: inline-flex; gap: 6px; }
+.chips button {
+  min-width: 40px; padding: 7px 10px;
+  font: 500 13px/1 var(--font-mono);
+  background: transparent; border: 1px solid var(--line-2); border-radius: 3px;
+  color: var(--muted); cursor: pointer;
+}
+.chips button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); background: var(--gold-wash); }
+.chips button:hover { color: var(--text); }
+.rail .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-left: auto; padding-bottom: 7px; }
+.rail .count { font: 400 12px/1.3 var(--font-mono); color: var(--faint); padding-bottom: 8px; }
+
+/* chart bay */
+.bay { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; }
+.panel {
+  grid-column: span 6;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px 16px;
+  display: grid; gap: 12px; align-content: start;
+  min-width: 0;
+}
+.span-7 { grid-column: span 7; }
+.span-5 { grid-column: span 5; }
+.ph { display: flex; gap: 12px; align-items: start; justify-content: space-between; }
+.ph > div { min-width: 0; }
+h2 { font: 600 20px/1.2 var(--font-display); letter-spacing: 0.005em; text-wrap: balance; }
+.q { color: var(--muted); font-size: 13.5px; margin-top: 3px; max-width: 62ch; }
+.data-btn {
+  flex: none;
+  font: 500 11px/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 7px 9px; border-radius: 3px;
+  background: transparent; border: 1px solid var(--line-2); color: var(--muted); cursor: pointer;
+}
+.data-btn:hover, .data-btn[aria-expanded="true"] { color: var(--gold); border-color: var(--gold); }
+.chart { min-height: 140px; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.note { color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+.note b { color: var(--text); font-weight: 500; }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 400 12px/1.4 var(--font-mono); color: var(--muted); }
+.keys span { display: inline-flex; align-items: center; gap: 6px; }
+.keys svg { flex: none; }
+.empty { display: grid; place-items: center; min-height: 160px; color: var(--muted); font-size: 13.5px; text-align: center; padding: 20px; border: 1px dashed var(--line-2); border-radius: 3px; }
+.run-pick { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.run-pick label { display: grid; gap: 4px; font: 500 10.5px/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+.run-pick select {
+  font: 500 13px/1 var(--font-mono); color: var(--text);
+  background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 3px; padding: 6px 8px;
+}
+.run-pick .run-noise { font: 400 12px/1.3 var(--font-mono); color: var(--muted); padding-bottom: 7px; }
+
+/* tables */
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font: 400 12.5px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; }
+th { text-align: left; font-weight: 500; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+td { padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); white-space: nowrap; color: var(--text); }
+td.num, th.num { text-align: right; }
+tr.hl td { color: var(--gold); }
+
+/* SVG styling */
+svg text { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
+svg .axt { fill: var(--faint); font-size: 10.5px; letter-spacing: 0.05em; }
+svg .tick-on { fill: var(--gold); font-weight: 500; }
+svg .lbl { fill: var(--text); font-family: var(--font-body); font-size: 12.5px; font-weight: 500; }
+svg .val { fill: var(--text); font-size: 11.5px; }
+svg .gl { stroke: var(--line); stroke-width: 1; }
+svg .base { stroke: var(--line-2); stroke-width: 1; }
+svg .band { fill: var(--gold-wash); }
+svg .whisk { stroke: var(--text); stroke-opacity: 0.55; stroke-width: 1.2; }
+svg .floor { stroke: var(--text); stroke-opacity: 0.6; stroke-width: 1.2; stroke-dasharray: 5 4; }
+svg .exact { stroke: var(--text); stroke-opacity: 0.75; stroke-width: 1.2; stroke-dasharray: 6 4; }
+svg .zero { stroke: var(--text); stroke-opacity: 0.4; stroke-dasharray: 3 3; }
+svg .hit { fill: transparent; }
+svg .dot { cursor: pointer; }
+svg .pick { fill: none; stroke: var(--gold); stroke-width: 2; }
+
+/* verdict board */
+.verdicts { display: grid; gap: 14px; }
+.sec-head { display: grid; gap: 4px; }
+.vlist { list-style: none; padding: 0; display: grid; border-top: 1px solid var(--line); }
+.vlist li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  gap: 6px 20px;
+  padding: 16px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.v-id { font: 500 14px/1.4 var(--font-mono); color: var(--gold); padding-top: 1px; }
+.v-claim { font: 500 15.5px/1.45 var(--font-body); color: var(--text); }
+.v-ev { grid-column: 2; color: var(--muted); font-size: 13.5px; max-width: 78ch; }
+.v-chip {
+  grid-column: 3; grid-row: 1 / span 2; align-self: start;
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 500 11px/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 7px 10px; border-radius: 3px; white-space: nowrap;
+}
+.v-chip.supported { color: var(--gold); border: 1px solid var(--gold); }
+.v-chip.partial { color: var(--text); border: 1px dashed var(--line-2); }
+.v-chip i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.v-chip.supported i { background: var(--gold); }
+.v-chip.partial i { background: linear-gradient(90deg, var(--text) 50%, transparent 50%); border: 1px solid var(--text); }
+
+/* run sheet */
+.sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 24px 40px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.sheet p { color: var(--muted); font-size: 13.5px; max-width: 64ch; }
+.sheet h3 { font: 600 16px/1.3 var(--font-display); margin-bottom: 8px; }
+
+#tip {
+  position: fixed; z-index: 20; pointer-events: none;
+  max-width: 280px;
+  background: var(--tip); border: 1px solid var(--line-2); border-radius: 3px;
+  padding: 9px 11px;
+  font: 400 12px/1.5 var(--font-mono); color: var(--text);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+#tip .mchip { font-size: 12px; }
+#tip .hint { color: var(--cryo); }
+
+@media (max-width: 980px) {
+  .panel, .span-7, .span-5 { grid-column: 1 / -1; }
+  .plate, .sheet { grid-template-columns: minmax(0, 1fr); }
+  .rail .legend { margin-left: 0; }
+}
+@media (max-width: 560px) {
+  .seg .s-sub { display: none; }
+  .ro-value { font-size: 40px; }
+  .vlist li { grid-template-columns: 40px minmax(0, 1fr); }
+  .v-chip { grid-column: 2; grid-row: auto; justify-self: start; }
+  .rail { position: static; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .seg button, .chips button, .data-btn { transition: background-color 120ms, color 120ms, border-color 120ms; }
+}
+</style>
+
+<div class="wrap">
+  <header class="plate">
+    <div>
+      <p class="eyebrow">Group 20 · noise and error mitigation</p>
+      <h1>Mitigation Bench</h1>
+      <p class="lede" id="lede"></p>
+    </div>
+    <dl class="spec" id="spec"></dl>
+  </header>
+
+  <section class="readouts" id="readouts" aria-label="Headline results"></section>
+
+  <nav class="rail" aria-label="Filters">
+    <div class="ctl">
+      <span class="ctl-label" id="lbl-noise">Noise level</span>
+      <div class="seg" role="radiogroup" aria-labelledby="lbl-noise" id="ctl-noise"></div>
+    </div>
+    <div class="ctl">
+      <span class="ctl-label" id="lbl-n">Qubits n</span>
+      <div class="chips" role="group" aria-labelledby="lbl-n" id="ctl-n"></div>
+    </div>
+    <div class="ctl">
+      <span class="ctl-label" id="lbl-L">Layers L</span>
+      <div class="chips" role="group" aria-labelledby="lbl-L" id="ctl-L"></div>
+    </div>
+    <p class="count" id="count"></p>
+    <div class="legend" id="legend" aria-label="Methods"></div>
+  </nav>
+
+  <main class="bay">
+    <section class="panel span-7" aria-labelledby="h-error">
+      <header class="ph">
+        <div>
+          <h2 id="h-error">Error by method</h2>
+          <p class="q">Distance from the exact parity at every noise level. Bars are means over the selected circuits; whiskers are ±1 standard deviation.</p>
+        </div>
+        <button class="data-btn" type="button" aria-expanded="false" aria-controls="t-error">Data</button>
+      </header>
+      <div class="chart" id="c-error" role="img" aria-label="Bar chart of mean absolute error by method and noise level"></div>
+      <p class="note" id="n-error"></p>
+      <div class="tbl" id="t-error" hidden></div>
+    </section>
+
+    <section class="panel span-5" aria-labelledby="h-heat">
+      <header class="ph">
+        <div>
+          <h2 id="h-heat">Improvement map</h2>
+          <p class="q">Median error cut against no mitigation, per circuit size, at the selected noise level.</p>
+        </div>
+        <button class="data-btn" type="button" aria-expanded="false" aria-controls="t-heat">Data</button>
+      </header>
+      <div class="chart" id="c-heat" role="img" aria-label="Heatmaps of median improvement by qubits and layers"></div>
+      <p class="note" id="n-heat"></p>
+      <div class="tbl" id="t-heat" hidden></div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-strip">
+      <header class="ph">
+        <div>
+          <h2 id="h-strip">Where each estimate lands</h2>
+          <p class="q">Every run's error, oriented so that left of zero means the estimate was shrunk toward 0. Click a point to open that circuit's extrapolation.</p>
+        </div>
+      </header>
+      <div class="chart" id="c-strip" role="img" aria-label="Strip plot of oriented signed error per method"></div>
+      <p class="note" id="n-strip"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="h-zne">
+      <header class="ph">
+        <div>
+          <h2 id="h-zne">Extrapolation, one circuit</h2>
+          <p class="q">The parity measured at noise scales λ = 1, 3, 5 and the fits extended back to λ = 0.</p>
+        </div>
+      </header>
+      <div class="run-pick" id="run-pick">
+        <label for="sel-n">Qubits<select id="sel-n"></select></label>
+        <label for="sel-L">Layers<select id="sel-L"></select></label>
+        <label for="sel-seed">Seed<select id="sel-seed"></select></label>
+        <span class="run-noise" id="run-noise"></span>
+      </div>
+      <div class="chart" id="c-zne" role="img" aria-label="Zero-noise extrapolation for the selected circuit"></div>
+      <div class="keys" id="k-zne"></div>
+      <div class="tbl" id="t-zne"></div>
+      <p class="note" id="n-zne"></p>
+    </section>
+
+    <section class="panel span-5" aria-labelledby="h-bias">
+      <header class="ph">
+        <div>
+          <h2 id="h-bias">Where the bias comes from</h2>
+          <p class="q">The unmitigated bias with unlimited shots, split exactly into its gate-noise and readout parts.</p>
+        </div>
+        <button class="data-btn" type="button" aria-expanded="false" aria-controls="t-bias">Data</button>
+      </header>
+      <div class="chart" id="c-bias" role="img" aria-label="Stacked bars of gate and readout bias per circuit size"></div>
+      <div class="keys"><span><i class="sw gate"></i>gate noise</span><span><i class="sw readout"></i>readout error</span></div>
+      <div class="tbl" id="t-bias" hidden></div>
+    </section>
+
+    <section class="panel span-7" aria-labelledby="h-cost">
+      <header class="ph">
+        <div>
+          <h2 id="h-cost">Cost against benefit</h2>
+          <p class="q">Shots spent per estimate against the median error cut at the selected noise level. Lines join the qubit counts of one method.</p>
+        </div>
+        <button class="data-btn" type="button" aria-expanded="false" aria-controls="t-cost">Data</button>
+      </header>
+      <div class="chart" id="c-cost" role="img" aria-label="Scatter of shots per estimate against median improvement"></div>
+      <div class="tbl" id="t-cost-fixed"></div>
+      <div class="tbl" id="t-cost" hidden></div>
+    </section>
+  </main>
+
+  <section class="verdicts" aria-labelledby="h-verdicts">
+    <div class="sec-head">
+      <h2 id="h-verdicts">Hypotheses, checked against the data</h2>
+      <p class="q">Each was stated before the sweep ran. Verdicts and evidence come from all 30 circuits, not from the filters above.</p>
+    </div>
+    <ol class="vlist" id="vlist"></ol>
+  </section>
+
+  <footer class="sheet">
+    <div>
+      <h3>How the runs were made</h3>
+      <p id="method-text"></p>
+    </div>
+    <div class="tbl" id="t-levels"></div>
+  </footer>
+</div>
+
+<div id="tip" hidden></div>
+
+<script type="application/json" id="bench-data">"__BENCH_DATA__"</script>
+<script>
+(function () {
+  "use strict";
+
+  var RAW = JSON.parse(document.getElementById("bench-data").textContent);
+  var N = RAW.numbers;
+  var META = RAW.meta;
+  var COLS = RAW.cols;
+  var METHODS = META.methods;
+  var MIT = METHODS.filter(function (m) { return m !== "none"; });
+  var LEVELS = META.noise_levels.map(function (l) { return l.name; });
+  var SCALES = META.scales;
+
+  var ROWS = COLS.n.map(function (_, i) {
+    var r = {};
+    for (var k in COLS) r[k] = COLS[k][i];
+    return r;
+  });
+  var BY = {};
+  ROWS.forEach(function (r) { BY[key(r.n, r.L, r.noise, r.seed, r.method)] = r; });
+  function key(n, L, noise, seed, m) { return n + "|" + L + "|" + noise + "|" + seed + "|" + m; }
+
+  var rootStyle = getComputedStyle(document.documentElement);
+  function tok(name) { return rootStyle.getPropertyValue(name).trim(); }
+  var COLOR = {};
+  METHODS.forEach(function (m) { COLOR[m] = tok("--m-" + m); });
+
+  /* ---------- state ---------- */
+  var STORE = "qem-bench-v1";
+  var ex = META.example;
+  var state = { noise: ex.noise, n: META.qubits.slice(), L: META.depths.slice(), run: { n: ex.n, L: ex.L, seed: ex.seed } };
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORE) || "null");
+    if (saved && LEVELS.indexOf(saved.noise) >= 0) state.noise = saved.noise;
+    if (saved && Array.isArray(saved.n) && saved.n.length) state.n = saved.n.filter(function (v) { return META.qubits.indexOf(v) >= 0; });
+    if (saved && Array.isArray(saved.L) && saved.L.length) state.L = saved.L.filter(function (v) { return META.depths.indexOf(v) >= 0; });
+    if (saved && saved.run && BY[key(saved.run.n, saved.run.L, state.noise, saved.run.seed, "zne")]) state.run = saved.run;
+    if (!state.n.length) state.n = META.qubits.slice();
+    if (!state.L.length) state.L = META.depths.slice();
+  } catch (e) { /* storage unavailable: keep defaults */ }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* ignore */ } }
+
+  function sel(noise, method) {
+    return ROWS.filter(function (r) {
+      return state.n.indexOf(r.n) >= 0 && state.L.indexOf(r.L) >= 0 &&
+        (noise === undefined || r.noise === noise) && (method === undefined || r.method === method);
+    });
+  }
+
+  /* ---------- numbers ---------- */
+  function vals(rows, k) { return rows.map(function (r) { return r[k]; }).filter(function (v) { return v !== null && isFinite(v); }); }
+  function mean(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : NaN; }
+  function std(a) {
+    if (a.length < 2) return NaN;
+    var m = mean(a);
+    return Math.sqrt(a.reduce(function (s, x) { return s + (x - m) * (x - m); }, 0) / (a.length - 1));
+  }
+  function median(a) {
+    if (!a.length) return NaN;
+    var s = a.slice().sort(function (x, y) { return x - y; });
+    var h = s.length >> 1;
+    return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2;
+  }
+  function ok(v) { return typeof v === "number" && isFinite(v); }
+  function f3(v) { return ok(v) ? v.toFixed(3) : "–"; }
+  function pct(v) { return ok(v) ? (Math.round(v) === 0 ? "0" : Math.round(v)) + "%" : "–"; }
+  function sgn(v) { return ok(v) ? (v > 0 ? "+" : "") + v.toFixed(3) : "–"; }
+  function fmtInt(v) { return Number(v).toLocaleString("en-US"); }
+  function mtag(m) { return '<span class="mchip"><i class="sw ' + m + '"></i>' + m + "</span>"; }
+
+  /* ---------- SVG helpers ---------- */
+  var NS = "http://www.w3.org/2000/svg";
+  function s(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function txt(parent, x, y, str, attrs) {
+    var a = attrs || {};
+    a.x = x; a.y = y;
+    var t = s("text", a, parent);
+    t.textContent = str;
+    return t;
+  }
+  function lin(d0, d1, r0, r1) { return function (v) { return r0 + (v - d0) / (d1 - d0) * (r1 - r0); }; }
+  function niceStep(span, count) {
+    var raw = span / Math.max(1, count);
+    var p = Math.pow(10, Math.floor(Math.log10(raw)));
+    var f = raw / p;
+    return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+  }
+  function ticks(lo, hi, count) {
+    var st = niceStep(hi - lo, count || 5), out = [];
+    for (var v = Math.ceil(lo / st - 1e-9) * st; v <= hi + st * 1e-9; v += st) out.push(+v.toFixed(10));
+    return out;
+  }
+  function decimals(step) { return Math.max(0, Math.min(3, -Math.floor(Math.log10(step) + 1e-9))); }
+  function svgFor(host, H) {
+    host.innerHTML = "";
+    var W = Math.max(280, Math.floor(host.clientWidth || 600));
+    return { svg: s("svg", { viewBox: "0 0 " + W + " " + H, width: W, height: H }, host), W: W, H: H };
+  }
+  function shape(parent, m, x, y, r, attrs) {
+    var el, h;
+    if (m === "none") el = s("circle", { cx: x, cy: y, r: r }, parent);
+    else if (m === "rem") el = s("rect", { x: x - r * 0.88, y: y - r * 0.88, width: r * 1.76, height: r * 1.76 }, parent);
+    else if (m === "zne") { h = r * 1.18; el = s("path", { d: "M" + x + "," + (y - h) + "L" + (x + h) + "," + (y + h * 0.78) + "L" + (x - h) + "," + (y + h * 0.78) + "Z" }, parent); }
+    else { h = r * 1.22; el = s("path", { d: "M" + x + "," + (y - h) + "L" + (x + h) + "," + y + "L" + x + "," + (y + h) + "L" + (x - h) + "," + y + "Z" }, parent); }
+    for (var k in (attrs || {})) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function starPath(cx, cy, R) {
+    var d = "", r = R * 0.46;
+    for (var i = 0; i < 10; i++) {
+      var a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? r : R;
+      d += (i ? "L" : "M") + (cx + rad * Math.cos(a)).toFixed(2) + "," + (cy + rad * Math.sin(a)).toFixed(2);
+    }
+    return d + "Z";
+  }
+  function hexRgb(h) { h = h.replace("#", ""); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; }
+  function mix(a, b, t) {
+    var A = hexRgb(a), B = hexRgb(b);
+    return "rgb(" + A.map(function (v, i) { return Math.round(v + (B[i] - v) * t); }).join(",") + ")";
+  }
+  function divColor(v) {
+    var t = Math.max(-1, Math.min(1, v / 100));
+    return t >= 0 ? mix(tok("--div-mid"), tok("--div-pos"), t) : mix(tok("--div-mid"), tok("--div-neg"), -t);
+  }
+
+  /* ---------- tooltip ---------- */
+  var tip = document.getElementById("tip");
+  function placeTip(ev) {
+    var pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+    var x = ev.clientX + pad, y = ev.clientY + pad;
+    if (x + w > window.innerWidth - 8) x = ev.clientX - w - pad;
+    if (y + h > window.innerHeight - 8) y = ev.clientY - h - pad;
+    tip.style.left = Math.max(8, x) + "px";
+    tip.style.top = Math.max(8, y) + "px";
+  }
+  function hover(el, html) {
+    el.addEventListener("pointerenter", function (ev) { tip.innerHTML = typeof html === "function" ? html() : html; tip.hidden = false; placeTip(ev); });
+    el.addEventListener("pointermove", placeTip);
+    el.addEventListener("pointerleave", function () { tip.hidden = true; });
+  }
+
+  /* ---------- tables ---------- */
+  function table(hostId, headers, rows, opts) {
+    var host = document.getElementById(hostId);
+    var num = (opts && opts.num) || [];
+    var h = "<table><thead><tr>" + headers.map(function (x, i) { return '<th class="' + (num.indexOf(i) >= 0 ? "num" : "") + '">' + x + "</th>"; }).join("") + "</tr></thead><tbody>";
+    rows.forEach(function (r) {
+      var cls = r.hl ? ' class="hl"' : "";
+      var cells = r.cells || r;
+      h += "<tr" + cls + ">" + cells.map(function (c, i) { return '<td class="' + (num.indexOf(i) >= 0 ? "num" : "") + '">' + c + "</td>"; }).join("") + "</tr>";
+    });
+    host.innerHTML = h + "</tbody></table>";
+  }
+  document.querySelectorAll(".data-btn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var t = document.getElementById(b.getAttribute("aria-controls"));
+      var open = b.getAttribute("aria-expanded") !== "true";
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      t.hidden = !open;
+      b.textContent = open ? "Hide data" : "Data";
+    });
+  });
+
+  /* ---------- static content ---------- */
+  function levelOf(name) { return META.noise_levels.filter(function (l) { return l.name === name; })[0]; }
+
+  document.getElementById("lede").textContent =
+    "Does mitigating a noisy quantum circuit pay off, and at what cost? " + N["grid.instances"] +
+    " random circuits, each run at " + LEVELS.length + " noise levels and estimated " + METHODS.length +
+    " ways from the same simulated shots.";
+
+  (function spec() {
+    var items = [
+      ["Circuit", "ry · rz · cx ladder"],
+      ["Sizes", "n ∈ {" + META.qubits.join(", ") + "} · L ∈ {" + META.depths.join(", ") + "}"],
+      ["Observable", "parity ⟨Z⊗…⊗Z⟩"],
+      ["Shots", fmtInt(META.shots) + " per circuit"],
+      ["Folding", "λ ∈ {" + SCALES.join(", ") + "}, global"],
+      ["Instances", "|E_exact| ≥ " + META.threshold + ", seeds " + META.seeds[0] + "–" + META.seeds[META.seeds.length - 1]]
+    ];
+    document.getElementById("spec").innerHTML = items.map(function (it) { return "<dt>" + it[0] + "</dt><dd>" + it[1] + "</dd>"; }).join("");
+  })();
+
+  (function readouts() {
+    var R = [
+      { label: "Best at moderate noise", value: N["imp.median.zne_rem.moderate"], unit: "%",
+        meta: mtag("zne_rem") + " median error cut. Lowest error in " + N["best.count.zne_rem.moderate"] + " circuit sizes." },
+      { label: "Best at low noise", value: N["imp.median.rem.low"], unit: "%",
+        meta: mtag("rem") + " median error cut. Lowest error in " + N["best.count.rem.low"] + " circuit sizes." },
+      { label: "ZNE shot-noise growth", value: N["var.ratio.emp.moderate"], unit: "×",
+        meta: "Measured spread of the extrapolated estimate against one plain run. Theory predicts " + N["var.ratio.theory"] + "×." },
+      { label: "REM cost at n = 6", value: N["circuits.rem.n6"], unit: "circuits",
+        meta: "Per estimate, growing as 1 + 2ⁿ. ZNE needs " + N["circuits.zne.n6"] + " at any size." }
+    ];
+    document.getElementById("readouts").innerHTML = R.map(function (r) {
+      return '<div class="ro"><p class="ro-label">' + r.label + '</p><p class="ro-value">' + r.value +
+        '<span class="unit">' + r.unit + '</span></p><p class="ro-meta">' + r.meta + "</p></div>";
+    }).join("");
+  })();
+
+  document.getElementById("legend").innerHTML = METHODS.map(mtag).join("");
+
+  (function verdicts() {
+    var V = [
+      { id: "H1", v: "partial", claim: "Unmitigated error grows with noise level, qubit count and depth.",
+        ev: "Mean error rises from " + N["err.mean.none.ideal"] + " to " + N["err.mean.none.low"] + " to " + N["err.mean.none.moderate"] +
+          " across the noise levels. Pooled over circuits it also grows with n (" + N["err.none.moderate.n2"] + ", " + N["err.none.moderate.n4"] + ", " +
+          N["err.none.moderate.n6"] + " at moderate noise) and with L (" + N["err.none.moderate.L2"] + " vs " + N["err.none.moderate.L4"] +
+          "), but not in every individual circuit size." },
+      { id: "H2", v: "supported", claim: "REM removes most of the readout error, improves distribution fidelity and leaves the gate-noise bias.",
+        ev: "REM's remaining error (" + N["err.mean.rem.low"] + " low, " + N["err.mean.rem.moderate"] + " moderate) sits close to the gate-noise bias (" +
+          N["bias.gate.low"] + ", " + N["bias.gate.moderate"] + "). Hellinger fidelity improves in " + N["fid.better.low"] + " and " + N["fid.better.moderate"] + " circuit sizes." },
+      { id: "H3", v: "supported", claim: "ZNE removes much of the gate-noise bias but not the readout bias.",
+        ev: "With unlimited shots and the readout error divided out, ZNE removes " + N["zne.gate_bias_removed.low"] + "% (low) and " +
+          N["zne.gate_bias_removed.moderate"] + "% (moderate) of the gate-noise bias. With readout left in it still misses by " +
+          N["zne.inf_shot_err.low"] + " and " + N["zne.inf_shot_err.moderate"] + "." },
+      { id: "H4", v: "partial", claim: "Combining ZNE with REM gives the lowest error at low and moderate noise.",
+        ev: "True at moderate noise (mean error " + N["err.mean.zne_rem.moderate"] + ", lowest in " + N["best.count.zne_rem.moderate"] +
+          " sizes). At low noise REM alone does better (" + N["err.mean.rem.low"] + " vs " + N["err.mean.zne_rem.low"] + ", lowest in " + N["best.count.rem.low"] + " sizes)." },
+      { id: "H5", v: "supported", claim: "ZNE adds variance, and with no noise to remove it is no better than doing nothing.",
+        ev: "ZNE's shot noise is " + N["var.ratio.emp.low"] + "–" + N["var.ratio.emp.moderate"] + "× the baseline's (theory " + N["var.ratio.theory"] +
+          "×). At the ideal level it is worse in " + N["ideal.zne_worse"] + " runs." },
+      { id: "H6", v: "supported", claim: "REM uses 1 + 2ⁿ circuits, ZNE uses 3 with 9× the CNOTs and about 5× the depth, and the combination uses both.",
+        ev: "Measured " + N["circuits.rem.n2"] + " / " + N["circuits.rem.n4"] + " / " + N["circuits.rem.n6"] + " circuits for REM, " + N["circuits.zne.n2"] +
+          " for ZNE with " + N["zne.cx_ratio"] + "× the CNOTs and " + N["zne.depth_ratio.max"] + "× the depth, and " + N["circuits.zne_rem.n2"] + " / " +
+          N["circuits.zne_rem.n4"] + " / " + N["circuits.zne_rem.n6"] + " for the combination." }
+    ];
+    document.getElementById("vlist").innerHTML = V.map(function (h) {
+      return '<li><span class="v-id">' + h.id + '</span><p class="v-claim">' + h.claim + '</p><p class="v-ev">' + h.ev + "</p>" +
+        '<span class="v-chip ' + h.v + '"><i></i>' + (h.v === "supported" ? "Supported" : "Partly supported") + "</span></li>";
+    }).join("");
+  })();
+
+  document.getElementById("method-text").textContent =
+    "Each circuit is a layered ry–rz–CNOT ansatz with random angles, kept only if its exact parity is at least " + META.threshold +
+    " in size. Qiskit Aer " + N["env.qiskit-aer"] + " simulates it as a density matrix under depolarizing gate noise and symmetric readout error. " +
+    "All four methods post-process the same " + fmtInt(META.shots) + " shots, so differences between them come from the mitigation alone. " +
+    N["grid.rows"] + " method runs in total; a rerun reproduces every value exactly. Qiskit " + N["env.qiskit"] + ", Python " + N["env.python"] + ".";
+
+  table("t-levels", ["Noise level", "1-qubit p₁", "2-qubit p₂", "Readout p_ro"],
+    META.noise_levels.map(function (l) { return [l.name, l.p1, l.p2, l.p_ro]; }), { num: [1, 2, 3] });
+
+  /* ---------- controls ---------- */
+  var segHost = document.getElementById("ctl-noise");
+  LEVELS.forEach(function (name) {
+    var l = levelOf(name);
+    var b = document.createElement("button");
+    b.type = "button";
+    b.id = "noise-" + name;
+    b.setAttribute("role", "radio");
+    b.innerHTML = '<span class="s-name">' + name + '</span><span class="s-sub">' +
+      (l.p2 || l.p_ro ? "p₂ " + l.p2 + " · ro " + l.p_ro : "no noise") + "</span>";
+    b.addEventListener("click", function () { state.noise = name; changed(); });
+    segHost.appendChild(b);
+  });
+  function chipGroup(hostId, values, prop, prefix) {
+    var host = document.getElementById(hostId);
+    values.forEach(function (v) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.id = prefix + v;
+      b.textContent = v;
+      b.addEventListener("click", function () {
+        var cur = state[prop], i = cur.indexOf(v);
+        if (i >= 0) { if (cur.length === 1) return; cur.splice(i, 1); } else { cur.push(v); cur.sort(function (a, b2) { return a - b2; }); }
+        changed();
+      });
+      host.appendChild(b);
+    });
+  }
+  chipGroup("ctl-n", META.qubits, "n", "n-");
+  chipGroup("ctl-L", META.depths, "L", "L-");
+
+  function syncControls() {
+    LEVELS.forEach(function (name) {
+      var b = document.getElementById("noise-" + name);
+      b.setAttribute("aria-checked", state.noise === name ? "true" : "false");
+      b.tabIndex = state.noise === name ? 0 : -1;
+    });
+    META.qubits.forEach(function (v) { document.getElementById("n-" + v).setAttribute("aria-pressed", state.n.indexOf(v) >= 0 ? "true" : "false"); });
+    META.depths.forEach(function (v) { document.getElementById("L-" + v).setAttribute("aria-pressed", state.L.indexOf(v) >= 0 ? "true" : "false"); });
+    var circuits = state.n.length * state.L.length * META.seeds.length;
+    document.getElementById("count").textContent = circuits + " circuits selected";
+  }
+  segHost.addEventListener("keydown", function (ev) {
+    if (ev.key !== "ArrowRight" && ev.key !== "ArrowLeft") return;
+    var i = LEVELS.indexOf(state.noise) + (ev.key === "ArrowRight" ? 1 : -1);
+    state.noise = LEVELS[(i + LEVELS.length) % LEVELS.length];
+    changed();
+    document.getElementById("noise-" + state.noise).focus();
+    ev.preventDefault();
+  });
+
+  var selN = document.getElementById("sel-n"), selL = document.getElementById("sel-L"), selS = document.getElementById("sel-seed");
+  function fill(select, values, label) {
+    select.innerHTML = values.map(function (v) { return '<option value="' + v + '">' + label + v + "</option>"; }).join("");
+  }
+  fill(selN, META.qubits, "n = ");
+  fill(selL, META.depths, "L = ");
+  fill(selS, META.seeds, "");
+  [selN, selL, selS].forEach(function (el) {
+    el.addEventListener("change", function () {
+      state.run = { n: +selN.value, L: +selL.value, seed: +selS.value };
+      save();
+      renderZne();
+      renderStrip();
+    });
+  });
+
+  /* ---------- A: error by method ---------- */
+  function renderError() {
+    var host = document.getElementById("c-error");
+    var o = svgFor(host, 292), svg = o.svg, W = o.W, H = o.H;
+    var m = { l: 50, r: 10, t: 12, b: 34 };
+    var stats = {}, ymax = 0;
+    LEVELS.forEach(function (nz) {
+      METHODS.forEach(function (me) {
+        var e = vals(sel(nz, me), "err");
+        var st = { mean: mean(e), sd: std(e), med: median(e), k: e.length };
+        stats[nz + "|" + me] = st;
+        ymax = Math.max(ymax, st.mean + (isFinite(st.sd) ? st.sd : 0));
+      });
+    });
+    var floor = mean(vals(sel(undefined, "none"), "floor"));
+    ymax = Math.max(ymax, floor) * 1.06;
+    var y = lin(0, ymax, H - m.b, m.t);
+    var gw = (W - m.l - m.r) / LEVELS.length;
+    var g = s("g", {}, svg);
+    var tk = ticks(0, ymax, 5), dec = decimals(tk[1] - tk[0]);
+    tk.forEach(function (t) {
+      s("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), "class": "gl" }, g);
+      txt(g, m.l - 8, y(t) + 4, t.toFixed(dec), { "text-anchor": "end" });
+    });
+    var midY = m.t + (H - m.b - m.t) / 2;
+    txt(g, 11, midY, "mean |error|", { "text-anchor": "middle", "class": "axt", transform: "rotate(-90 11 " + midY + ")" });
+    var si = LEVELS.indexOf(state.noise);
+    s("rect", { x: m.l + si * gw + 3, y: m.t - 4, width: gw - 6, height: H - m.b - m.t + 4, "class": "band" }, svg);
+    var inner = gw * 0.8, bw = inner / METHODS.length;
+    LEVELS.forEach(function (nz, i) {
+      var x0 = m.l + i * gw + (gw - inner) / 2;
+      txt(svg, m.l + i * gw + gw / 2, H - m.b + 20, nz, { "text-anchor": "middle", "class": nz === state.noise ? "tick-on" : "" });
+      METHODS.forEach(function (me, j) {
+        var st = stats[nz + "|" + me];
+        if (!isFinite(st.mean)) return;
+        var bx = x0 + j * bw + 1, w = Math.max(2, bw - 2);
+        s("rect", { x: bx, y: y(st.mean), width: w, height: Math.max(0.5, y(0) - y(st.mean)), fill: COLOR[me], rx: 1.5 }, svg);
+        if (isFinite(st.sd)) {
+          var lo = Math.max(0, st.mean - st.sd), hi = st.mean + st.sd, cx = bx + w / 2;
+          s("line", { x1: cx, x2: cx, y1: y(lo), y2: y(hi), "class": "whisk" }, svg);
+          s("line", { x1: cx - 3, x2: cx + 3, y1: y(hi), y2: y(hi), "class": "whisk" }, svg);
+        }
+        var hit = s("rect", { x: bx - 1, y: m.t, width: w + 2, height: y(0) - m.t, "class": "hit" }, svg);
+        hover(hit, function () {
+          return mtag(me) + " at " + nz + " noise<br>mean " + f3(st.mean) + " ± " + f3(st.sd) + "<br>median " + f3(st.med) + " · " + st.k + " runs";
+        });
+      });
+    });
+    s("line", { x1: m.l, x2: W - m.r, y1: y(floor), y2: y(floor), "class": "floor" }, svg);
+    s("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), "class": "base" }, svg);
+    document.getElementById("n-error").innerHTML =
+      "Dashed line: the shot-noise floor of a single 1,024-shot run, <b>" + f3(floor) + "</b> on average. The highlighted group is the selected noise level.";
+    table("t-error", ["Noise", "Method", "Mean |error|", "Std", "Median", "Runs"],
+      LEVELS.reduce(function (acc, nz) {
+        METHODS.forEach(function (me) {
+          var st = stats[nz + "|" + me];
+          acc.push({ hl: nz === state.noise, cells: [nz, me, f3(st.mean), f3(st.sd), f3(st.med), st.k] });
+        });
+        return acc;
+      }, []), { num: [2, 3, 4, 5] });
+  }
+
+  /* ---------- B: improvement map ---------- */
+  function renderHeat() {
+    var host = document.getElementById("c-heat");
+    var qs = META.qubits, ls = META.depths;
+    var cellH = 46, top = 24, lab = 40, gap = 12, legendH = 46;
+    var o = svgFor(host, top + cellH * qs.length + 24 + legendH), svg = o.svg, W = o.W;
+    var pw = (W - lab - gap * (MIT.length - 1)) / MIT.length, cw = pw / ls.length;
+    var cells = [];
+    MIT.forEach(function (me, p) {
+      var x0 = lab + p * (pw + gap);
+      var t = txt(svg, x0, 14, "", { "class": "lbl" });
+      t.textContent = me;
+      qs.forEach(function (n, i) {
+        if (p === 0) txt(svg, lab - 8, top + i * cellH + cellH / 2 + 4, "n=" + n, { "text-anchor": "end" });
+        ls.forEach(function (L, j) {
+          var rs = ROWS.filter(function (r) { return r.n === n && r.L === L && r.noise === state.noise && r.method === me; });
+          var imp = vals(rs, "imp"), v = median(imp), better = imp.filter(function (x) { return x > 0; }).length;
+          var on = state.n.indexOf(n) >= 0 && state.L.indexOf(L) >= 0;
+          var x = x0 + j * cw, yy = top + i * cellH;
+          s("rect", { x: x + 1, y: yy + 1, width: cw - 2, height: cellH - 2, fill: divColor(v), opacity: on ? 1 : 0.28, rx: 2 }, svg);
+          var lum = (function () { var c = divColor(v).match(/\d+/g).map(Number); return (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255; })();
+          txt(svg, x + cw / 2, yy + cellH / 2 + 4, pct(v), { "text-anchor": "middle", "class": "val", style: "fill:" + (lum > 0.5 ? tok("--ground") : tok("--text")) + ";opacity:" + (on ? 1 : 0.45) });
+          var hit = s("rect", { x: x, y: yy, width: cw, height: cellH, "class": "hit" }, svg);
+          hover(hit, function () {
+            return mtag(me) + " · n=" + n + ", L=" + L + "<br>" + state.noise + " noise<br>median cut " + pct(v) + " · mean " + pct(mean(imp)) +
+              "<br>better than none in " + better + "/" + imp.length + " runs";
+          });
+          cells.push({ hl: on, cells: [me, n, L, pct(v), pct(mean(imp)), better + "/" + imp.length] });
+        });
+        if (i === qs.length - 1) ls.forEach(function (L, j) { txt(svg, x0 + j * cw + cw / 2, top + qs.length * cellH + 16, "L=" + L, { "text-anchor": "middle" }); });
+      });
+    });
+    var gy = top + qs.length * cellH + 32, gx0 = lab, gx1 = W - 4;
+    var gid = "divgrad";
+    var defs = s("defs", {}, svg), lg = s("linearGradient", { id: gid, x1: "0", x2: "1", y1: "0", y2: "0" }, defs);
+    [[0, tok("--div-neg")], [0.5, tok("--div-mid")], [1, tok("--div-pos")]].forEach(function (st) { s("stop", { offset: st[0], "stop-color": st[1] }, lg); });
+    s("rect", { x: gx0, y: gy, width: gx1 - gx0, height: 8, fill: "url(#" + gid + ")", rx: 2 }, svg);
+    [["−100%", gx0, "start"], ["0", (gx0 + gx1) / 2, "middle"], ["+100% error cut", gx1, "end"]].forEach(function (t) {
+      txt(svg, t[1], gy + 22, t[0], { "text-anchor": t[2] });
+    });
+    document.getElementById("n-heat").innerHTML = state.noise === "ideal"
+      ? "At the ideal level the baseline error is pure shot noise, so these percentages swing wildly and are left out of the headline numbers."
+      : "Faded cells are outside the qubit and layer filters. Values beyond ±100% are drawn at the end of the scale.";
+    table("t-heat", ["Method", "n", "L", "Median cut", "Mean cut", "Better than none"], cells, { num: [1, 2, 3, 4] });
+  }
+
+  /* ---------- C: strip of oriented errors ---------- */
+  function jitter(n, L, seed) {
+    var h = (n * 73856093) ^ (L * 19349663) ^ ((seed + 7) * 83492791);
+    h = (h ^ (h >>> 13)) * 1274126177;
+    return (((h ^ (h >>> 16)) >>> 0) % 1000) / 1000 - 0.5;
+  }
+  function renderStrip() {
+    var host = document.getElementById("c-strip");
+    var rowH = 58, m = { l: 82, r: 74, t: 10, b: 42 };
+    var o = svgFor(host, m.t + rowH * METHODS.length + m.b), svg = o.svg, W = o.W, H = o.H;
+    var data = METHODS.map(function (me) {
+      return sel(state.noise, me).map(function (r) { return { r: r, v: Math.sign(r.E_exact) * (r.E_hat - r.E_exact) }; });
+    });
+    var all = [].concat.apply([], data.map(function (d) { return d.map(function (p) { return p.v; }); }));
+    var lo = Math.min(0, Math.min.apply(null, all)), hi = Math.max(0, Math.max.apply(null, all));
+    var pad = (hi - lo) * 0.08 || 0.05;
+    lo -= pad; hi += pad;
+    var x = lin(lo, hi, m.l, W - m.r);
+    var tk = ticks(lo, hi, 6), dec = decimals(tk[1] - tk[0]);
+    tk.forEach(function (t) {
+      s("line", { x1: x(t), x2: x(t), y1: m.t, y2: H - m.b, "class": "gl" }, svg);
+      txt(svg, x(t), H - m.b + 16, (t > 0 ? "+" : "") + t.toFixed(dec), { "text-anchor": "middle" });
+    });
+    s("line", { x1: x(0), x2: x(0), y1: m.t - 4, y2: H - m.b, "class": "zero" }, svg);
+    txt(svg, m.l, H - 6, "← shrunk toward 0", { "class": "axt" });
+    txt(svg, W - m.r, H - 6, "overshoot →", { "class": "axt", "text-anchor": "end" });
+    txt(svg, x(0), H - 6, "exact", { "class": "axt", "text-anchor": "middle" });
+    METHODS.forEach(function (me, i) {
+      var cy = m.t + i * rowH + rowH / 2;
+      shape(svg, me, 12, cy, 5, { fill: COLOR[me] });
+      txt(svg, 24, cy + 4, me, { "class": "lbl" });
+      var pts = data[i];
+      var med = median(pts.map(function (p) { return p.v; }));
+      pts.forEach(function (p) {
+        var r = p.r, cyj = cy + jitter(r.n, r.L, r.seed) * rowH * 0.6;
+        var picked = r.n === state.run.n && r.L === state.run.L && r.seed === state.run.seed;
+        var dot = shape(svg, me, x(p.v), cyj, picked ? 5.5 : 4.5, { fill: COLOR[me], stroke: tok("--panel"), "stroke-width": 1.2, "class": "dot" });
+        if (picked) s("circle", { cx: x(p.v), cy: cyj, r: 9, "class": "pick" }, svg);
+        hover(dot, function () {
+          return mtag(me) + " · n=" + r.n + ", L=" + r.L + ", seed " + r.seed + "<br>exact " + f3(r.E_exact) + " · estimate " + f3(r.E_hat) +
+            "<br>oriented error " + sgn(p.v) + '<br><span class="hint">Click to open this circuit</span>';
+        });
+        dot.addEventListener("click", function () {
+          state.run = { n: r.n, L: r.L, seed: r.seed };
+          save();
+          renderZne();
+          renderStrip();
+          tip.hidden = true;
+        });
+      });
+      if (isFinite(med)) {
+        s("line", { x1: x(med), x2: x(med), y1: cy - rowH * 0.36, y2: cy + rowH * 0.36, stroke: tok("--text"), "stroke-width": 2 }, svg);
+        txt(svg, W - m.r + 10, cy + 4, sgn(med), { "class": "val" });
+      }
+    });
+    txt(svg, W - m.r + 10, m.t + 2, "median", { "class": "axt" });
+    var nRuns = data[0].length;
+    document.getElementById("n-strip").innerHTML = "Showing <b>" + nRuns + "</b> runs per method at " + state.noise +
+      " noise. The white tick on each row is its median; the gold ring marks the circuit open on the right.";
+  }
+
+  /* ---------- D: one circuit's extrapolation ---------- */
+  function richardson(xs, ys, t) {
+    var total = 0;
+    for (var i = 0; i < xs.length; i++) {
+      var term = ys[i];
+      for (var j = 0; j < xs.length; j++) if (j !== i) term *= (t - xs[j]) / (xs[i] - xs[j]);
+      total += term;
+    }
+    return total;
+  }
+  function linfit(xs, ys) {
+    var mx = mean(xs), my = mean(ys), sxy = 0, sxx = 0;
+    for (var i = 0; i < xs.length; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) * (xs[i] - mx); }
+    var b = sxy / sxx;
+    return { a: my - b * mx, b: b };
+  }
+  function expfit(xs, ys) {
+    if (ys.some(function (v) { return !isFinite(v) || Math.abs(v) <= 1e-6; })) return null;
+    var sg = Math.sign(ys[0]);
+    if (ys.some(function (v) { return Math.sign(v) !== sg; })) return null;
+    var f = linfit(xs, ys.map(function (v) { return Math.log(Math.abs(v)); }));
+    return { sign: sg, B: Math.exp(f.a), c: -f.b };
+  }
+  function renderZne() {
+    var run = state.run, noise = state.noise;
+    selN.value = run.n; selL.value = run.L; selS.value = run.seed;
+    document.getElementById("run-noise").textContent = noise + " noise (set above)";
+    var rows = {};
+    METHODS.forEach(function (me) { rows[me] = BY[key(run.n, run.L, noise, run.seed, me)]; });
+    var host = document.getElementById("c-zne");
+    var o = svgFor(host, 280), svg = o.svg, W = o.W, H = o.H;
+    var m = { l: 50, r: 14, t: 14, b: 36 };
+    var series = [
+      { me: "zne", label: "raw counts", r: rows.zne },
+      { me: "zne_rem", label: "REM-corrected", r: rows.zne_rem }
+    ];
+    var grid = [];
+    for (var i = 0; i <= 60; i++) grid.push(i * 5.5 / 60);
+    var ys = [rows.none.E_exact];
+    series.forEach(function (sr) {
+      var pts = [sr.r.E1, sr.r.E3, sr.r.E5];
+      sr.pts = pts;
+      sr.lin = linfit(SCALES, pts);
+      sr.exp = expfit(SCALES, pts);
+      sr.curves = {
+        rich: grid.map(function (t) { return richardson(SCALES, pts, t); }),
+        lin: grid.map(function (t) { return sr.lin.a + sr.lin.b * t; }),
+        exp: sr.exp ? grid.map(function (t) { return sr.exp.sign * sr.exp.B * Math.exp(-sr.exp.c * t); }) : null
+      };
+      ys = ys.concat(pts, sr.curves.rich, sr.curves.lin, sr.curves.exp || []);
+    });
+    var lo = Math.min.apply(null, ys), hi = Math.max.apply(null, ys), pad = (hi - lo) * 0.08 || 0.05;
+    lo -= pad; hi += pad;
+    var x = lin(-0.25, 5.6, m.l, W - m.r), y = lin(lo, hi, H - m.b, m.t);
+    var tk = ticks(lo, hi, 5), dec = decimals(tk[1] - tk[0]);
+    tk.forEach(function (t) {
+      s("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), "class": "gl" }, svg);
+      txt(svg, m.l - 8, y(t) + 4, t.toFixed(dec), { "text-anchor": "end" });
+    });
+    [0, 1, 2, 3, 4, 5].forEach(function (t) { txt(svg, x(t), H - m.b + 18, t, { "text-anchor": "middle", "class": SCALES.indexOf(t) >= 0 ? "tick-on" : "" }); });
+    txt(svg, (m.l + W - m.r) / 2, H - 2, "noise scale factor λ", { "text-anchor": "middle", "class": "axt" });
+    var midY = m.t + (H - m.b - m.t) / 2;
+    txt(svg, 11, midY, "parity", { "text-anchor": "middle", "class": "axt", transform: "rotate(-90 11 " + midY + ")" });
+    s("line", { x1: x(0), x2: x(0), y1: m.t, y2: H - m.b, "class": "base" }, svg);
+    var ey = y(rows.none.E_exact);
+    s("line", { x1: m.l, x2: W - m.r, y1: ey, y2: ey, "class": "exact" }, svg);
+    txt(svg, W - m.r, ey - 7, "exact " + f3(rows.none.E_exact), { "text-anchor": "end", "class": "val" });
+    function path(vs) { return vs.map(function (v, k) { return (k ? "L" : "M") + x(grid[k]).toFixed(1) + "," + y(v).toFixed(1); }).join(""); }
+    series.forEach(function (sr) {
+      var c = COLOR[sr.me];
+      s("path", { d: path(sr.curves.rich), fill: "none", stroke: c, "stroke-width": 2 }, svg);
+      s("path", { d: path(sr.curves.lin), fill: "none", stroke: c, "stroke-width": 1.4, "stroke-dasharray": "6 4", opacity: 0.85 }, svg);
+      if (sr.curves.exp) s("path", { d: path(sr.curves.exp), fill: "none", stroke: c, "stroke-width": 1.8, "stroke-dasharray": "1.5 3.5", "stroke-linecap": "round", opacity: 0.9 }, svg);
+      sr.pts.forEach(function (v, k) {
+        var dot = shape(svg, sr.me, x(SCALES[k]), y(v), 5, { fill: c, stroke: tok("--panel"), "stroke-width": 1.5 });
+        hover(dot, function () { return mtag(sr.me) + " " + sr.label + "<br>λ = " + SCALES[k] + " · parity " + f3(v); });
+      });
+      var star = s("path", { d: starPath(x(0), y(sr.r.E_rich), 8), fill: c, stroke: tok("--ground"), "stroke-width": 1 }, svg);
+      hover(star, function () {
+        return mtag(sr.me) + " Richardson at λ = 0<br>estimate " + f3(sr.r.E_rich) + "<br>linear " + f3(sr.r.E_lin) + " · exp " + (sr.r.E_exp === null ? "undefined" : f3(sr.r.E_exp));
+      });
+    });
+    var keyLine = function (dash, w) { return '<svg width="26" height="8" aria-hidden="true"><line x1="1" x2="25" y1="4" y2="4" stroke="' + tok("--text") + '" stroke-width="' + w + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : "") + ' stroke-linecap="round"/></svg>'; };
+    document.getElementById("k-zne").innerHTML =
+      '<span><i class="sw zne"></i>raw counts</span><span><i class="sw zne_rem"></i>REM-corrected</span>' +
+      "<span>" + keyLine("", 2) + "Richardson</span><span>" + keyLine("6 4", 1.4) + "linear</span><span>" + keyLine("1.5 3.5", 1.8) + "exponential</span>" +
+      '<span><svg width="14" height="14" aria-hidden="true"><path d="' + starPath(7, 7.5, 6.5) + '" fill="' + tok("--text") + '"/></svg>estimate at λ = 0</span>';
+    table("t-zne", ["Method", "Estimate", "|Error|", "Vs none"], METHODS.map(function (me) {
+      var r = rows[me];
+      return [mtag(me), f3(r.E_hat), f3(r.err), me === "none" ? "baseline" : pct(r.imp)];
+    }), { num: [1, 2, 3] });
+    var bad = series.filter(function (sr) { return !sr.exp; }).map(function (sr) { return sr.label; });
+    document.getElementById("n-zne").innerHTML = "Exact parity <b>" + f3(rows.none.E_exact) + "</b>; with unlimited shots and no mitigation this circuit reads <b>" +
+      f3(rows.none.E_noisy) + "</b>." + (bad.length ? " The exponential fit is undefined for the " + bad.join(" and ") + " points because they change sign or reach zero." : "");
+  }
+
+  /* ---------- E: bias sources ---------- */
+  function renderBias() {
+    var host = document.getElementById("c-bias");
+    var groups = [];
+    state.n.forEach(function (n) {
+      state.L.forEach(function (L) {
+        var rs = ROWS.filter(function (r) { return r.n === n && r.L === L && r.noise === state.noise && r.method === "none"; });
+        var gate = [], ro = [];
+        rs.forEach(function (r) {
+          var a = Math.pow(1 - 2 * r.p_ro, r.n), Eg = r.E_noisy / a;
+          gate.push(Math.abs(Eg - r.E_exact));
+          ro.push(Math.abs(r.E_noisy - Eg));
+        });
+        groups.push({ n: n, L: L, gate: mean(gate), ro: mean(ro) });
+      });
+    });
+    var total = groups.map(function (gq) { return gq.gate + gq.ro; });
+    if (state.noise === "ideal" || Math.max.apply(null, total) < 1e-9) {
+      host.innerHTML = '<div class="empty">No noise at the ideal level, so there is no bias to split.<br>Pick low or moderate noise above.</div>';
+      table("t-bias", ["n", "L", "Gate", "Readout", "Readout share"], []);
+      return;
+    }
+    var rowH = 34, m = { l: 74, r: 104, t: 4, b: 30 };
+    var o = svgFor(host, m.t + rowH * groups.length + m.b), svg = o.svg, W = o.W, H = o.H;
+    var xmax = Math.max.apply(null, total) * 1.04;
+    var x = lin(0, xmax, m.l, W - m.r);
+    var tk = ticks(0, xmax, 4), dec = decimals(tk[1] - tk[0]);
+    tk.forEach(function (t) {
+      s("line", { x1: x(t), x2: x(t), y1: m.t, y2: H - m.b, "class": "gl" }, svg);
+      txt(svg, x(t), H - m.b + 16, t.toFixed(dec), { "text-anchor": "middle" });
+    });
+    txt(svg, (m.l + W - m.r) / 2, H - 1, "mean |bias| of the unmitigated parity", { "text-anchor": "middle", "class": "axt" });
+    groups.forEach(function (gq, i) {
+      var yy = m.t + i * rowH + 7, h = rowH - 14;
+      txt(svg, m.l - 10, yy + h / 2 + 4, "n=" + gq.n + " L=" + gq.L, { "text-anchor": "end" });
+      var g1 = s("rect", { x: x(0), y: yy, width: Math.max(0, x(gq.gate) - x(0)), height: h, fill: tok("--gate") }, svg);
+      var g2 = s("rect", { x: x(gq.gate) + 1, y: yy, width: Math.max(0, x(gq.gate + gq.ro) - x(gq.gate) - 1), height: h, fill: tok("--readout") }, svg);
+      var share = gq.ro / (gq.gate + gq.ro) * 100;
+      txt(svg, x(gq.gate + gq.ro) + 8, yy + h / 2 + 4, f3(gq.gate + gq.ro) + " · " + Math.round(share) + "% ro", { "class": "val" });
+      var html = function () {
+        return "n=" + gq.n + ", L=" + gq.L + " at " + state.noise + " noise<br>gate noise " + f3(gq.gate) + "<br>readout error " + f3(gq.ro) + "<br>readout share " + Math.round(share) + "%";
+      };
+      hover(g1, html);
+      hover(g2, html);
+    });
+    table("t-bias", ["n", "L", "Gate", "Readout", "Total", "Readout share"], groups.map(function (gq) {
+      return [gq.n, gq.L, f3(gq.gate), f3(gq.ro), f3(gq.gate + gq.ro), Math.round(gq.ro / (gq.gate + gq.ro) * 100) + "%"];
+    }), { num: [0, 1, 2, 3, 4, 5] });
+  }
+
+  /* ---------- F: cost against benefit ---------- */
+  function renderCost() {
+    var host = document.getElementById("c-cost");
+    var o = svgFor(host, 300), svg = o.svg, W = o.W, H = o.H;
+    var m = { l: 52, r: 54, t: 14, b: 40 };
+    var pts = [];
+    METHODS.forEach(function (me) {
+      state.n.forEach(function (n) {
+        var rs = ROWS.filter(function (r) { return r.n === n && state.L.indexOf(r.L) >= 0 && r.noise === state.noise && r.method === me; });
+        var first = rs[0];
+        var imp = me === "none" ? 0 : median(vals(rs, "imp"));
+        pts.push({ me: me, n: n, shots: first.shots, circuits: first.circuits, cxx: first.total_cx / first.cx, dx: first.max_depth / first.depth, imp: imp, k: rs.length });
+      });
+    });
+    var ylo = Math.min(0, Math.min.apply(null, pts.map(function (p) { return p.imp; })));
+    var yhi = Math.max(10, Math.max.apply(null, pts.map(function (p) { return p.imp; })));
+    var pad = (yhi - ylo) * 0.1;
+    ylo -= pad; yhi += pad;
+    var lx0 = Math.log10(700), lx1 = Math.log10(110000);
+    var x = function (v) { return m.l + (Math.log10(v) - lx0) / (lx1 - lx0) * (W - m.l - m.r); };
+    var y = lin(ylo, yhi, H - m.b, m.t);
+    var tk = ticks(ylo, yhi, 5);
+    tk.forEach(function (t) {
+      s("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), "class": "gl" }, svg);
+      txt(svg, m.l - 8, y(t) + 4, t + "%", { "text-anchor": "end" });
+    });
+    [1000, 10000, 100000].forEach(function (t) {
+      s("line", { x1: x(t), x2: x(t), y1: m.t, y2: H - m.b, "class": "gl" }, svg);
+      txt(svg, x(t), H - m.b + 18, t.toLocaleString("en-US"), { "text-anchor": "middle" });
+    });
+    txt(svg, (m.l + W - m.r) / 2, H - 2, "shots per estimate (log scale)", { "text-anchor": "middle", "class": "axt" });
+    var midY = m.t + (H - m.b - m.t) / 2;
+    txt(svg, 11, midY, "median error cut", { "text-anchor": "middle", "class": "axt", transform: "rotate(-90 11 " + midY + ")" });
+    s("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), "class": "zero" }, svg);
+    txt(svg, W - m.r, y(0) + 15, "no improvement", { "text-anchor": "end", "class": "axt" });
+    MIT.forEach(function (me) {
+      var ps = pts.filter(function (p) { return p.me === me; });
+      if (ps.length > 1) s("path", { d: ps.map(function (p, k) { return (k ? "L" : "M") + x(p.shots) + "," + y(p.imp); }).join(""), fill: "none", stroke: COLOR[me], "stroke-width": 1.2, opacity: 0.45 }, svg);
+    });
+    pts.forEach(function (p) {
+      if (p.me === "none" && p.n !== state.n[0]) return;
+      var mk = shape(svg, p.me, x(p.shots), y(p.imp), 6, { fill: COLOR[p.me], stroke: tok("--panel"), "stroke-width": 1.5 });
+      // zne costs the same shots at every n, so its labels go on the left, clear of the other methods
+      var left = p.me === "zne";
+      txt(svg, x(p.shots) + (left ? -10 : 9), y(p.imp) + (left ? 4 : -7), p.me === "none" ? "none, any n" : "n=" + p.n,
+        { "class": "axt", "text-anchor": left ? "end" : "start" });
+      hover(mk, function () {
+        if (p.me === "none") return mtag("none") + "<br>1 circuit · " + fmtInt(p.shots) + " shots<br>the baseline every method is measured against";
+        return mtag(p.me) + " · n=" + p.n + " at " + state.noise + " noise<br>" + p.circuits + " circuits · " + fmtInt(p.shots) + " shots<br>" +
+          Math.round(p.cxx) + "× CNOTs · " + p.dx.toFixed(1) + "× max depth<br>median error cut " + pct(p.imp) + " (" + p.k + " runs)";
+      });
+    });
+    var head = ["Per estimate"].concat(META.qubits.map(function (n) { return "n=" + n; })).concat(["CNOTs", "Max depth"]);
+    table("t-cost-fixed", head, METHODS.map(function (me) {
+      var rs = META.qubits.map(function (n) { return ROWS.filter(function (r) { return r.n === n && r.method === me; })[0]; });
+      return [mtag(me)].concat(rs.map(function (r) { return r.circuits + " circ · " + fmtInt(r.shots); }))
+        .concat([Math.round(rs[0].total_cx / rs[0].cx) + "×", (rs[0].max_depth / rs[0].depth).toFixed(0) + "×"]);
+    }), { num: [1, 2, 3, 4, 5] });
+    table("t-cost", ["Method", "n", "Circuits", "Shots", "Median cut", "Runs"], pts.map(function (p) {
+      return [p.me, p.n, p.circuits, fmtInt(p.shots), p.me === "none" ? "baseline" : pct(p.imp), p.k];
+    }), { num: [1, 2, 3, 4, 5] });
+  }
+
+  /* ---------- wiring ---------- */
+  function renderAll() {
+    syncControls();
+    renderError();
+    renderHeat();
+    renderStrip();
+    renderZne();
+    renderBias();
+    renderCost();
+  }
+  function changed() { save(); renderAll(); }
+
+  renderAll();
+  var pending = null, lastW = document.querySelector(".bay").clientWidth;
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      var w = document.querySelector(".bay").clientWidth;
+      if (w === lastW) return;
+      lastW = w;
+      clearTimeout(pending);
+      pending = setTimeout(renderAll, 120);
+    }).observe(document.querySelector(".bay"));
+  }
+})();
+</script>

@@ -42,6 +42,25 @@ Useful options for `run_sweep.py`:
 
 `python scripts/smoke_test.py` runs the smoke sweep and checks its output end to end.
 
+## Dashboard
+
+```bash
+python scripts/build_dashboard.py
+```
+
+This embeds `results/raw/runs.csv` and `results/summary/report_numbers.json` into
+`dashboard/template.html` and writes `dashboard/mitigation-bench.html`, a single
+self-contained page. Rebuild it after every sweep and analysis run.
+
+The same build writes a standalone copy to `dashboard/group20-mitigation-bench/index.html`,
+which is deployed as a static site to <https://group20-mitigation-bench.vercel.app>.
+To publish a new version after rebuilding:
+
+```bash
+cd dashboard/group20-mitigation-bench
+vercel deploy --prod
+```
+
 ## Test
 
 ```bash
