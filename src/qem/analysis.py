@@ -526,6 +526,12 @@ def report_numbers(runs: pd.DataFrame, summary: pd.DataFrame, tests: pd.DataFram
         for m in mitigators:
             num[f"time.ratio.{m}.n{n}"] = f"{g[g.method == m].time_quantum_s.mean() / t_none:.0f}"
     z = runs[runs.method == "zne"]
+    for nz in NOISY_LEVELS:
+        for n in sorted(runs.n_qubits.unique()):
+            g = z[(z.noise_level == nz) & (z.n_qubits == n)]
+            for s in (1, 5):
+                kept = (g[f"E_lambda{s}"].abs() / g.E_exact.abs()).mean()
+                num[f"zne.signal_kept.lambda{s}.{nz}.n{n}"] = _i(100 * kept)
     num["zne.depth_ratio.min"] = _f((z.max_depth / z.base_depth).min(), 2)
     num["zne.depth_ratio.max"] = _f((z.max_depth / z.base_depth).max(), 2)
     num["zne.cx_ratio"] = f"{(z.total_cx / z.base_cx).mean():.0f}"
@@ -533,7 +539,8 @@ def report_numbers(runs: pd.DataFrame, summary: pd.DataFrame, tests: pd.DataFram
 
     # Q5: noiseless sanity check
     ideal = runs[runs.noise_level == "ideal"].pivot_table(index="run_id", columns="method", values="E_hat")
-    num["ideal.rem_none_maxdiff"] = f"{(ideal['rem'] - ideal['none']).abs().max():.1e}"
+    maxdiff = (ideal["rem"] - ideal["none"]).abs().max()
+    num["ideal.rem_none_maxdiff"] = "0" if maxdiff == 0 else f"{maxdiff:.1e}"
     ie = runs[runs.noise_level == "ideal"].pivot_table(index="run_id", columns="method", values="abs_error")
     num["ideal.zne_worse"] = f"{int((ie['zne'] > ie['none']).sum())}/{len(ie)}"
     num["ideal.err_ratio.zne"] = f"{ie['zne'].mean() / ie['none'].mean():.1f}"

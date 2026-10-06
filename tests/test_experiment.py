@@ -151,3 +151,19 @@ def test_md_table_escapes_pipes():
     text = md_table(["a |x|", "b"], [["|1|", "2"]], "lr")
     assert text.splitlines()[0] == r"| a \|x\| | b |"
     assert text.splitlines()[2] == r"| \|1\| | 2 |"
+
+
+def test_build_report_renders_placeholders(root, tmp_path):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("build_report", root / "scripts" / "build_report.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    (tmp_path / "t.md").write_text("# Title\n\n## Sub\n\n| a | b |\n|---|---|\n| 1 | 2 |\n", encoding="utf-8")
+    (tmp_path / "n1_L1_s0.json").write_text(json.dumps({"qasm": "OPENQASM 2.0;\n"}), encoding="utf-8")
+    out = mod.render("x={{num:k}} {{table:t}} {{qasm:n1_L1_s0}}", {"k": "0.5"}, tmp_path, tmp_path)
+    assert out.startswith("x=0.5 **Sub**")
+    assert "| 1 | 2 |" in out and "OPENQASM 2.0;" in out and "# Title" not in out
+    with pytest.raises(KeyError):
+        mod.render("{{num:missing}}", {}, tmp_path, tmp_path)
