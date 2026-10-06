@@ -52,12 +52,12 @@ This embeds `results/raw/runs.csv` and `results/summary/report_numbers.json` int
 `dashboard/template.html` and writes `dashboard/mitigation-bench.html`, a single
 self-contained page. Rebuild it after every sweep and analysis run.
 
-The same build writes a standalone copy to `dashboard/group20-mitigation-bench/index.html`,
-which is deployed as a static site to <https://group20-mitigation-bench.vercel.app>.
+The same build writes a standalone copy to `dashboard/quantum-error-mitigation-bench/index.html`,
+which is deployed as a static site to <https://quantum-error-mitigation-bench.vercel.app>.
 To publish a new version after rebuilding:
 
 ```bash
-cd dashboard/group20-mitigation-bench
+cd dashboard/quantum-error-mitigation-bench
 vercel deploy --prod
 ```
 

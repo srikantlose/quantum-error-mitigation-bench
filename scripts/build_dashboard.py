@@ -4,7 +4,7 @@
 
 Reads results/raw/runs.csv and results/summary/report_numbers.json, embeds them as JSON
 into dashboard/template.html, and writes dashboard/mitigation-bench.html (the artifact
-page) plus dashboard/group20-mitigation-bench/index.html (a standalone page for Vercel).
+page) plus dashboard/quantum-error-mitigation-bench/index.html (a standalone page for Vercel).
 """
 
 from __future__ import annotations
@@ -77,7 +77,7 @@ def main(argv=None) -> int:
     ap.add_argument("--config", default=str(ROOT / "config" / "experiment.yaml"))
     ap.add_argument("--template", default=str(ROOT / "dashboard" / "template.html"))
     ap.add_argument("--out", default=str(ROOT / "dashboard" / "mitigation-bench.html"))
-    ap.add_argument("--site", default=str(ROOT / "dashboard" / "group20-mitigation-bench"),
+    ap.add_argument("--site", default=str(ROOT / "dashboard" / "quantum-error-mitigation-bench"),
                     help="folder for the standalone index.html that is deployed to Vercel")
     args = ap.parse_args(argv)
 
