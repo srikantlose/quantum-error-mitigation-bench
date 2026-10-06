@@ -160,7 +160,7 @@ def save_instance(inst: CircuitInstance, directory: str | Path) -> Path:
         "angles": inst.angles.tolist(),
         "qasm": qasm2.dumps(with_measurements(inst.unitary)),
     }
-    path.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     return path
 
 

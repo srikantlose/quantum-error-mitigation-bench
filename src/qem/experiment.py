@@ -303,7 +303,7 @@ def run_condition(
         "calibration": cal_counts,
     }
     (raw_dir / "counts" / f"{run_id}.json").write_text(
-        json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8"
+        json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
     )
     return rows
 
@@ -338,9 +338,9 @@ def write_environment(out_dir: Path) -> None:
     freeze = subprocess.run(
         [sys.executable, "-m", "pip", "freeze"], capture_output=True, text=True, check=False
     ).stdout
-    (out_dir / "environment.txt").write_text(freeze, encoding="utf-8")
+    (out_dir / "environment.txt").write_text(freeze.replace("\r\n", "\n"), encoding="utf-8", newline="\n")
     (out_dir / "python_version.txt").write_text(
-        f"{platform.python_version()}\n{sys.version}\n", encoding="utf-8"
+        f"{platform.python_version()}\n{sys.version}\n", encoding="utf-8", newline="\n"
     )
 
 
