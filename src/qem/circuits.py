@@ -66,6 +66,23 @@ def with_measurements(unitary: QuantumCircuit) -> QuantumCircuit:
     return qc
 
 
+def calibration_circuits(n: int) -> list[QuantumCircuit]:
+    """2^n readout-calibration circuits; circuit j prepares the basis state |j>.
+
+    ry(pi) is used instead of x so the preparation stays inside the noisy gate basis.
+    """
+    circuits = []
+    for j in range(2**n):
+        qc = QuantumCircuit(n, n, name=f"cal_{j}")
+        for q in range(n):
+            if (j >> q) & 1:
+                qc.ry(np.pi, q)
+        qc.barrier()
+        qc.measure(range(n), range(n))
+        circuits.append(qc)
+    return circuits
+
+
 def circuit_stats(qc: QuantumCircuit) -> dict:
     """Depth and gate counts, excluding barriers and measurements."""
     gates = [inst for inst in qc.data if _is_gate(inst)]
