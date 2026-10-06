@@ -58,6 +58,6 @@ def apply_rem(p_noisy: np.ndarray, A: np.ndarray, cond_threshold: float = 1e8) -
         q = np.linalg.lstsq(A, p_noisy, rcond=None)[0]
     else:
         q = np.linalg.solve(A, p_noisy)
-    negative_mass = float(-q[q < 0].sum())
+    negative_mass = float(np.abs(q[q < 0]).sum())
     return RemResult(quasi=q, projected=project_to_simplex(q), negative_mass=negative_mass,
                      cond=cond, used_lstsq=used_lstsq)

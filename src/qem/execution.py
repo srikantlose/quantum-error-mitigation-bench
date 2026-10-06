@@ -46,6 +46,8 @@ class Executor:
         self.basis = list(cfg.simulator.transpile_basis)
         self.allowed_ops = frozenset(self.basis) | NON_GATE_OPS
         self._levels = {lvl.name: lvl for lvl in cfg.noise.levels}
+        # The transpiled circuits of the most recent run(), for overhead statistics.
+        self.last_transpiled: list[QuantumCircuit] = []
         self._sims: dict[str, AerSimulator] = {}
         for name, lvl in self._levels.items():
             nm = build_noise_model(lvl, cfg.noise.one_qubit_gates, cfg.noise.two_qubit_gates)
@@ -85,6 +87,7 @@ class Executor:
         if transpile_seed is None:
             transpile_seed = derive_seed("transpile", seed)
         tcircs = self.transpile_circuits(circuits, transpile_seed)
+        self.last_transpiled = tcircs
         sim = self.simulator(noise_level)
         t0 = perf_counter()
         result = sim.run(tcircs, shots=shots, seed_simulator=seed).result()
