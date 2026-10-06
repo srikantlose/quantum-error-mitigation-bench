@@ -66,6 +66,24 @@ def with_measurements(unitary: QuantumCircuit) -> QuantumCircuit:
     return qc
 
 
+def fold_global(u: QuantumCircuit, scale: int) -> QuantumCircuit:
+    """Global unitary folding U_lambda = U (U^dagger U)^k for odd scale lambda = 2k + 1.
+
+    Barriers separate the folds; the result must never be transpiled at optimization
+    level > 0, which would cancel the U^dagger U pairs. Returns a unitary-only circuit.
+    """
+    if not (isinstance(scale, int) and scale >= 1 and scale % 2 == 1):
+        raise ValueError(f"scale must be an odd positive integer, got {scale!r}")
+    k = (scale - 1) // 2
+    folded = u.copy()
+    for _ in range(k):
+        folded.barrier()
+        folded.compose(u.inverse(), inplace=True)
+        folded.barrier()
+        folded.compose(u, inplace=True)
+    return folded
+
+
 def calibration_circuits(n: int) -> list[QuantumCircuit]:
     """2^n readout-calibration circuits; circuit j prepares the basis state |j>.
 
