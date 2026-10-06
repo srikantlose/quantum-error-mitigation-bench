@@ -120,3 +120,34 @@ def test_resume_skips_existing_runs(smoke_cfg, smoke_runs, tmp_path):
     df = run_sweep(smoke_cfg, tmp_path / "copy", resume=True, progress=False)
     assert len(df) == 12
     assert (tmp_path / "copy" / "raw" / "runs.csv").read_bytes() == before
+
+
+def test_analysis_on_smoke_runs(smoke_cfg, df):
+    from qem import analysis
+
+    noise_order = list(smoke_cfg.experiment.noise_levels)
+    summary = analysis.summarize(df, noise_order)
+    assert len(summary) == 12  # 1 n x 1 L x 3 noise x 4 methods
+    assert list(summary.method[:4]) == ["none", "rem", "zne", "zne_rem"]
+    row = summary[(summary.noise_level == "low") & (summary.method == "rem")].iloc[0]
+    assert row.abs_error_mean == pytest.approx(df[(df.noise_level == "low") & (df.method == "rem")].abs_error.mean())
+    assert row.n_circuits == 5
+    assert analysis.t_crit(5) == pytest.approx(2.776, abs=1e-3)
+    # the bias split is exact: gate part + readout part >= total, and readout part is 0 at ideal
+    bias = analysis.bias_decomposition(df)
+    assert (bias[bias.noise_level == "ideal"].readout_bias == 0).all()
+    assert np.allclose(bias.E_gate_exact * (1 - 2 * bias.p_ro) ** bias.n_qubits, bias.E_noisy_exact)
+    tests = analysis.stats_tests(df, noise_order)
+    assert set(tests.scope) == {"per_condition", "pooled"}
+    for text in (analysis.table_error(summary, noise_order, list(smoke_cfg.experiment.methods)),
+                 analysis.table_fidelity(summary, noise_order),
+                 analysis.table_overhead(summary, list(smoke_cfg.experiment.methods))):
+        assert text.startswith("# ") and ("| n " in text or "| method " in text)
+
+
+def test_md_table_escapes_pipes():
+    from qem.analysis import md_table
+
+    text = md_table(["a |x|", "b"], [["|1|", "2"]], "lr")
+    assert text.splitlines()[0] == r"| a \|x\| | b |"
+    assert text.splitlines()[2] == r"| \|1\| | 2 |"
