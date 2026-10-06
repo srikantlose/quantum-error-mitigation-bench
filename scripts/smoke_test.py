@@ -19,8 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def check(df: pd.DataFrame, cfg) -> list[str]:
     problems = []
-    e = cfg.experiment
-    expected_rows = len(e.qubits) * len(e.depths) * len(e.seeds) * len(e.noise_levels) * len(e.methods)
+    a = cfg.track_a
+    expected_rows = len(a.qubits) * len(a.depths) * len(cfg.experiment.seeds) * len(a.noise_levels) * len(a.methods)
     if len(df) != expected_rows:
         problems.append(f"expected {expected_rows} rows, got {len(df)}")
     if list(df.columns) != COLUMNS:
@@ -32,8 +32,9 @@ def check(df: pd.DataFrame, cfg) -> list[str]:
             problems.append(f"{method}: NaN in required columns {bad}")
     ideal = df[df["noise_level"] == "ideal"].set_index(["run_id", "method"])["E_hat"]
     for rid in ideal.index.get_level_values(0).unique():
-        if abs(ideal[(rid, "rem")] - ideal[(rid, "none")]) > 1e-12:
-            problems.append(f"{rid}: REM changed the estimate at the ideal level")
+        for m in ("rem", "rem_tensored"):
+            if abs(ideal[(rid, m)] - ideal[(rid, "none")]) > 1e-12:
+                problems.append(f"{rid}: {m} changed the estimate at the ideal level")
     return problems
 
 
@@ -49,7 +50,7 @@ def main(argv=None) -> int:
     table = df.pivot_table(index="noise_level", columns="method", values="abs_error", sort=False)
     with pd.option_context("display.float_format", "{:.4f}".format):
         print("abs_error by noise level and method:")
-        print(table[[m for m in cfg.experiment.methods]])
+        print(table[[m for m in cfg.track_a.methods]])
     print("E_exact:", np.unique(df["E_exact"]))
 
     problems = check(df, cfg)

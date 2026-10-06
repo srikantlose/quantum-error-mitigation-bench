@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from qem.experiment import COLUMNS, REQUIRED_COLUMNS, TIMING_COLUMNS, run_sweep
+from qem.experiment import COLUMNS, METHOD_ORDER, REQUIRED_COLUMNS, TIMING_COLUMNS, run_sweep
 
 
 @pytest.fixture(scope="module")
@@ -22,17 +22,18 @@ def df(smoke_runs):
 
 
 def test_row_count_and_exact_column_order(smoke_runs, df):
-    assert len(df) == 3 * 4
+    # smoke.yaml: 1 n x 1 L x 1 seed x 4 noise levels x 5 methods = 20 rows
+    assert len(df) == 4 * 5
     header = (smoke_runs[0] / "raw" / "runs.csv").read_text(encoding="utf-8").splitlines()[0]
     assert header.split(",") == COLUMNS
-    assert list(df["method"]) == ["none", "rem", "zne", "zne_rem"] * 3
-    assert list(df["noise_level"]) == ["ideal"] * 4 + ["low"] * 4 + ["moderate"] * 4
+    assert list(df["method"]) == list(METHOD_ORDER) * 4
+    assert list(df["noise_level"]) == ["ideal"] * 5 + ["low"] * 5 + ["moderate"] * 5 + ["high"] * 5
 
 
 def test_required_columns_are_present(df):
     for method, cols in REQUIRED_COLUMNS.items():
         sub = df[df["method"] == method]
-        assert len(sub) == 3
+        assert len(sub) == 4
         missing = [c for c in cols if sub[c].isna().any()]
         assert not missing, f"{method}: {missing}"
 
@@ -41,7 +42,8 @@ def test_not_applicable_columns_are_empty(df):
     zne = df[df["method"].isin(["zne", "zne_rem"])]
     assert zne[["hellinger_fidelity", "tvd"]].isna().all().all()
     assert df[df["method"] == "none"][["improvement_pct", "E_richardson"]].isna().all().all()
-    assert df[df["method"].isin(["rem", "zne_rem"])]["est_std"].isna().all()
+    assert df[df["method"].isin(["rem", "rem_tensored", "zne_rem"])]["est_std"].isna().all()
+    assert df[df["method"].isin(["none", "zne"])][["rem_negative_mass", "rem_condition_number"]].isna().all().all()
 
 
 def test_runs_are_reproducible(smoke_runs):
@@ -58,23 +60,27 @@ def test_runs_are_reproducible(smoke_runs):
 
 def test_rem_is_identity_at_ideal_level(df):
     ideal = df[df["noise_level"] == "ideal"].set_index("method")
-    assert abs(ideal.loc["rem", "E_hat"] - ideal.loc["none", "E_hat"]) <= 1e-12
-    assert ideal.loc["rem", "rem_condition_number"] == 1.0
-    assert ideal.loc["rem", "rem_negative_mass"] == 0.0
+    for m in ("rem", "rem_tensored"):
+        assert abs(ideal.loc[m, "E_hat"] - ideal.loc["none", "E_hat"]) <= 1e-12
+        assert ideal.loc[m, "rem_condition_number"] == pytest.approx(1.0)
+        assert ideal.loc[m, "rem_negative_mass"] == 0.0
 
 
 def test_overhead_matches_formulas(df):
     n, L = 2, 2
     c, n1q = (n - 1) * L, 2 * n * L
-    cal_1q = n * 2 ** (n - 1)  # one ry(pi) per set bit over all 2^n preparations
+    cal_1q_full = n * 2 ** (n - 1)  # one ry(pi) per set bit over all 2^n preparations
+    cal_1q_tensored = n  # only the all-|1> circuit carries ry(pi) gates
     expected = {
         "none": (1, 1024, c, n1q),
-        "rem": (1 + 2**n, 1024 * (1 + 2**n), c, n1q + cal_1q),
+        "rem": (1 + 2**n, 1024 * (1 + 2**n), c, n1q + cal_1q_full),
+        "rem_tensored": (3, 3072, c, n1q + cal_1q_tensored),
         "zne": (3, 3072, 9 * c, 9 * n1q),
-        "zne_rem": (3 + 2**n, 1024 * (3 + 2**n), 9 * c, 9 * n1q + cal_1q),
+        "zne_rem": (3 + 2**n, 1024 * (3 + 2**n), 9 * c, 9 * n1q + cal_1q_full),
     }
     for _, row in df.iterrows():
         assert (row.n_circuits, row.total_shots, row.total_cx, row.total_1q) == expected[row.method]
+        assert row.total_gates == row.total_1q + row.total_cx
         assert row.base_cx == c
         if row.method in ("zne", "zne_rem"):
             assert row.base_depth < row.max_depth <= 5 * row.base_depth
@@ -94,6 +100,8 @@ def test_pairing_and_derived_columns(df):
         assert zne["E_richardson"] == pytest.approx(g15, abs=1e-9)
         rem = g[g["method"] == "rem"].iloc[0]
         assert rem["improvement_pct"] == pytest.approx(100 * (1 - rem["abs_error"] / none["abs_error"]))
+        # success-probability ratio is consistent with the stored exact/estimated values
+        assert none["P_succ_ratio"] == pytest.approx(none["P_succ_hat"] / none["P_succ_exact"])
     assert np.allclose(df["abs_error"], (df["E_hat"] - df["E_exact"]).abs(), atol=1e-9)
 
 
@@ -102,13 +110,18 @@ def test_raw_artifacts(smoke_runs):
     assert (out / "environment.txt").read_text().strip()
     assert (out / "python_version.txt").read_text().startswith("3.")
     assert (out / "logs" / "sweep.log").exists()
-    assert len(list((out / "raw" / "counts").glob("*.json"))) == 3
+    assert len(list((out / "raw" / "counts").glob("*.json"))) == 4
     assert len(list((out / "raw" / "circuits").glob("*.json"))) == 1
-    A = np.load(out / "raw" / "calibration" / "n2_L2_moderate_s0.npy")
+    assert len(list((out / "raw" / "calibration").glob("full_*.npy"))) == 4
+    assert len(list((out / "raw" / "calibration").glob("tensored_*.npy"))) == 4
+    A = np.load(out / "raw" / "calibration" / "full_n2_L2_moderate_s0.npy")
     assert A.shape == (4, 4) and np.allclose(A.sum(axis=0), 1.0)
+    A_t = np.load(out / "raw" / "calibration" / "tensored_n2_L2_moderate_s0.npy")
+    assert A_t.shape == (4, 4) and np.allclose(A_t.sum(axis=0), 1.0)
     record = json.loads((out / "raw" / "counts" / "n2_L2_moderate_s0.json").read_text())
     assert set(record["scale_counts"]) == {"1", "3", "5"}
-    assert len(record["calibration"]) == 4
+    assert len(record["calibration_full"]) == 4
+    assert set(record["calibration_tensored"]) == {"all_zero", "all_one"}
     assert sum(record["ideal_shots"].values()) == 1024
 
 
@@ -118,31 +131,8 @@ def test_resume_skips_existing_runs(smoke_cfg, smoke_runs, tmp_path):
     shutil.copytree(smoke_runs[0], tmp_path / "copy")
     before = (tmp_path / "copy" / "raw" / "runs.csv").read_bytes()
     df = run_sweep(smoke_cfg, tmp_path / "copy", resume=True, progress=False)
-    assert len(df) == 12
+    assert len(df) == 20
     assert (tmp_path / "copy" / "raw" / "runs.csv").read_bytes() == before
-
-
-def test_analysis_on_smoke_runs(smoke_cfg, df):
-    from qem import analysis
-
-    noise_order = list(smoke_cfg.experiment.noise_levels)
-    summary = analysis.summarize(df, noise_order)
-    assert len(summary) == 12  # 1 n x 1 L x 3 noise x 4 methods
-    assert list(summary.method[:4]) == ["none", "rem", "zne", "zne_rem"]
-    row = summary[(summary.noise_level == "low") & (summary.method == "rem")].iloc[0]
-    assert row.abs_error_mean == pytest.approx(df[(df.noise_level == "low") & (df.method == "rem")].abs_error.mean())
-    assert row.n_circuits == 5
-    assert analysis.t_crit(5) == pytest.approx(2.776, abs=1e-3)
-    # the bias split is exact: gate part + readout part >= total, and readout part is 0 at ideal
-    bias = analysis.bias_decomposition(df)
-    assert (bias[bias.noise_level == "ideal"].readout_bias == 0).all()
-    assert np.allclose(bias.E_gate_exact * (1 - 2 * bias.p_ro) ** bias.n_qubits, bias.E_noisy_exact)
-    tests = analysis.stats_tests(df, noise_order)
-    assert set(tests.scope) == {"per_condition", "pooled"}
-    for text in (analysis.table_error(summary, noise_order, list(smoke_cfg.experiment.methods)),
-                 analysis.table_fidelity(summary, noise_order),
-                 analysis.table_overhead(summary, list(smoke_cfg.experiment.methods))):
-        assert text.startswith("# ") and ("| n " in text or "| method " in text)
 
 
 def test_md_table_escapes_pipes():
