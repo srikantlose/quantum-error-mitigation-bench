@@ -4,9 +4,20 @@ import numpy as np
 import pytest
 
 from conftest import cfg_with_levels
-from qem.circuits import calibration_circuits, circuit_stats, select_instance, with_measurements
+from qem.circuits import (
+    calibration_circuits,
+    circuit_stats,
+    select_instance,
+    tensored_calibration_circuits,
+    with_measurements,
+)
 from qem.execution import Executor
-from qem.mitigation.readout import apply_rem, build_assignment_matrix, project_to_simplex
+from qem.mitigation.readout import (
+    apply_rem,
+    build_assignment_matrix,
+    build_tensored_assignment_matrix,
+    project_to_simplex,
+)
 from qem.noise import true_assignment_matrix
 from qem.observables import counts_to_probvec, parity_from_probs
 
@@ -125,3 +136,63 @@ def test_project_to_simplex_known_case():
     # quasi-probabilities summing to 1 with a negative entry
     x = project_to_simplex(np.array([0.7, -0.1, 0.25, 0.15]))
     assert np.allclose(x, [0.7 - 1 / 30, 0.0, 0.25 - 1 / 30, 0.15 - 1 / 30])
+
+
+# --- tensored (scalable) REM: 2 calibration circuits instead of 2^n -------------------
+
+
+def tensored_calibrate(ex, n, level, shots, seed):
+    (c0, c1), _ = ex.run(tensored_calibration_circuits(n), level, shots, seed)
+    return build_tensored_assignment_matrix(c0, c1, n)
+
+
+def test_tensored_calibration_circuit_structure():
+    all_zero, all_one = tensored_calibration_circuits(3)
+    assert circuit_stats(all_zero)["n1q"] == 0
+    assert circuit_stats(all_one)["n1q"] == 3
+    for qc in (all_zero, all_one):
+        assert set(qc.count_ops()) <= {"ry", "barrier", "measure"}
+        assert circuit_stats(qc)["cx"] == 0
+
+
+@pytest.mark.parametrize("n", [2, 4])
+def test_ideal_tensored_matrix_is_identity(ex, n):
+    A = tensored_calibrate(ex, n, "ideal", 1024, seed=8)
+    assert np.allclose(A, np.eye(2**n), atol=1e-12)
+
+
+@pytest.mark.parametrize("n", [2, 3])
+def test_readout_only_tensored_matrix_matches_tensor_product(ex, n):
+    A = tensored_calibrate(ex, n, "ro_only", 50_000, seed=9)
+    assert np.max(np.abs(A - true_assignment_matrix(0.03, n))) < 0.01
+
+
+def test_tensored_matrix_columns_sum_to_one(ex):
+    A = tensored_calibrate(ex, 4, "moderate", 1024, seed=10)
+    assert np.allclose(A.sum(axis=0), 1.0, atol=1e-12, rtol=0)
+
+
+def test_rem_tensored_recovers_parity_with_readout_only_noise(ex):
+    n, shots = 4, 50_000
+    inst = select_instance(n, 4, 0, 0.3, 20000)
+    sigma = np.sqrt((1 - inst.E_exact**2) / shots)
+    (counts,), _ = ex.run([with_measurements(inst.unitary)], "ro_only", shots, seed=31)
+    p_noisy = counts_to_probvec(counts, n)
+    A = tensored_calibrate(ex, n, "ro_only", shots, seed=33)
+    rem = apply_rem(p_noisy, A)
+    E_rem = parity_from_probs(rem.quasi)
+    assert abs(E_rem - inst.E_exact) < 4 * sigma
+
+
+def test_tensored_kron_order_with_asymmetric_qubits():
+    """A hand-built 2-qubit asymmetric example checks the Kronecker ordering directly.
+
+    Qubit 0 is noiseless; qubit 1 always flips. all-|00> then reads as "10" and
+    all-|11> (ry(pi) on both) reads as "01". The combined matrix must have columns
+    [0,0,1,0] and [0,1,0,0], i.e. A = A_1 (x) A_0 with A_1 = [[0,1],[1,0]], A_0 = I.
+    """
+    all_zero_counts = {"10": 1000}  # qubit1 flipped 0->1, qubit0 stayed 0
+    all_one_counts = {"01": 1000}   # qubit1 flipped 1->0, qubit0 stayed 1
+    A = build_tensored_assignment_matrix(all_zero_counts, all_one_counts, 2)
+    expected = np.kron(np.array([[0.0, 1.0], [1.0, 0.0]]), np.eye(2))
+    assert np.allclose(A, expected)

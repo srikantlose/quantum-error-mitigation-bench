@@ -1,4 +1,5 @@
-"""Counts -> probability vectors, parity and magnetization, and exact noiseless references.
+"""Counts -> probability vectors, parity, magnetization and success probability, and exact
+noiseless references.
 
 Bit ordering follows Qiskit (little-endian): in a count key ``s`` of length n, qubit q is
 ``s[n-1-q]``; in the integer index ``i = int(s, 2)`` qubit q is bit ``(i >> q) & 1``.
@@ -78,12 +79,22 @@ def magnetization_from_probs(p: np.ndarray, n: int) -> float:
     return float(np.mean(z_expectations(p, n)))
 
 
+def success_probability(p: np.ndarray, target_index: int) -> float:
+    """p[target_index]: the (quasi-)probability of the most likely ideal bitstring."""
+    return float(np.asarray(p, dtype=float)[target_index])
+
+
 def exact_parity(unitary: QuantumCircuit) -> float:
     return parity_from_probs(Statevector(unitary).probabilities())
 
 
-def exact_reference(unitary: QuantumCircuit) -> tuple[float, float, np.ndarray]:
-    """Exact (infinite-shot) parity, magnetization and outcome distribution."""
+def exact_reference(unitary: QuantumCircuit) -> dict:
+    """Exact (infinite-shot) parity, magnetization, distribution and success target.
+
+    Returns a dict with keys: E_exact, M_exact, probs, target_index, P_succ_exact.
+    target_index = argmax(probs) is the most likely ideal bitstring; P_succ_exact is its
+    exact probability.
+    """
     n = unitary.num_qubits
     sv = Statevector(unitary)
     probs = sv.probabilities()
@@ -92,4 +103,11 @@ def exact_reference(unitary: QuantumCircuit) -> tuple[float, float, np.ndarray]:
     if abs(E_exact - E_pauli) > 1e-9:
         raise AssertionError(f"parity cross-check failed: {E_exact} vs {E_pauli}")
     M_exact = magnetization_from_probs(probs, n)
-    return E_exact, M_exact, probs
+    target_index = int(np.argmax(probs))
+    return {
+        "E_exact": E_exact,
+        "M_exact": M_exact,
+        "probs": probs,
+        "target_index": target_index,
+        "P_succ_exact": float(probs[target_index]),
+    }

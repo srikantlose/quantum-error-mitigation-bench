@@ -94,6 +94,39 @@ def zne_std(scales: Sequence[float], values: Sequence[float], shots: int) -> flo
     return float(np.sqrt(np.sum(g**2 * var_terms)))
 
 
+def optimal_allocation(gammas: Sequence[float], sigmas: Sequence[float], total: int) -> list[int]:
+    """Variance-minimizing integer shot allocation across scale factors for a fixed total.
+
+    Minimizing Var(E0) = sum_i gamma_i^2 sigma_i^2 / N_i subject to sum_i N_i = total gives
+    N_i proportional to |gamma_i| * sigma_i (Lagrange multipliers / Cauchy-Schwarz). Weights
+    are rounded to integers by the largest-remainder method so they sum exactly to ``total``,
+    with a minimum of 1 shot per scale.
+    """
+    g = np.abs(np.asarray(gammas, dtype=float))
+    s = np.asarray(sigmas, dtype=float)
+    w = g * s
+    if w.sum() <= 0:
+        raise ValueError("gammas and sigmas must give at least one positive weight")
+    raw = w / w.sum() * total
+    counts = np.maximum(np.floor(raw).astype(int), 1)
+    # floors (each >= 1) may now sum to more than `total` if `total` is small; clip down
+    # from the smallest fractional remainders first, then distribute any leftover by the
+    # largest-remainder method so the final counts sum exactly to `total`.
+    while counts.sum() > total:
+        i = np.where(counts > 1)[0]
+        if len(i) == 0:
+            raise ValueError(f"cannot allocate at least 1 shot per scale within total={total}")
+        j = i[np.argmin(raw[i] - np.floor(raw[i]))]
+        counts[j] -= 1
+    remainder = total - counts.sum()
+    if remainder > 0:
+        frac = raw - np.floor(raw)
+        order = np.argsort(-frac)
+        for k in range(remainder):
+            counts[order[k % len(counts)]] += 1
+    return counts.tolist()
+
+
 EXTRAPOLATORS: dict[str, Callable[[Sequence[float], Sequence[float]], float]] = {
     "richardson": extrapolate_richardson,
     "linear": extrapolate_linear,

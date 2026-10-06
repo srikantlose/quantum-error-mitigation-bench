@@ -8,6 +8,7 @@ from qem.circuits import select_instance, with_measurements
 from qem.observables import (
     counts_to_probvec,
     exact_reference,
+    success_probability,
     magnetization_from_probs,
     parity_from_probs,
     parity_signs,
@@ -78,7 +79,8 @@ def test_magnetization():
 @pytest.mark.parametrize("n, L, seed", [(2, 2, 0), (4, 4, 1), (6, 4, 2)])
 def test_exact_reference_matches_pauli_expectation(n, L, seed):
     inst = select_instance(n, L, seed, 0.3, 20000)
-    E, M, probs = exact_reference(inst.unitary)
+    ref = exact_reference(inst.unitary)
+    E, M, probs = ref["E_exact"], ref["M_exact"], ref["probs"]
     sv = Statevector(inst.unitary)
     assert abs(E - sv.expectation_value(SparsePauliOp("Z" * n)).real) < 1e-9
     m_ref = np.mean([
@@ -86,3 +88,15 @@ def test_exact_reference_matches_pauli_expectation(n, L, seed):
     ])
     assert abs(M - m_ref) < 1e-9
     assert probs.sum() == pytest.approx(1.0)
+    assert ref["target_index"] == int(np.argmax(probs))
+    assert ref["P_succ_exact"] == pytest.approx(probs.max())
+    assert success_probability(probs, ref["target_index"]) == pytest.approx(ref["P_succ_exact"])
+
+
+def test_success_probability():
+    p = counts_to_probvec({"00": 1, "01": 3}, 2)
+    assert success_probability(p, 0) == pytest.approx(0.25)
+    assert success_probability(p, 1) == pytest.approx(0.75)
+    # linear in quasi-probabilities too
+    q = np.array([0.6, -0.1, 0.3, 0.2])
+    assert success_probability(q, 1) == -0.1

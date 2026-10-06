@@ -116,7 +116,7 @@ def test_zne_beats_none_under_gate_only_noise(cfg):
     n, L, shots = 4, 4, 50_000
     ex = Executor(cfg_with_levels(cfg, gate_only=(0.005, 0.03, 0.0)))
     inst = select_instance(n, L, 0, 0.3, 20000)
-    E_exact = exact_reference(inst.unitary)[0]
+    E_exact = exact_reference(inst.unitary)["E_exact"]
     values = []
     for scale in SCALES:
         qc = with_measurements(fold_global(inst.unitary, scale))
@@ -125,3 +125,34 @@ def test_zne_beats_none_under_gate_only_noise(cfg):
     err_none = abs(values[0] - E_exact)
     err_zne = abs(extrapolate_richardson(SCALES, values) - E_exact)
     assert err_zne < err_none
+
+
+# --- variance-optimal shot allocation (improvement 2) ---------------------------------
+
+
+def test_optimal_allocation_matches_worked_example():
+    from qem.mitigation.zne import optimal_allocation
+
+    g = richardson_coeffs(SCALES)
+    counts = optimal_allocation(g, (1.0, 1.0, 1.0), 3072)
+    assert sum(counts) == 3072
+    assert all(c >= 1 for c in counts)
+    assert counts == pytest.approx([1646, 1097, 329], abs=1)
+
+
+def test_optimal_allocation_sums_exactly_and_respects_minimum():
+    from qem.mitigation.zne import optimal_allocation
+
+    g = richardson_coeffs(SCALES)
+    for total in (3, 10, 100, 3071, 3072, 3073, 100000):
+        counts = optimal_allocation(g, (1.0, 1.0, 1.0), total)
+        assert sum(counts) == total
+        assert all(c >= 1 for c in counts)
+
+
+def test_optimal_allocation_favors_larger_gamma():
+    from qem.mitigation.zne import optimal_allocation
+
+    counts = optimal_allocation([2.0, 1.0], [1.0, 1.0], 300)
+    assert counts[0] > counts[1]
+    assert sum(counts) == 300

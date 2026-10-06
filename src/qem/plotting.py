@@ -266,7 +266,7 @@ def fig_depth_overhead(depths: pd.DataFrame, out, dpi):
 def distributions(raw_dir: Path, n, L, noise, seed, cond_threshold):
     rid = f"n{n}_L{L}_{noise}_s{seed}"
     inst = load_instance(raw_dir / "circuits" / f"n{n}_L{L}_s{seed}.json")
-    _, _, p_exact = exact_reference(inst.unitary)
+    p_exact = exact_reference(inst.unitary)["probs"]
     record = json.loads((raw_dir / "counts" / f"{rid}.json").read_text(encoding="utf-8"))
     p_noisy = counts_to_probvec(record["scale_counts"]["1"], n)
     A = np.load(raw_dir / "calibration" / f"{rid}.npy")

@@ -92,7 +92,8 @@ def test_counts_keys_are_normalized(ex):
 
 def test_exact_noisy_probs(ex):
     inst = select_instance(4, 4, 0, 0.3, 20000)
-    E_exact, _, p_exact = exact_reference(inst.unitary)
+    ref = exact_reference(inst.unitary)
+    E_exact, p_exact = ref["E_exact"], ref["probs"]
     # ideal: identical to the statevector distribution
     assert np.allclose(ex.exact_noisy_probs(inst.unitary, "ideal"), p_exact, atol=1e-12)
     # readout only: parity attenuated by exactly (1 - 2p)^n

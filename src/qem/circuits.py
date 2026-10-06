@@ -101,6 +101,24 @@ def calibration_circuits(n: int) -> list[QuantumCircuit]:
     return circuits
 
 
+def tensored_calibration_circuits(n: int) -> list[QuantumCircuit]:
+    """2 readout-calibration circuits: all-|0> and all-|1>, for tensored (per-qubit) REM.
+
+    Marginals from these two circuits give each qubit's own 2x2 assignment matrix, which
+    are combined with a Kronecker product. This assumes readout errors are uncorrelated
+    across qubits, which holds in our noise model by construction.
+    """
+    all_zero = QuantumCircuit(n, n, name="cal_tensored_0")
+    all_zero.barrier()
+    all_zero.measure(range(n), range(n))
+    all_one = QuantumCircuit(n, n, name="cal_tensored_1")
+    for q in range(n):
+        all_one.ry(np.pi, q)
+    all_one.barrier()
+    all_one.measure(range(n), range(n))
+    return [all_zero, all_one]
+
+
 def circuit_stats(qc: QuantumCircuit) -> dict:
     """Depth and gate counts, excluding barriers and measurements."""
     gates = [inst for inst in qc.data if _is_gate(inst)]

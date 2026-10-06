@@ -77,7 +77,8 @@ def test_select_instance_meets_threshold(n, L):
     inst = select_instance(n, L, 0, 0.3, 20000)
     assert inst.attempts >= 1
     assert abs(inst.E_exact) >= 0.3
-    E_exact, _, probs = exact_reference(inst.unitary)
+    ref = exact_reference(inst.unitary)
+    E_exact, probs = ref["E_exact"], ref["probs"]
     assert E_exact == pytest.approx(inst.E_exact, abs=1e-12)
     assert probs.shape == (2**n,)
 
@@ -102,5 +103,5 @@ def test_instance_roundtrip(tmp_path):
     assert np.array_equal(back.angles, inst.angles)
     assert back.attempts == inst.attempts and back.E_exact == inst.E_exact
     assert circuit_stats(back.unitary) == circuit_stats(inst.unitary)
-    assert exact_reference(back.unitary)[0] == pytest.approx(inst.E_exact, abs=1e-12)
+    assert exact_reference(back.unitary)["E_exact"] == pytest.approx(inst.E_exact, abs=1e-12)
     assert "OPENQASM 2.0" in path.read_text()

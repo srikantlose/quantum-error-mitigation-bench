@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from functools import reduce
 
 import numpy as np
 
@@ -35,6 +36,33 @@ def build_assignment_matrix(cal_counts: list[dict[str, int]], n: int, shots: int
     if not np.all(np.abs(col_sums - 1.0) <= 1e-12):
         raise AssertionError(f"assignment matrix columns do not sum to 1: {col_sums}")
     return A
+
+
+def build_tensored_assignment_matrix(all_zero_counts: dict[str, int], all_one_counts: dict[str, int],
+                                     n: int) -> np.ndarray:
+    """Per-qubit assignment matrices from two calibration circuits (all-|0>, all-|1>),
+    combined as A = A_{n-1} (x) ... (x) A_0.
+
+    Marginals are read directly off the two counts dicts: for qubit q, P(0|0) is the
+    fraction of all-|0> shots with bit q equal to 0, and P(1|1) the fraction of all-|1>
+    shots with bit q equal to 1. This assumes readout errors are uncorrelated across
+    qubits, which holds in our noise model by construction (§10.3).
+    """
+    p0 = counts_to_probvec(all_zero_counts, n)
+    p1 = counts_to_probvec(all_one_counts, n)
+    from ..observables import z_signs  # local import: avoids a cycle at module load time
+
+    mats = []
+    for q in range(n):
+        # P(bit q = 0 | prepared 0) = sum of p0 over basis states with bit q = 0
+        mask0 = (z_signs(n, q) + 1) / 2  # 1 where bit q is 0, else 0
+        mask1 = 1 - mask0
+        p_0_given_0 = float(mask0 @ p0)
+        p_1_given_1 = float(mask1 @ p1)
+        A_q = np.array([[p_0_given_0, 1 - p_1_given_1], [1 - p_0_given_0, p_1_given_1]])
+        mats.append(A_q)
+    # qubit n-1 is the most significant bit, so A_{n-1} goes leftmost
+    return reduce(np.kron, reversed(mats))
 
 
 def project_to_simplex(v: np.ndarray) -> np.ndarray:
