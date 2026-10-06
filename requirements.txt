@@ -4,7 +4,8 @@ numpy
 scipy
 pandas
 matplotlib
+scikit-learn
+pylatexenc       # required by qiskit's qc.draw("mpl") for the circuit figure; see DECISIONS.md
 pyyaml
 tqdm
 pytest
-pylatexenc       # required by qiskit's qc.draw("mpl") for the circuit figure; see DECISIONS.md
