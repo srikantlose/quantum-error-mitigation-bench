@@ -51,3 +51,9 @@ def test_noise_floor_and_std():
     assert metrics.shot_noise_floor(0.0, 1024) == pytest.approx(1 / 32)
     assert metrics.shot_noise_floor(0.6, 100) == pytest.approx(0.08)
     assert metrics.binomial_std(1.2, 100) == 0.0
+
+
+def test_success_ratio():
+    assert metrics.success_ratio(0.6, 0.8) == pytest.approx(0.75)
+    assert metrics.success_ratio(0.1, 0.5) == pytest.approx(0.2)
+    assert np.isnan(metrics.success_ratio(0.1, 0.0))

@@ -33,6 +33,13 @@ def error_reduction_factor(err: float, err_none: float) -> float:
     return err_none / err
 
 
+def success_ratio(p_succ_hat: float, p_succ_exact: float) -> float:
+    """P_succ_hat / P_succ_exact; NaN when the exact success probability is (numerically) zero."""
+    if abs(p_succ_exact) < ZERO_ERROR:
+        return float("nan")
+    return p_succ_hat / p_succ_exact
+
+
 def hellinger_fidelity(p: np.ndarray, q: np.ndarray) -> float:
     """(sum_x sqrt(p_x q_x))^2 on full 2^n vectors; matches qiskit's hellinger_fidelity."""
     p = np.asarray(p, dtype=float)
