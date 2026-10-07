@@ -1,0 +1,32 @@
+2026-10-07 05:27:00,268 INFO qem.qml.runner: track B sweep start: qubits=(2, 4) depths=(2, 4) noise=('ideal', 'low', 'moderate', 'high') seeds=(0, 1, 2, 3, 4) retrain=False
+2026-10-07 05:27:00,293 INFO qem.qml.runner: n=2 seed=0: logreg acc=0.850 svm acc=0.900
+2026-10-07 05:27:06,056 INFO qem.qml.runner: n=2 L=2 seed=0: trained in 5.73s, 246 iters, train_acc=0.938, test_acc(exact)=0.850
+2026-10-07 05:27:21,138 INFO qem.qml.runner: n=2 L=4 seed=0: trained in 14.22s, 400 iters, train_acc=0.938, test_acc(exact)=0.900
+2026-10-07 05:27:22,133 INFO qem.qml.runner: n=4 seed=0: logreg acc=0.950 svm acc=0.900
+2026-10-07 05:27:38,868 INFO qem.qml.runner: n=4 L=2 seed=0: trained in 16.68s, 400 iters, train_acc=0.925, test_acc(exact)=1.000
+2026-10-07 05:28:35,728 INFO qem.qml.runner: n=4 L=4 seed=0: trained in 55.38s, 800 iters, train_acc=0.938, test_acc(exact)=0.950
+2026-10-07 05:28:37,499 INFO qem.qml.runner: n=2 seed=1: logreg acc=0.900 svm acc=0.900
+2026-10-07 05:28:43,340 INFO qem.qml.runner: n=2 L=2 seed=1: trained in 5.81s, 244 iters, train_acc=0.900, test_acc(exact)=0.900
+2026-10-07 05:28:58,529 INFO qem.qml.runner: n=2 L=4 seed=1: trained in 14.33s, 400 iters, train_acc=0.887, test_acc(exact)=0.900
+2026-10-07 05:28:59,530 INFO qem.qml.runner: n=4 seed=1: logreg acc=0.850 svm acc=0.850
+2026-10-07 05:29:16,344 INFO qem.qml.runner: n=4 L=2 seed=1: trained in 16.76s, 400 iters, train_acc=0.938, test_acc(exact)=0.900
+2026-10-07 05:30:14,102 INFO qem.qml.runner: n=4 L=4 seed=1: trained in 56.30s, 800 iters, train_acc=0.963, test_acc(exact)=0.850
+2026-10-07 05:30:15,874 INFO qem.qml.runner: n=2 seed=2: logreg acc=0.950 svm acc=0.950
+2026-10-07 05:30:22,950 INFO qem.qml.runner: n=2 L=2 seed=2: trained in 7.04s, 300 iters, train_acc=0.850, test_acc(exact)=0.950
+2026-10-07 05:30:38,120 INFO qem.qml.runner: n=2 L=4 seed=2: trained in 14.30s, 400 iters, train_acc=0.875, test_acc(exact)=0.950
+2026-10-07 05:30:39,158 INFO qem.qml.runner: n=4 seed=2: logreg acc=0.950 svm acc=0.950
+2026-10-07 05:30:56,110 INFO qem.qml.runner: n=4 L=2 seed=2: trained in 16.89s, 400 iters, train_acc=0.938, test_acc(exact)=0.950
+2026-10-07 05:31:53,302 INFO qem.qml.runner: n=4 L=4 seed=2: trained in 55.66s, 800 iters, train_acc=0.950, test_acc(exact)=0.950
+2026-10-07 05:31:55,079 INFO qem.qml.runner: n=2 seed=3: logreg acc=0.950 svm acc=0.900
+2026-10-07 05:32:02,150 INFO qem.qml.runner: n=2 L=2 seed=3: trained in 7.04s, 300 iters, train_acc=0.875, test_acc(exact)=0.850
+2026-10-07 05:32:17,331 INFO qem.qml.runner: n=2 L=4 seed=3: trained in 14.33s, 400 iters, train_acc=0.912, test_acc(exact)=0.900
+2026-10-07 05:32:18,425 INFO qem.qml.runner: n=4 seed=3: logreg acc=1.000 svm acc=0.950
+2026-10-07 05:32:35,235 INFO qem.qml.runner: n=4 L=2 seed=3: trained in 16.75s, 400 iters, train_acc=0.925, test_acc(exact)=0.950
+2026-10-07 05:33:32,561 INFO qem.qml.runner: n=4 L=4 seed=3: trained in 55.85s, 800 iters, train_acc=0.938, test_acc(exact)=0.950
+2026-10-07 05:33:34,307 INFO qem.qml.runner: n=2 seed=4: logreg acc=0.950 svm acc=0.950
+2026-10-07 05:33:41,475 INFO qem.qml.runner: n=2 L=2 seed=4: trained in 7.13s, 300 iters, train_acc=0.887, test_acc(exact)=0.950
+2026-10-07 05:33:57,053 INFO qem.qml.runner: n=2 L=4 seed=4: trained in 14.59s, 400 iters, train_acc=0.887, test_acc(exact)=0.950
+2026-10-07 05:33:58,045 INFO qem.qml.runner: n=4 seed=4: logreg acc=0.900 svm acc=0.900
+2026-10-07 05:34:14,979 INFO qem.qml.runner: n=4 L=2 seed=4: trained in 16.88s, 400 iters, train_acc=0.963, test_acc(exact)=0.900
+2026-10-07 05:35:12,577 INFO qem.qml.runner: n=4 L=4 seed=4: trained in 56.16s, 800 iters, train_acc=0.950, test_acc(exact)=0.900
+2026-10-07 05:35:14,342 INFO qem.qml.runner: track B sweep finished: 360 rows in 494.1s

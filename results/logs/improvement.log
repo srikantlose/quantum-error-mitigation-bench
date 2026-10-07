@@ -1,0 +1,3 @@
+2026-10-07 05:35:23,137 INFO qem.improvement: improvement sweep start: qubits=(2, 4, 6) depths=(2, 4) noise=('low', 'moderate') seeds=(0, 1, 2, 3, 4) reps=50 total_shots=3072
+2026-10-07 05:37:18,275 INFO qem.improvement: improvement sweep finished: 120 rows in 115.1s
+2026-10-07 05:37:18,275 INFO qem.improvement: spot-check: mean empirical std ratio (optimal/uniform) = 0.874 (theory ~0.885)

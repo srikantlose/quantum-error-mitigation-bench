@@ -1,5 +1,5 @@
 {
- "calibration": [
+ "calibration_full": [
   {
    "000000": 1024
   },
@@ -194,6 +194,14 @@
   }
  ],
  "calibration_shots": 1024,
+ "calibration_tensored": {
+  "all_one": {
+   "111111": 1024
+  },
+  "all_zero": {
+   "000000": 1024
+  }
+ },
  "ideal_shots": {
   "000000": 27,
   "000001": 4,
