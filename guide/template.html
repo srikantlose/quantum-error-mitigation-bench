@@ -1,4 +1,4 @@
-<title>Mitigation Bench Field Guide</title>
+<title>Quantum Error Mitigation Field Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -22,6 +22,7 @@
   --neg: #E5484D;
   --m-none: #7A7F89;
   --m-rem: #3E8BFF;
+  --m-rem_tensored: #8E6BFF;
   --m-zne: #E0682A;
   --m-zne_rem: #23A86A;
   --gate: #239CB5;
@@ -212,6 +213,7 @@ td.num, th.num { text-align: right; }
 .sw { display: inline-block; width: 10px; height: 10px; margin-right: 7px; vertical-align: -1px; }
 .sw.none { background: var(--m-none); border-radius: 50%; }
 .sw.rem { background: var(--m-rem); }
+.sw.rem_tensored { background: var(--m-rem_tensored); clip-path: polygon(50% 0,100% 38%,82% 100%,18% 100%,0 38%); width: 11px; height: 11px; }
 .sw.zne { background: var(--m-zne); clip-path: polygon(50% 0, 100% 92%, 0 92%); width: 11px; height: 11px; }
 .sw.zne_rem { background: var(--m-zne_rem); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); width: 11px; height: 11px; }
 
@@ -295,8 +297,8 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
   <main class="content">
     <header class="hero">
       <p class="eyebrow">Group 20 · learn the project by playing with it</p>
-      <h1>Noise shrinks quantum answers. We tested two ways to undo it.</h1>
-      <p class="hero-lede">Nine short chapters. Each one has a live bench to play with, then the points to remember and a sentence you can say out loud. Dotted words have a definition when you hover or tap them.</p>
+      <h1>Noise shrinks quantum answers. We tested five ways to undo it, on a circuit and on a classifier.</h1>
+      <p class="hero-lede">Eleven short chapters. Each one has a live bench to play with, then the points to remember and a sentence you can say out loud. Dotted words have a definition when you hover or tap them.</p>
       <p class="how"><span><b>Every result number</b> is read from the experiment's output files</span><span><b>Your progress</b> is saved in this browser</span></p>
     </header>
 
@@ -306,7 +308,7 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
       <h2 id="h1x">One question, two fixes, one honest answer about cost.</h2>
       <div class="facts">
         <div class="fact"><span>The question</span><p>Does <b>error mitigation</b> make a noisy quantum circuit's answer more accurate, and what does it cost in extra circuits and shots?</p></div>
-        <div class="fact"><span>What we did</span><p>Simulated <b data-n="grid.instances"></b> random circuits on 2, 4 and 6 qubits at three noise levels, and estimated each answer four ways from <b>the same shots</b>.</p></div>
+        <div class="fact"><span>What we did</span><p>Simulated <b data-n="grid.instances"></b> random circuits on 2, 4 and 6 qubits at four noise levels, and estimated each answer five ways from <b>the same shots</b> &mdash; then applied the same idea to a quantum classifier.</p></div>
         <div class="fact"><span>What we found</span><p>At moderate noise, combining both fixes cut the error by a median <b><span data-n="imp.median.zne_rem.moderate"></span>%</b>. At low noise, the cheap readout fix alone was best.</p></div>
       </div>
       <div class="bench">
@@ -386,7 +388,7 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
         <div class="notice"><h3>What to notice</h3><ul>
           <li>Readout loss depends only on <b>n</b>: the parity is multiplied by exactly (1 − 2p_ro)ⁿ.</li>
           <li>Gate loss grows with the <b>number of gates</b>, so it grows with both n and L. Deep circuits are dominated by gate noise.</li>
-          <li>In our full simulation, readout caused about <b><span data-n="bias.readout_share.moderate.L2"></span>%</b> of the bias at L = 2 but only <b><span data-n="bias.readout_share.moderate.L4"></span>%</b> at L = 4 (moderate noise).</li>
+          <li>In our full simulation, readout's share of the bias fell from <b><span data-n="bias.readout_share.low"></span>%</b> at low noise to <b><span data-n="bias.readout_share.moderate"></span>%</b> at moderate noise, as gate noise grows with depth faster than readout error does.</li>
         </ul></div>
         <blockquote class="say"><span>Say it like this</span><p>"There are two error sources. Gate noise grows with circuit size and depth; readout error depends only on how many qubits we measure. For shallow circuits they were about equal; for deeper ones gate noise dominated."</p></blockquote>
       </div>
@@ -421,13 +423,18 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
         </div>
         <p class="readout" id="rem-cost"></p>
       </div>
+      <div class="bench">
+        <div class="bench-title"><h3>The scalable version: tensored REM</h3><span>2 calibration circuits, any n</span></div>
+        <p class="readout">If each qubit's readout error is independent of the others, the <b>n</b>-qubit assignment matrix is the Kronecker product of <b>n</b> 2×2 single-qubit matrices. Measuring those single-qubit matrices takes only <b>2</b> calibration circuits total, no matter how large <b>n</b> is &mdash; against <b>2ⁿ</b> for full REM. We ran both on every condition and compared the corrected expectation values directly.</p>
+        <p class="readout">Mean absolute difference between tensored and full REM: <b data-n="rem_tensored.mean_abs_diff"></b>, maximum <b data-n="rem_tensored.max_abs_diff"></b> &mdash; both well inside the per-condition shot-noise floor, so the uncorrelated-error assumption cost us nothing here while cutting calibration circuits from <b data-n="circuits.rem.n6"></b> to <b data-n="circuits.rem_tensored.n6"></b> at n = 6.</p>
+      </div>
       <div class="takeaways">
         <div class="notice"><h3>What to notice</h3><ul>
           <li>With exact numbers REM recovers the truth perfectly. With finite shots it is close but noisy, and can produce small <span class="g" data-g="quasi">negative probabilities</span>.</li>
           <li>We take the expectation value from the raw, possibly negative vector, and only clip it to a real distribution for fidelity metrics.</li>
-          <li>REM does <b>nothing</b> about gate noise, and its cost doubles with every qubit: <b data-n="circuits.rem.n6"></b> circuits per estimate at n = 6.</li>
+          <li>Neither REM variant touches gate noise. Full REM's cost doubles with every qubit (<b data-n="circuits.rem.n6"></b> circuits at n = 6); tensored REM stays at a constant <b data-n="circuits.rem_tensored.n2"></b>, trading exactness for scalability.</li>
         </ul></div>
-        <blockquote class="say"><span>Say it like this</span><p>"REM calibrates the readout by preparing every basis state, builds the assignment matrix, and inverts it. It removes readout bias well, but it can't touch gate noise, and full calibration grows as two to the n."</p></blockquote>
+        <blockquote class="say"><span>Say it like this</span><p>"REM calibrates the readout by preparing every basis state, builds the assignment matrix, and inverts it. Full calibration grows as two to the n, so we also implemented a tensored version that assumes independent per-qubit readout errors and needs only two calibration circuits; it matched full REM within shot noise on every condition we tried."</p></blockquote>
       </div>
       <button class="got" type="button">Mark as understood</button>
     </section>
@@ -476,51 +483,58 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
     <section class="ch" id="experiment" data-short="How the experiment ran" aria-labelledby="h6x">
       <p class="ch-eyebrow"><b>Chapter 6</b> · the pipeline</p>
       <h2 id="h6x">Every method got the same shots, so the comparison is fair.</h2>
-      <p class="lead">Click each stage to see what it does, which file does it, and why it matters. Then look at the diagram below it: one set of shots feeds all four methods.</p>
+      <p class="lead">Click each stage to see what it does, which file does it, and why it matters. Then look at the diagram below it: one set of shots feeds all five methods.</p>
       <div class="bench">
         <div class="bench-title"><h3>From config file to report</h3><span>click a stage</span></div>
         <div class="pipe" id="pipe"></div>
         <div class="pipe-detail" id="pipe-detail" aria-live="polite"></div>
       </div>
       <figure class="bench">
-        <svg viewBox="0 0 640 326" role="img" aria-label="The base circuit's shots feed all four methods; calibration circuits feed rem and zne_rem; folded circuits feed zne and zne_rem.">
+        <svg viewBox="0 0 640 262" role="img" aria-label="The base circuit's shots feed all five methods; full calibration circuits feed rem and zne_rem; tensored calibration circuits feed rem_tensored; folded circuits feed zne and zne_rem.">
           <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#98A5BF"/></marker></defs>
-          <g font-family="IBM Plex Mono, monospace" font-size="13">
-            <rect x="10" y="20" width="190" height="56" rx="3" fill="#172540" stroke="#E8A93A" stroke-width="1.5"/>
-            <text x="105" y="44" text-anchor="middle" fill="#E9EEF7" font-weight="500">base circuit</text>
-            <text x="105" y="62" text-anchor="middle" fill="#98A5BF">1,024 shots</text>
-            <rect x="10" y="122" width="190" height="56" rx="3" fill="#172540" stroke="#34466C"/>
-            <text x="105" y="146" text-anchor="middle" fill="#E9EEF7" font-weight="500">2ⁿ calibration</text>
-            <text x="105" y="164" text-anchor="middle" fill="#98A5BF">circuits</text>
-            <rect x="10" y="224" width="190" height="56" rx="3" fill="#172540" stroke="#34466C"/>
-            <text x="105" y="248" text-anchor="middle" fill="#E9EEF7" font-weight="500">folded λ = 3, 5</text>
-            <text x="105" y="266" text-anchor="middle" fill="#98A5BF">1,024 shots each</text>
-            <rect x="440" y="10" width="190" height="44" rx="3" fill="#111D33" stroke="#7A7F89" stroke-width="1.5"/>
-            <text x="535" y="37" text-anchor="middle" fill="#E9EEF7">none</text>
-            <rect x="440" y="88" width="190" height="44" rx="3" fill="#111D33" stroke="#3E8BFF" stroke-width="1.5"/>
-            <text x="535" y="115" text-anchor="middle" fill="#E9EEF7">rem</text>
-            <rect x="440" y="166" width="190" height="44" rx="3" fill="#111D33" stroke="#E0682A" stroke-width="1.5"/>
-            <text x="535" y="193" text-anchor="middle" fill="#E9EEF7">zne</text>
-            <rect x="440" y="244" width="190" height="44" rx="3" fill="#111D33" stroke="#23A86A" stroke-width="1.5"/>
-            <text x="535" y="271" text-anchor="middle" fill="#E9EEF7">zne_rem</text>
+          <g font-family="IBM Plex Mono, monospace" font-size="12.5">
+            <rect x="10" y="10" width="190" height="50" rx="3" fill="#172540" stroke="#E8A93A" stroke-width="1.5"/>
+            <text x="105" y="31" text-anchor="middle" fill="#E9EEF7" font-weight="500">base circuit</text>
+            <text x="105" y="48" text-anchor="middle" fill="#98A5BF">1,024 shots</text>
+            <rect x="10" y="74" width="190" height="50" rx="3" fill="#172540" stroke="#34466C"/>
+            <text x="105" y="95" text-anchor="middle" fill="#E9EEF7" font-weight="500">2ⁿ full calibration</text>
+            <text x="105" y="112" text-anchor="middle" fill="#98A5BF">circuits</text>
+            <rect x="10" y="138" width="190" height="50" rx="3" fill="#172540" stroke="#34466C"/>
+            <text x="105" y="159" text-anchor="middle" fill="#E9EEF7" font-weight="500">2 tensored calibration</text>
+            <text x="105" y="176" text-anchor="middle" fill="#98A5BF">circuits</text>
+            <rect x="10" y="202" width="190" height="50" rx="3" fill="#172540" stroke="#34466C"/>
+            <text x="105" y="223" text-anchor="middle" fill="#E9EEF7" font-weight="500">folded λ = 3, 5</text>
+            <text x="105" y="240" text-anchor="middle" fill="#98A5BF">1,024 shots each</text>
+            <rect x="440" y="4" width="190" height="40" rx="3" fill="#111D33" stroke="#7A7F89" stroke-width="1.5"/>
+            <text x="535" y="29" text-anchor="middle" fill="#E9EEF7">none</text>
+            <rect x="440" y="58" width="190" height="40" rx="3" fill="#111D33" stroke="#3E8BFF" stroke-width="1.5"/>
+            <text x="535" y="83" text-anchor="middle" fill="#E9EEF7">rem</text>
+            <rect x="440" y="112" width="190" height="40" rx="3" fill="#111D33" stroke="#8E6BFF" stroke-width="1.5"/>
+            <text x="535" y="137" text-anchor="middle" fill="#E9EEF7">rem_tensored</text>
+            <rect x="440" y="166" width="190" height="40" rx="3" fill="#111D33" stroke="#E0682A" stroke-width="1.5"/>
+            <text x="535" y="191" text-anchor="middle" fill="#E9EEF7">zne</text>
+            <rect x="440" y="220" width="190" height="40" rx="3" fill="#111D33" stroke="#23A86A" stroke-width="1.5"/>
+            <text x="535" y="245" text-anchor="middle" fill="#E9EEF7">zne_rem</text>
             <g stroke="#98A5BF" stroke-width="1.3" fill="none" marker-end="url(#ar)">
-              <path d="M200,40 L436,32"/>
-              <path d="M200,48 L436,106"/>
-              <path d="M200,56 L436,182"/>
-              <path d="M200,64 L436,258"/>
-              <path d="M200,150 L436,114" stroke-dasharray="5 4"/>
-              <path d="M200,158 L436,268" stroke-dasharray="5 4"/>
-              <path d="M200,250 L436,194" stroke-dasharray="2 4"/>
-              <path d="M200,258 L436,276" stroke-dasharray="2 4"/>
+              <path d="M200,16 L436,24"/>
+              <path d="M200,26 L436,78"/>
+              <path d="M200,36 L436,132"/>
+              <path d="M200,46 L436,186"/>
+              <path d="M200,56 L436,240"/>
+              <path d="M200,90 L436,78" stroke-dasharray="5 4"/>
+              <path d="M200,108 L436,240" stroke-dasharray="5 4"/>
+              <path d="M200,163 L436,132" stroke-dasharray="1 3"/>
+              <path d="M200,212 L436,186" stroke-dasharray="2 4"/>
+              <path d="M200,242 L436,240" stroke-dasharray="2 4"/>
             </g>
-            <text x="10" y="318" fill="#66748F" font-size="11.5">solid: shared base shots · dashed: calibration circuits · dotted: folded circuits</text>
           </g>
         </svg>
-        <figcaption class="readout">All four methods read the <b>same base shots</b>. REM and ZNE+REM also use the calibration circuits; ZNE and ZNE+REM also use the folded circuits. Any difference between methods comes from the mitigation, never from luckier shots.</figcaption>
+        <figcaption class="readout">All five methods read the <b>same base shots</b> (solid). <b>rem</b>/<b>zne_rem</b> also use the full calibration circuits (dashed); <b>rem_tensored</b> uses its own 2-circuit tensored calibration (dotted); <b>zne</b>/<b>zne_rem</b> also use the folded circuits (dash-dot). Any difference between methods comes from the mitigation, never from luckier shots.</figcaption>
       </figure>
       <div class="bench">
-        <div class="bench-title"><h3>The size of the grid</h3><span>every combination, 5 random circuits each</span></div>
-        <div class="eq"><span><b>3</b> qubit counts</span>×<span><b>2</b> depths</span>×<span><b>3</b> noise levels</span>×<span><b>5</b> seeds</span>=<span><b data-n="grid.conditions"></b> conditions</span>×<span><b>4</b> methods</span>=<span class="total"><b data-n="grid.rows"></b> result rows</span></div>
+        <div class="bench-title"><h3>The size of the grid</h3><span>Track A, every combination, 5 random circuits each</span></div>
+        <div class="eq"><span><b>3</b> qubit counts</span>×<span><b>2</b> depths</span>×<span><b>4</b> noise levels</span>×<span><b>5</b> seeds</span>=<span><b data-n="grid.conditions"></b> conditions</span>×<span><b>5</b> methods</span>=<span class="total"><b data-n="grid.rows"></b> result rows</span></div>
+        <p class="readout">Two more sweeps run on top of this grid: <b>Track B</b> trains a variational classifier and applies the same four mitigation methods to it (chapter 8), and the <b>shot-allocation</b> experiment reruns ZNE with a variance-optimal split of the shot budget (chapter 9).</p>
       </div>
       <div class="takeaways">
         <div class="notice"><h3>What to notice</h3><ul>
@@ -528,7 +542,7 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
           <li>Errors are measured against the <b>exact</b> answer from the statevector, never against another noisy run.</li>
           <li>The report is rendered from a template, so no result number in it was typed by hand.</li>
         </ul></div>
-        <blockquote class="say"><span>Say it like this</span><p>"We ran a full grid of 90 conditions. All four methods post-process the same shots, so the comparison is paired, and because every random number comes from a derived seed, the whole sweep reproduces exactly."</p></blockquote>
+        <blockquote class="say"><span>Say it like this</span><p>"We ran a full grid of 120 Track A conditions, and all five methods post-process the same shots, so the comparison is paired. Because every random number comes from a derived seed, the whole sweep reproduces exactly."</p></blockquote>
       </div>
       <button class="got" type="button">Mark as understood</button>
     </section>
@@ -547,41 +561,87 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
         <div class="bench-title"><h3>What each method costs per estimate</h3><span>measured on the executed circuits</span></div>
         <div class="cost" id="res-cost"></div>
       </div>
-      <h3>The six hypotheses (click to reveal the verdict)</h3>
+      <h3>The ten hypotheses (click to reveal the verdict)</h3>
       <div class="verdict-grid" id="verdicts"></div>
       <div class="takeaways">
         <div class="notice"><h3>What to notice</h3><ul>
-          <li><b>Moderate noise:</b> everything helps; ZNE + REM is best.</li>
-          <li><b>Low noise:</b> REM alone is best; ZNE's added variance cancels most of its gain.</li>
+          <li><b>Moderate/high noise:</b> everything helps; ZNE + REM is best.</li>
+          <li><b>Low noise:</b> REM alone is best more often; ZNE's added variance cancels most of its gain.</li>
           <li><b>No noise:</b> REM changes nothing; ZNE makes things worse.</li>
         </ul></div>
-        <blockquote class="say"><span>Say it like this</span><p>"At moderate noise every method helped, and combining both was best. At low noise, readout mitigation alone won. With no noise, ZNE only added variance. So the right method depends on the noise level and on how much you can spend."</p></blockquote>
+        <blockquote class="say"><span>Say it like this</span><p>"At moderate and high noise every method helped, and combining both was usually best. At low noise, readout mitigation alone won more often. With no noise, ZNE only added variance. So the right method depends on the noise level and on how much you can spend."</p></blockquote>
       </div>
       <button class="got" type="button">Mark as understood</button>
     </section>
 
     <!-- 8 -->
-    <section class="ch" id="limits" data-short="Limits of the study" aria-labelledby="h8x">
-      <p class="ch-eyebrow"><b>Chapter 8</b> · what the study can't tell you</p>
-      <h2 id="h8x">Know the limits before someone asks.</h2>
+    <section class="ch" id="qml" data-short="Track B: VQC vs classical" aria-labelledby="h8x">
+      <p class="ch-eyebrow"><b>Chapter 8</b> · does mitigation help a downstream task?</p>
+      <h2 id="h8x">Noise shrinks the margin long before it flips the label.</h2>
+      <p class="lead">Track A asks whether mitigation fixes a <b>number</b>. Track B asks whether that matters for a <b>decision</b>: a variational quantum classifier (VQC) on the Iris binary task, scored with angle-encoded features and a layered ry&ndash;rz&ndash;CX ansatz, trained once on exact simulation and then evaluated at each noise level with each of the four mitigation methods &mdash; on the <b>same</b> train/test split as a classical Logistic Regression and SVM baseline.</p>
+      <div class="bench">
+        <div class="bench-title"><h3>Accuracy barely moves; the margin tells the real story</h3><span>high noise, unmitigated vs. zne_rem</span></div>
+        <p class="readout">Unmitigated at high noise: mean |E_hat &minus; E_exact| error <b data-n="qml.meanE.none.high"></b>, margin retention <b data-n="qml.margin.none.high"></b>, accuracy <b data-n="qml.acc.none.high"></b> (vs. <b data-n="qml.acc.none.ideal"></b> ideal). With <b>zne_rem</b>: mean error falls to <b data-n="qml.meanE.zne_rem.high"></b>, margin retention recovers to <b data-n="qml.margin.zne_rem.high"></b>, while accuracy is <b data-n="qml.acc.zne_rem.high"></b> &mdash; almost unchanged.</p>
+        <p class="readout">With only 20 test samples, accuracy moves in 5% steps and cannot resolve differences that the continuous expectation-value and margin metrics show clearly. A classifier can keep answering correctly even while the number underneath it is drifting a lot &mdash; right up until the margin collapses far enough to flip a prediction.</p>
+      </div>
+      <div class="bench">
+        <div class="bench-title"><h3>Is the VQC even competitive?</h3><span>exact simulation, no noise</span></div>
+        <p class="readout">Exact-simulation VQC mean accuracy: <b data-n="qml.vqc_exact.acc.mean"></b> (range <b data-n="qml.vqc_exact.acc.min"></b>&ndash;<b data-n="qml.vqc_exact.acc.max"></b>) against Logistic Regression <b data-n="qml.logreg.acc.n2"></b>/<b data-n="qml.logreg.acc.n4"></b> and SVM <b data-n="qml.svm.acc.n2"></b>/<b data-n="qml.svm.acc.n4"></b> on identical preprocessed inputs. No quantum advantage is expected or claimed on a toy 2D binary task &mdash; the point of Track B is to test whether mitigation's benefit on raw expectation values survives being fed into a classifier, not to beat classical baselines.</p>
+      </div>
+      <div class="takeaways">
+        <div class="notice"><h3>What to notice</h3><ul>
+          <li>Track B reuses the same four mitigation methods as Track A (no tensored REM there), applied to the same kind of noisy expectation values that feed the classifier's decision function.</li>
+          <li>Accuracy is a coarse, thresholded metric; margin retention and mean |E| error are continuous and move far more sensitively with noise and mitigation.</li>
+          <li>The VQC is not trained to be noise-robust; it is trained once on exact simulation, so everything we measure is the effect of noise and mitigation at evaluation time.</li>
+        </ul></div>
+        <blockquote class="say"><span>Say it like this</span><p>"We also mitigated a downstream task, not just a number: a variational classifier against Logistic Regression and SVM on identical inputs. Noise collapses the decision margin well before it flips enough labels to move accuracy, so margin retention and expectation error are where mitigation's benefit actually shows up."</p></blockquote>
+      </div>
+      <button class="got" type="button">Mark as understood</button>
+    </section>
+
+    <!-- 9 -->
+    <section class="ch" id="scale" data-short="Scaling up: tensored REM & shots" aria-labelledby="h9x">
+      <p class="ch-eyebrow"><b>Chapter 9</b> · two improvements on the baseline recipe</p>
+      <h2 id="h9x">Spend the same budget smarter, not just more of it.</h2>
+      <p class="lead">Two add-ons were tested against the plain Track A recipe: the tensored REM already covered in chapter 4, and a <b>variance-optimal shot allocation</b> for ZNE.</p>
+      <div class="bench">
+        <div class="bench-title"><h3>Uniform vs. optimal shot allocation</h3><span>same total shot budget</span></div>
+        <p class="readout">Richardson extrapolation's coefficients γ&#8321;, γ&#8323;, γ&#8325; are not equal in size, so spending shots evenly across λ = 1, 3, 5 is not the variance-minimal choice at fixed total shots. Allocating shots in proportion to <b>|γᵢ|&middot;σᵢ</b> instead minimizes the extrapolated estimator's variance for the same total cost.</p>
+        <p class="readout">Measured standard-deviation ratio (optimal ÷ uniform): <b data-n="alloc.ratio.empirical"></b>, close to the theoretical prediction <b data-n="alloc.ratio.theory"></b> &mdash; about an 11% reduction in standard deviation at equal budget, confirmed empirically over <b data-n="alloc.repetitions"></b> repetitions per condition.</p>
+      </div>
+      <div class="takeaways">
+        <div class="notice"><h3>What to notice</h3><ul>
+          <li>Both improvements are &ldquo;free&rdquo; in the sense that they change <b>how</b> a fixed budget is spent, not how much is spent.</li>
+          <li>Tensored REM trades a small, measured amount of exactness (an uncorrelated-readout assumption) for circuit count that no longer scales with n.</li>
+          <li>Optimal shot allocation needs an estimate of each λ's shot-noise std, which the uniform pilot run already gives you for free before you reallocate.</li>
+        </ul></div>
+        <blockquote class="say"><span>Say it like this</span><p>"On top of the baseline comparison, we tried two improvements: tensored REM, which drops calibration cost from two-to-the-n to a constant two circuits by assuming independent readout errors, and variance-optimal shot allocation for ZNE, which reduces the Richardson estimator's standard deviation by about 11% at the same total shot budget."</p></blockquote>
+      </div>
+      <button class="got" type="button">Mark as understood</button>
+    </section>
+
+    <!-- 10 -->
+    <section class="ch" id="limits" data-short="Limits of the study" aria-labelledby="h10x">
+      <p class="ch-eyebrow"><b>Chapter 10</b> · what the study can't tell you</p>
+      <h2 id="h10x">Know the limits before someone asks.</h2>
       <div class="limits">
         <details><summary>Mitigation is not correction</summary><p>It improves averages only. Every individual shot is still noisy, and no extra qubits protect the information.</p></details>
-        <details><summary>ZNE trades bias for variance</summary><p>Its shot noise is about 2.3 to 2.5 times larger, its quadratic can mismatch the real decay (a residual gate bias of <b data-n="zne.gate_only_inf_shot_err.moderate"></b> remains even with unlimited shots at moderate noise), and it never removes readout error.</p></details>
-        <details><summary>Folded circuits are 5× deeper</summary><p>On real hardware the deepest folded circuit may run past the qubits' coherence time, and the noise may not scale as cleanly with folding as it does in simulation.</p></details>
-        <details><summary>Full REM costs 2ⁿ circuits</summary><p>Fine for 6 qubits, impossible for 50. Fixes: reuse one calibration for many circuits, or a tensored calibration (2 circuits) when readout errors are independent.</p></details>
-        <details><summary>REM assumes stable, independent readout</summary><p>Real readout drifts over time and can depend on neighbouring qubits. Our calibration also includes a little state-preparation error, so it slightly overstates the readout error.</p></details>
+        <details><summary>ZNE trades bias for variance</summary><p>Its shot noise is about <b data-n="var.ratio.emp.low"></b>&times;&ndash;<b data-n="var.ratio.emp.moderate"></b>&times; larger (theory <b data-n="var.ratio.theory"></b>&times;), its extrapolation curve can mismatch the real decay, and it never removes readout error, since measurements are not folded.</p></details>
+        <details><summary><span>Folded circuits are up to <span data-n="zne.depth_ratio.max"></span>× deeper</span></summary><p>On real hardware the deepest folded circuit may run past the qubits' coherence time, and the noise may not scale as cleanly with folding as it does in simulation.</p></details>
+        <details><summary>Full REM costs 2ⁿ circuits</summary><p>Fine for 6 qubits, impossible for 50. We implemented and measured the fix: tensored REM uses a constant <b data-n="circuits.rem_tensored.n2"></b> calibration circuits by assuming independent per-qubit readout errors, and matched full REM within shot noise (mean |diff| <b data-n="rem_tensored.mean_abs_diff"></b>) on every condition we ran &mdash; but that assumption is untested here against devices with correlated readout crosstalk.</p></details>
+        <details><summary>REM assumes stable, independent readout</summary><p>Real readout drifts over time and can depend on neighbouring qubits. Tensored REM additionally assumes qubit-to-qubit independence, which held in simulation but is a stronger assumption on real hardware. Our calibration also includes a little state-preparation error, so it slightly overstates the readout error.</p></details>
         <details><summary>Simulation only</summary><p>The noise model is incoherent and memoryless. Real devices add coherent errors, crosstalk, T1/T2 relaxation, drift and leakage.</p></details>
-        <details><summary>Small sample</summary><p>Three qubit counts, two depths and five seeds per condition. Pooled tests are strong; several per-condition tests are not significant.</p></details>
-        <details><summary>Selection bias</summary><p>We kept only circuits whose exact parity is at least 0.3 in size, so circuits with near-zero answers are not covered.</p></details>
+        <details><summary>Small sample</summary><p>Three qubit counts, two depths and five seeds per Track A condition (20 test samples for Track B). Pooled tests are strong; several per-condition tests are not significant.</p></details>
+        <details><summary>Selection bias</summary><p>We kept only circuits whose exact parity is at least 0.3 in size (observed range <b data-n="E_exact.absmin"></b>&ndash;<b data-n="E_exact.absmax"></b>), so circuits with near-zero answers are not covered.</p></details>
         <details><summary>Simulator time is not hardware time</summary><p>Wall time measures the classical simulation. Circuits and shots are the meaningful cost.</p></details>
       </div>
       <button class="got" type="button">Mark as understood</button>
     </section>
 
     <!-- 9 -->
-    <section class="ch" id="practice" data-short="Practice" aria-labelledby="h9x">
-      <p class="ch-eyebrow"><b>Chapter 9</b> · check yourself</p>
-      <h2 id="h9x">Quiz, flashcards, and a two-minute script.</h2>
+    <section class="ch" id="practice" data-short="Practice" aria-labelledby="h11x">
+      <p class="ch-eyebrow"><b>Chapter 11</b> · check yourself</p>
+      <h2 id="h11x">Quiz, flashcards, and a two-minute script.</h2>
       <div class="bench quiz">
         <div class="qhead"><h3>Quick quiz</h3><span class="score" id="q-score"></span><button class="btn ghost" type="button" id="q-reset">Reset quiz</button></div>
         <div id="quiz" class="quiz"></div>
@@ -598,7 +658,7 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
       <button class="got" type="button">Mark as understood</button>
     </section>
 
-    <footer class="end">Built from the results of the Group 20 sweep (Qiskit <span data-n="env.qiskit"></span>, Aer <span data-n="env.qiskit-aer"></span>). The demo benches in chapters 2 to 5 use small illustrative models; every number about our results comes from the experiment's output files.</footer>
+    <footer class="end">Built from the results of the Group 20 sweep (Qiskit <span data-n="env.qiskit"></span>, Aer <span data-n="env.qiskit-aer"></span>, scikit-learn <span data-n="env.scikit-learn"></span>). The demo benches in chapters 2 to 5 use small illustrative models; every number about our results comes from the experiment's output files.</footer>
   </main>
 </div>
 
@@ -623,7 +683,7 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
   var COL = {
     gold: tok("--gold"), cryo: tok("--cryo"), text: tok("--text"), muted: tok("--muted"), faint: tok("--faint"),
     line: tok("--line"), line2: tok("--line-2"), panel: tok("--panel"), panel2: tok("--panel-2"), ground: tok("--ground"),
-    none: tok("--m-none"), rem: tok("--m-rem"), zne: tok("--m-zne"), zne_rem: tok("--m-zne_rem"),
+    none: tok("--m-none"), rem: tok("--m-rem"), rem_tensored: tok("--m-rem_tensored"), zne: tok("--m-zne"), zne_rem: tok("--m-zne_rem"),
     gate: tok("--gate"), ro: tok("--readout"), neg: tok("--neg")
   };
 
@@ -948,7 +1008,7 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
 
   /* ========== 4. REM ========== */
   function renderCal() {
-    var A = D.calibration.A, nS = A.length, labels = ["00", "01", "10", "11"];
+    var A = D.calibration.A_full, nS = A.length, labels = ["00", "01", "10", "11"];
     document.getElementById("cal-run").textContent = D.calibration.run.replace(/_/g, " · ");
     var host = document.getElementById("cal-grid");
     var cell = Math.min(78, Math.floor((Math.max(280, host.clientWidth) - 120) / nS));
@@ -1185,21 +1245,22 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
   }
 
   /* ========== 7. results ========== */
-  var LV = ["ideal", "low", "moderate"], resLevel = "moderate";
-  var MIT = ["rem", "zne", "zne_rem"];
+  var LV = D.levels.map(function (l) { return l.name; }), resLevel = LV.indexOf("moderate") >= 0 ? "moderate" : LV[0];
+  var MIT = ["rem", "rem_tensored", "zne", "zne_rem"];
+  var MLABEL = { rem: "rem", rem_tensored: "rem (t.)", zne: "zne", zne_rem: "zne_rem" };
   var syncRes = segmented("res-level", LV, null, function (v) { resLevel = v; renderRes(); });
   function renderRes() {
     syncRes(resLevel);
     var vals = MIT.map(function (m) { return +num("imp.median." + m + "." + resLevel); });
-    var o = svgFor(document.getElementById("res-bars"), 168), svg = o.svg, W = o.W;
+    var o = svgFor(document.getElementById("res-bars"), 214), svg = o.svg, W = o.W;
     var lo = Math.min(-10, Math.min.apply(null, vals)), hi = Math.max(100, Math.max.apply(null, vals));
-    var m = { l: 76, r: 150 };
+    var m = { l: 98, r: 150 };
     var x = lin(lo, hi, m.l, W - m.r);
-    s("line", { x1: x(0), x2: x(0), y1: 4, y2: 148, stroke: COL.line2 }, svg);
-    txt(svg, x(0), 164, "0% (same as none)", { "text-anchor": "middle", fill: COL.faint, "font-size": 11 });
+    s("line", { x1: x(0), x2: x(0), y1: 4, y2: 194, stroke: COL.line2 }, svg);
+    txt(svg, x(0), 210, "0% (same as none)", { "text-anchor": "middle", fill: COL.faint, "font-size": 11 });
     MIT.forEach(function (mth, i) {
       var v = vals[i], yy = 10 + i * 46;
-      txt(svg, m.l - 10, yy + 18, mth, { "text-anchor": "end", fill: COL.text, "font-size": 12.5 });
+      txt(svg, m.l - 10, yy + 18, MLABEL[mth], { "text-anchor": "end", fill: COL.text, "font-size": 12.5 });
       s("rect", { x: Math.min(x(0), x(v)), y: yy + 4, width: Math.abs(x(v) - x(0)), height: 22, fill: COL[mth], rx: 2 }, svg);
       var better = num("imp.better." + mth + "." + resLevel);
       var p = N["wilcoxon.p." + mth + "." + resLevel];
@@ -1209,17 +1270,20 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
     var take = {
       ideal: "No noise to remove. REM changes nothing (largest change " + num("ideal.rem_none_maxdiff") + "). ZNE only amplifies shot noise: it was worse than doing nothing in " +
         num("ideal.zne_worse") + " runs. These percentages are unstable because the baseline error is pure shot noise.",
-      low: "REM alone is the best choice here: lowest error in " + num("best.count.rem.low") + " circuit sizes. ZNE alone is not significant (p = " + num("wilcoxon.p.zne.low") +
+      low: "REM (and tensored REM) are the best choice here: lowest error in " + num("best.count.rem.low") + " circuit sizes. ZNE alone is not significant (p = " + num("wilcoxon.p.zne.low") +
         "): its extra variance cancels most of its gain.",
       moderate: "Every method helps, and combining both is best: lowest error in " + num("best.count.zne_rem.moderate") + " circuit sizes. Mean error fell from " +
-        num("err.mean.none.moderate") + " with no mitigation to " + num("err.mean.zne_rem.moderate") + "."
+        num("err.mean.none.moderate") + " with no mitigation to " + num("err.mean.zne_rem.moderate") + ".",
+      high: "Noise is heavy enough that every method still helps, and zne_rem keeps the largest median cut (" + num("imp.median.zne_rem.high") + "%). ZNE does not show runaway failure here (out-of-range extrapolations stay at " +
+        num("oor.zne.high") + "), though more exponential fits fail (" + num("expnan.zne") + ")."
     };
-    document.getElementById("res-take").textContent = take[resLevel];
+    document.getElementById("res-take").textContent = take[resLevel] || "";
   }
   function renderCost() {
     var rows = [
       ["none", "1", "1", "1", "1×", "1×"],
       ["rem", num("circuits.rem.n2"), num("circuits.rem.n4"), num("circuits.rem.n6"), "1×", "1×"],
+      ["rem_tensored", num("circuits.rem_tensored.n2"), num("circuits.rem_tensored.n4"), num("circuits.rem_tensored.n6"), "1×", "1×"],
       ["zne", num("circuits.zne.n2"), num("circuits.zne.n4"), num("circuits.zne.n6"), num("zne.cx_ratio") + "×", Math.round(+num("zne.depth_ratio.max")) + "×"],
       ["zne_rem", num("circuits.zne_rem.n2"), num("circuits.zne_rem.n4"), num("circuits.zne_rem.n6"), num("zne.cx_ratio") + "×", Math.round(+num("zne.depth_ratio.max")) + "×"]
     ];
@@ -1227,18 +1291,24 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
       rows.map(function (r) { return '<tr><td><i class="sw ' + r[0] + '"></i>' + r[0] + "</td>" + r.slice(1).map(function (c) { return '<td class="num">' + c + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table>";
   }
   var HYP = [
-    ["H1", "par", "Unmitigated error grows with noise level, qubit count and depth.", "Mean error rises " + num("err.mean.none.ideal") + " → " + num("err.mean.none.low") + " → " + num("err.mean.none.moderate") +
-      " with noise, and on average with n and L, but not in every single circuit size, because the bias scales with each circuit's exact value."],
-    ["H2", "sup", "REM removes most of the readout error and improves fidelity, but leaves gate noise.", "REM's remaining error (" + num("err.mean.rem.moderate") + " at moderate noise) is close to the gate-noise bias (" +
+    ["H1", "sup", "Unmitigated error grows with noise level, qubit count and depth.", "Mean error rises " + num("err.mean.none.ideal") + " → " + num("err.mean.none.low") + " → " + num("err.mean.none.moderate") + " → " + num("err.mean.none.high") +
+      " across noise levels, and on average with n and L too, though not in every single circuit size, because the bias scales with each circuit's exact value."],
+    ["H2", "sup", "REM removes most of the readout error, improves fidelity and success probability, and leaves the gate-noise bias.", "REM's remaining error (" + num("err.mean.rem.moderate") + " at moderate noise) is close to the gate-noise bias (" +
       num("bias.gate.moderate") + "). Fidelity improves in " + num("fid.better.moderate") + " circuit sizes."],
-    ["H3", "sup", "ZNE removes much of the gate-noise bias, but not the readout bias.", "With unlimited shots and readout divided out, ZNE removes " + num("zne.gate_bias_removed.low") + "% (low) and " +
-      num("zne.gate_bias_removed.moderate") + "% (moderate) of the gate bias."],
-    ["H4", "par", "Combining ZNE and REM gives the lowest error at low and moderate noise.", "True at moderate noise (best in " + num("best.count.zne_rem.moderate") + " sizes). At low noise REM alone wins (best in " +
-      num("best.count.rem.low") + ")."],
-    ["H5", "sup", "ZNE adds variance, and with no noise it is no better than doing nothing.", "Spread " + num("var.ratio.emp.low") + "–" + num("var.ratio.emp.moderate") + "× the baseline (theory " + num("var.ratio.theory") +
-      "×). Worse at the ideal level in " + num("ideal.zne_worse") + " runs."],
-    ["H6", "sup", "REM needs 1 + 2ⁿ circuits; ZNE needs 3 with 9× the CNOTs and 5× the depth.", "Measured " + num("circuits.rem.n2") + " / " + num("circuits.rem.n4") + " / " + num("circuits.rem.n6") + " circuits for REM and " +
-      num("circuits.zne.n2") + " for ZNE, with " + num("zne.cx_ratio") + "× CNOTs and " + num("zne.depth_ratio.max") + "× depth."]
+    ["H3", "sup", "ZNE removes much of the gate-noise bias, but not the readout bias, because measurements are not folded.", "ZNE's relative benefit tracks the gate-noise share of the bias: little benefit at low noise where readout dominates (" +
+      num("bias.readout_share.low") + "% of the bias), large benefit at moderate noise where gate noise dominates (" + num("bias.readout_share.moderate") + "% readout share)."],
+    ["H4", "par", "zne_rem has the lowest error at low and moderate noise; ZNE degrades at high noise.", "True at moderate (best in " + num("best.count.zne_rem.moderate") + " sizes) and at high (best median improvement, " + num("imp.median.zne_rem.high") +
+      "%). At low noise plain REM wins more often (best in " + num("best.count.rem.low") + " vs. " + num("best.count.zne_rem.low") + " for zne_rem), because ZNE's variance cost dominates there."],
+    ["H5", "sup", "ZNE has higher variance than doing nothing, and at the ideal level it is no better.", "Measured std ratio " + num("var.ratio.emp.low") + "–" + num("var.ratio.emp.high") + "× the baseline (theory " + num("var.ratio.theory") +
+      "×). Worse than doing nothing at the ideal level in " + num("ideal.zne_worse") + " runs."],
+    ["H6", "sup", "REM uses 1+2ⁿ circuits, tensored REM uses 3, ZNE uses 3 with 9× CNOTs and ≈5× max depth, and zne_rem uses the sum.", "Measured " + num("circuits.rem.n2") + " / " + num("circuits.rem.n4") + " / " + num("circuits.rem.n6") + " for REM, a constant " +
+      num("circuits.rem_tensored.n2") + " for tensored REM, " + num("circuits.zne.n2") + " for ZNE with " + num("zne.cx_ratio") + "× CNOTs and " + num("zne.depth_ratio.max") + "× max depth."],
+    ["H7", "sup", "Exact VQC accuracy is comparable to or below LR and SVM; no quantum advantage is expected or claimed.", "Exact VQC mean accuracy " + num("qml.vqc_exact.acc.mean") + " vs. LR " + num("qml.logreg.acc.n2") + "/" + num("qml.logreg.acc.n4") +
+      " and SVM " + num("qml.svm.acc.n2") + "/" + num("qml.svm.acc.n4") + " on identical inputs."],
+    ["H8", "sup", "Noise shrinks margins while mostly preserving sign; accuracy degrades less than expectation error, and mitigation restores margins more than accuracy.", "At high noise, unmitigated margin retention falls to " + num("qml.margin.none.high") +
+      " and mean |E| error rises to " + num("qml.meanE.none.high") + ", while accuracy only drops to " + num("qml.acc.none.high") + " from " + num("qml.acc.none.ideal") + "; zne_rem restores margin to " + num("qml.margin.zne_rem.high") + " with almost no accuracy change."],
+    ["H9", "sup", "Tensored REM matches full REM within shot noise.", "Mean absolute difference " + num("rem_tensored.mean_abs_diff") + ", maximum " + num("rem_tensored.max_abs_diff") + ", both well inside the per-condition shot-noise floor."],
+    ["H10", "sup", "Optimal shot allocation reduces the ZNE standard deviation by about 11% at equal budget.", "Measured ratio " + num("alloc.ratio.empirical") + ", close to the " + num("alloc.ratio.theory") + " ratio theory predicts."]
   ];
   var vHost = document.getElementById("verdicts");
   HYP.forEach(function (h) {
@@ -1272,10 +1342,14 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
       "rem: median error cut " + num("imp.median.rem.low") + "%, lowest error in " + num("best.count.rem.low") + " sizes. ZNE's variance outweighed its small bias gain."],
     ["Why can REM produce negative probabilities?", ["A bug", "The calibration matrix and counts come from finite shots, so the inverse can overshoot", "Readout error is negative", "Because of folding"], 1,
       "Inverting a sampled matrix applied to sampled counts gives a quasi-probability vector. In our data the largest negative mass was " + num("negmass.max") + "."],
-    ["Why did all four methods process the same shots?", ["To save time", "So any difference between methods comes from the mitigation, not luckier shots", "Qiskit requires it", "It doesn't matter"], 1,
+    ["Why did all five methods process the same shots?", ["To save time", "So any difference between methods comes from the mitigation, not luckier shots", "Qiskit requires it", "It doesn't matter"], 1,
       "That is a paired design, and it is what makes the paired statistical tests valid."],
     ["By how much did ZNE multiply the shot noise in our sweep (moderate noise)?", ["About 1.0×", "About 1.5×", "About " + num("var.ratio.emp.moderate") + "×", "About 10×"], 2,
-      "Measured " + num("var.ratio.emp.moderate") + "× against a theoretical " + num("var.ratio.theory") + "×, from the Richardson weights 15/8, −5/4 and 3/8."]
+      "Measured " + num("var.ratio.emp.moderate") + "× against a theoretical " + num("var.ratio.theory") + "×, from the Richardson weights 15/8, −5/4 and 3/8."],
+    ["Why does Track B's accuracy barely move even when mitigation clearly helps?", ["Accuracy is a bug", "Accuracy is coarse and thresholded; margin retention and mean |E| error are continuous and far more sensitive", "The VQC ignores noise", "Mitigation doesn't help Track B at all"], 1,
+      "With only 20 test samples, accuracy moves in 5% steps. Margin retention fell to " + num("qml.margin.none.high") + " at high noise while accuracy only dropped to " + num("qml.acc.none.high") + "."],
+    ["Tensored REM assumes what, that full REM does not need to?", ["That the circuit is shallow", "That each qubit's readout error is independent of the others", "That n is even", "That shots are unlimited"], 1,
+      "That independence assumption is what lets the n-qubit assignment matrix factor into a Kronecker product of n 2×2 matrices, cutting calibration circuits from 2ⁿ to 2."]
   ];
   var quizHost = document.getElementById("quiz");
   function renderQuiz() {
@@ -1307,9 +1381,9 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
     ["What is the difference between error mitigation and error correction?", "Correction encodes logical qubits in many physical ones and fixes errors shot by shot. Mitigation needs no extra qubits; it runs extra circuits and post-processes to reduce the bias of an average."],
     ["Why keep only circuits with |exact parity| ≥ 0.3?", "A parity near zero hides every effect under shot noise (about ±0.03 at 1,024 shots) and makes relative error undefined. The cost is a selection bias, listed as a limitation."],
     ["Why a t-test per condition instead of Wilcoxon?", "With only 5 paired seeds, the smallest possible two-sided Wilcoxon p-value is 0.0625, so it can never reach 0.05. Pooled over 30 circuits we do use Wilcoxon."],
-    ["Why does REM's benefit shrink in deeper circuits?", "Deeper circuits have more gate noise, which REM cannot touch. Readout caused " + num("bias.readout_share.moderate.L2") + "% of the bias at L = 2 but " + num("bias.readout_share.moderate.L4") + "% at L = 4."],
+    ["Why does REM's benefit shrink in deeper circuits?", "Deeper circuits have more gate noise, which REM cannot touch. Readout's share of the bias fell from " + num("bias.readout_share.low") + "% at low noise to " + num("bias.readout_share.moderate") + "% at moderate noise as gate noise grows with depth."],
     ["Why does ZNE's benefit shrink with more qubits?", "Bigger circuits decay faster: at λ = 5 the signal is close to the shot-noise floor, so the extrapolation leans on noisy points and the quadratic fits the decay less well."],
-    ["How would you make REM scale?", "Reuse one calibration for many circuits (its cost amortizes), or use a tensored calibration with just 2 circuits when readout errors are independent, as they are in our model."],
+    ["How does tensored REM make REM scale?", "It assumes each qubit's readout error is independent of the others, so the assignment matrix is a Kronecker product of n 2×2 matrices measured with just 2 calibration circuits instead of 2ⁿ. It matched full REM within shot noise (mean |diff| " + num("rem_tensored.mean_abs_diff") + ") on every condition we tried."],
     ["Is the simulator's wall time a fair cost measure?", "No. It measures classical simulation. Circuits, shots, depth and CNOT count are the costs that matter on real hardware."],
     ["How do you know the results are reproducible?", "Every random number comes from a seed derived from its purpose. Running the full sweep twice gave identical values in every non-timing column and byte-identical raw files."],
     ["What do Hellinger fidelity and TVD measure?", "How close a measured distribution is to the exact one. Hellinger fidelity is 1 for identical distributions; TVD is half the summed absolute difference, 0 for identical. REM improved both in every noisy circuit size."],
@@ -1327,12 +1401,14 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
   var SCRIPT = [
     "Quantum computers are noisy: gates and measurements both make mistakes, and those mistakes shrink the expectation values we read out.",
     "Error mitigation doesn't fix individual shots. It runs extra circuits and uses classical post-processing to remove the bias from an average.",
-    "We tested two standard methods. Readout error mitigation measures how the readout scrambles known states and inverts that. Zero-noise extrapolation makes the noise three and five times worse on purpose and extrapolates back to zero.",
-    "We simulated " + num("grid.instances") + " random circuits on 2, 4 and 6 qubits at three noise levels in Qiskit Aer, and every method processed exactly the same shots, so the comparison is fair.",
+    "We tested two standard methods. Readout error mitigation measures how the readout scrambles known states and inverts that; we did both a full version and a scalable tensored version. Zero-noise extrapolation makes the noise three and five times worse on purpose and extrapolates back to zero.",
+    "We simulated " + num("grid.instances") + " random circuits on 2, 4 and 6 qubits at four noise levels in Qiskit Aer, and every method processed exactly the same shots, so the comparison is fair.",
     "At moderate noise every method helped: median error cuts of " + num("imp.median.rem.moderate") + "% for readout mitigation, " + num("imp.median.zne.moderate") + "% for ZNE, and " + num("imp.median.zne_rem.moderate") + "% for both combined.",
-    "At low noise, readout mitigation alone was best. ZNE multiplies shot noise by about " + num("var.ratio.emp.moderate") + " times, which cancelled most of its gain.",
-    "The catch is cost: readout mitigation needs one plus two-to-the-n circuits, " + num("circuits.rem.n6") + " at six qubits, while ZNE needs three circuits but nine times the CNOTs and five times the depth.",
-    "So our recommendation: use readout mitigation by default, add ZNE when gate noise is large, and never use ZNE on circuits that are already nearly noiseless."
+    "At low noise, readout mitigation alone was best more often. ZNE multiplies shot noise by about " + num("var.ratio.emp.moderate") + " times, which cancelled most of its gain.",
+    "The catch is cost: full readout mitigation needs one plus two-to-the-n circuits, " + num("circuits.rem.n6") + " at six qubits, while tensored REM stays at a constant " + num("circuits.rem_tensored.n2") + " and matched full REM within shot noise. ZNE needs three circuits but nine times the CNOTs and five times the depth.",
+    "We also applied all of this to a variational classifier against Logistic Regression and SVM: noise collapses the decision margin long before it flips enough labels to move accuracy, so margin retention is where mitigation's benefit actually shows up.",
+    "And we tried one improvement beyond the baseline recipe: allocating ZNE's shot budget in proportion to each scale factor's Richardson weight and noise, instead of evenly, cut the estimator's standard deviation by about 11% at the same cost.",
+    "So our recommendation: use tensored REM by default for its scalability, add ZNE when gate noise is large, and never use ZNE on circuits that are already nearly noiseless."
   ];
   var scriptHost = document.getElementById("script"), line = -1;
   SCRIPT.forEach(function (sline) { var li = document.createElement("li"); li.textContent = sline; scriptHost.appendChild(li); });

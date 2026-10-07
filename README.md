@@ -65,16 +65,13 @@ pytest -q
 
 ## Dashboard and learning guide
 
-The interactive dashboard (`dashboard/`) and field guide (`guide/`) were built against the
-Track A v1 schema (4 methods, 3 noise levels, no Track B). They have not yet been rebuilt
-against the v2 data (5 methods, the `high` noise level, Track B, the improvement
-experiment); rebuilding them is a known follow-up, not part of this submission. To rebuild
-once `dashboard/build_dashboard.py` / `scripts/build_guide.py` are updated for the v2
-schema:
+The interactive dashboard (`dashboard/`) and field guide (`guide/`) read the v2 data: all
+five Track A methods (including `rem_tensored`), the `high` noise level, Track B, and the
+shot-allocation improvement experiment. Rebuild either after a resweep:
 
 ```bash
-python scripts/build_dashboard.py
-python scripts/build_guide.py
+python scripts/build_dashboard.py   # dashboard/mitigation-bench.html + dashboard/quantum-error-mitigation-bench/index.html
+python scripts/build_guide.py       # guide/learn-qem.html
 ```
 
 ## Layout

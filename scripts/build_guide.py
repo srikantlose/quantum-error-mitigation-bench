@@ -22,6 +22,8 @@ from qem.config import load_config
 ROOT = Path(__file__).resolve().parents[1]
 PLACEHOLDER = '"__GUIDE_DATA__"'
 CALIBRATION_RUN = "n2_L2_moderate_s0"
+CALIBRATION_FULL = "full_" + CALIBRATION_RUN
+CALIBRATION_TENSORED = "tensored_" + CALIBRATION_RUN
 
 
 def r6(x) -> float | None:
@@ -45,16 +47,23 @@ def build_payload(runs: pd.DataFrame, numbers: dict, cfg, raw_dir: Path) -> dict
     bias_rows = [{"n": int(n), "L": int(L), "noise": nz, "gate": r6(r.gate), "readout": r6(r.readout), "absE": r6(r.E)}
                  for (n, L, nz), r in bias.iterrows()]
 
-    A = np.load(raw_dir / "calibration" / f"{CALIBRATION_RUN}.npy")
+    A_full = np.load(raw_dir / "calibration" / f"{CALIBRATION_FULL}.npy")
+    A_tensored = np.load(raw_dir / "calibration" / f"{CALIBRATION_TENSORED}.npy")
     levels = [{"name": nm, "p1": cfg.noise.level(nm).p1, "p2": cfg.noise.level(nm).p2, "p_ro": cfg.noise.level(nm).p_ro}
-              for nm in cfg.experiment.noise_levels]
+              for nm in cfg.track_a.noise_levels]
     return {
         "numbers": numbers,
         "example": {"n": ex.n, "L": ex.depth, "noise": ex.noise, "seed": ex.seed, "methods": example},
         "bias": bias_rows,
-        "calibration": {"run": CALIBRATION_RUN, "A": [[round(float(v), 4) for v in row] for row in A]},
+        "calibration": {
+            "run": CALIBRATION_RUN,
+            "A_full": [[round(float(v), 4) for v in row] for row in A_full],
+            "A_tensored": [[round(float(v), 4) for v in row] for row in A_tensored],
+        },
         "levels": levels,
         "shots": cfg.experiment.shots,
+        "methods": list(cfg.track_a.methods),
+        "qml_methods": list(cfg.track_b.methods),
     }
 
 
