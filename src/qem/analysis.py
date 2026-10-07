@@ -702,7 +702,7 @@ def table_zne_allocation(alloc: pd.DataFrame) -> str:
             "|γ_i| (the variance-minimizing allocation). Each row aggregates "
             f"{int(alloc.repetitions.iloc[0])} repetitions at a fixed (n, L, noise). "
             "Theoretical std assumes σ_i ≈ 1 at every scale.\n\n")
-    text += md_table(headers, rows, "rrllrrrr")
+    text += md_table(headers, rows, "rrllrrrrr")
 
     summary_rows = []
     for scheme in ("uniform", "optimal"):

@@ -3,7 +3,7 @@
 Same total budget (3072 shots) split uniformly (1024 each) or proportional to |γ_i| (the variance-minimizing allocation). Each row aggregates 50 repetitions at a fixed (n, L, noise). Theoretical std assumes σ_i ≈ 1 at every scale.
 
 | n | L | noise | scheme | shots (λ1,λ3,λ5) | bias | empirical std | rmse | theoretical std |
-| ---: | ---: | --- | --- | ---: | ---: | ---: | ---: |
+| ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | 2 | 2 | low | optimal | 1646,1097,329 | -0.0308 | 0.0446 | 0.0538 | 0.0631 |
 | 2 | 2 | low | uniform | 1024,1024,1024 | -0.0300 | 0.0524 | 0.0599 | 0.0714 |
 | 2 | 2 | moderate | optimal | 1646,1097,329 | -0.0812 | 0.0486 | 0.0944 | 0.0631 |
