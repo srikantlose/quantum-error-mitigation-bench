@@ -287,6 +287,8 @@ Computed against the exact noiseless distribution, mean ± std over 5 seeds. ZNE
 
 *A8. Output distribution at n = 4, L = 4, moderate noise.*
 
+REM improves the whole output distribution, not only the parity expectation value: mean Hellinger fidelity rises for `rem` over `none` in 6/6 of 6 (n, L) cells at low noise and 6/6 at moderate noise (mean gain 0.0018 and 0.0160), and total variation distance falls in 6/6 and 6/6 cells respectively (mean drop 0.0091 and 0.0374).
+
 ### 5.3 ZNE in detail
 
 ![A5](../results/figures/fig_A5_zne_extrapolation_example.png)

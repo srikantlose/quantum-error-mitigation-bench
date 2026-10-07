@@ -867,6 +867,19 @@ def report_numbers(
     if len(rt):
         num["negmass.max.tensored"] = f"{rt.rem_negative_mass.max():.4f}"
 
+    # distribution fidelity: does REM improve the whole distribution, not just the mean?
+    for nz in headline:
+        s = summary[summary.noise_level == nz].pivot_table(
+            index=["n_qubits", "depth_layers"], columns="method",
+            values=["hellinger_fidelity_mean", "tvd_mean"])
+        if "none" in s["hellinger_fidelity_mean"].columns and "rem" in s["hellinger_fidelity_mean"].columns:
+            hf_gain = s["hellinger_fidelity_mean"]["rem"] - s["hellinger_fidelity_mean"]["none"]
+            tvd_drop = s["tvd_mean"]["none"] - s["tvd_mean"]["rem"]
+            num[f"fid.better.{nz}"] = f"{int((hf_gain > 0).sum())}/{len(hf_gain)}"
+            num[f"fid.gain.{nz}"] = _f(hf_gain.mean(), 4)
+            num[f"tvd.drop.{nz}"] = _f(tvd_drop.mean(), 4)
+            num[f"tvd.better.{nz}"] = f"{int((tvd_drop > 0).sum())}/{len(tvd_drop)}"
+
     wide_rt = runs[runs.method.isin(["rem", "rem_tensored"])].pivot_table(
         index=["n_qubits", "depth_layers", "noise_level", "seed"], columns="method", values="abs_error")
     if "rem" in wide_rt.columns and "rem_tensored" in wide_rt.columns:

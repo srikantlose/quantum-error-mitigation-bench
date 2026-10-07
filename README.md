@@ -1,13 +1,22 @@
 # Group 20: Quantum Circuit Noise and Error Mitigation
 
-Does error mitigation improve the output of a noisy quantum circuit, and what does it cost?
-This repository simulates a layered parity circuit with Qiskit Aer under depolarizing and
-readout noise, and compares four methods on identical raw data: no mitigation, readout
-error mitigation (REM), zero-noise extrapolation (ZNE), and ZNE combined with REM.
+Does error mitigation improve the output of a noisy quantum circuit, what does it cost, and
+do the gains carry through to a downstream machine-learning task? This repository has two
+tracks. **Track A** simulates a layered parity circuit with Qiskit Aer under depolarizing
+and readout noise (course-standard levels: ideal / low / moderate / optional high), and
+compares five methods on identical raw data: no mitigation, full readout error mitigation
+(REM), scalable tensored REM, zero-noise extrapolation (ZNE), and ZNE combined with REM.
+**Track B** applies the same four mitigation methods (no tensored REM) to a variational
+quantum classifier (VQC) on the Iris binary task, compared against Logistic Regression and
+SVM on identical preprocessed features and the identical train/test split. A third
+experiment tests a variance-optimal shot allocation for ZNE against the usual uniform split.
 
 - The findings are in [report/report.md](report/report.md).
-- The full specification is in [plan.md](plan.md).
+- The full specification is in [plan.md](plan.md); the superseded v1 spec is kept at
+  [plan_v1.md](plan_v1.md) for reference.
 - Deviations from the specification are logged in [DECISIONS.md](DECISIONS.md).
+- Literature review notes are in [report/literature_notes.md](report/literature_notes.md).
+- Viva prep is in [docs/viva_prep.md](docs/viva_prep.md).
 
 ## Install
 
@@ -23,43 +32,28 @@ pip install -e .
 ## Reproduce everything
 
 ```bash
-python scripts/run_sweep.py --config config/experiment.yaml      # 90 conditions, about 15 s
-python scripts/analyze.py --runs results/raw/runs.csv --out results/summary
-python scripts/make_plots.py --runs results/raw/runs.csv --summary results/summary/summary.csv --out results/figures
-python scripts/build_report.py                                   # renders report/report.md
+python scripts/run_sweep.py --config config/experiment.yaml         # Track A: 120 conditions, ~20 s
+python scripts/run_qml.py --config config/experiment.yaml           # Track B: ~8 min (VQC training)
+python scripts/run_improvement.py --config config/experiment.yaml   # shot-allocation study, ~2 min
+python scripts/analyze.py --config config/experiment.yaml           # all summary tables + report_numbers.json
+python scripts/make_plots.py --config config/experiment.yaml        # figures A1-A13, B1-B6, I1
+python scripts/make_design_figures.py --config config/experiment.yaml  # circuit diagrams D1-D5
+python scripts/build_report.py                                      # renders report/report.md
 ```
 
-Each step reads only the outputs of the previous ones. Every random number is derived
-from a fixed seed, so a rerun reproduces `results/raw/runs.csv` exactly, apart from the
-two wall-time columns.
+Each step reads only the outputs of the previous ones. Every random number is derived from
+a fixed seed, so a rerun reproduces every CSV exactly, apart from the wall-time columns.
 
-Useful options for `run_sweep.py`:
+Useful options:
 
-- `--smoke` runs the tiny configuration (n = 2, L = 2, seed 0) into `results/smoke/`.
-- `--only-n 2 4` restricts the qubit counts.
-- `--resume` skips conditions already in `runs.csv`.
-- `--out DIR` writes somewhere else.
+- `run_sweep.py --smoke` / `run_qml.py --smoke` / `run_improvement.py --smoke` run the tiny
+  `config/smoke.yaml` configuration into `results/smoke/`.
+- `run_sweep.py --only-n 2 4` restricts Track A to the given qubit counts.
+- `run_sweep.py --resume` skips Track A conditions already in `runs.csv`.
+- `run_qml.py --retrain` retrains the VQC even if a cached model matches the config.
+- `--out DIR` (all three sweep scripts) writes somewhere else.
 
-`python scripts/smoke_test.py` runs the smoke sweep and checks its output end to end.
-
-## Dashboard
-
-```bash
-python scripts/build_dashboard.py
-```
-
-This embeds `results/raw/runs.csv` and `results/summary/report_numbers.json` into
-`dashboard/template.html` and writes `dashboard/mitigation-bench.html`, a single
-self-contained page. Rebuild it after every sweep and analysis run.
-
-The same build writes a standalone copy to `dashboard/quantum-error-mitigation-bench/index.html`,
-which is deployed as a static site to <https://quantum-error-mitigation-bench.vercel.app>.
-To publish a new version after rebuilding:
-
-```bash
-cd dashboard/quantum-error-mitigation-bench
-vercel deploy --prod
-```
+`python scripts/smoke_test.py` runs the Track A smoke sweep and checks its output end to end.
 
 ## Test
 
@@ -67,18 +61,37 @@ vercel deploy --prod
 pytest -q
 ```
 
+186 tests at the time of writing (`results/logs/pytest_output.txt` has the saved output).
+
+## Dashboard and learning guide
+
+The interactive dashboard (`dashboard/`) and field guide (`guide/`) were built against the
+Track A v1 schema (4 methods, 3 noise levels, no Track B). They have not yet been rebuilt
+against the v2 data (5 methods, the `high` noise level, Track B, the improvement
+experiment); rebuilding them is a known follow-up, not part of this submission. To rebuild
+once `dashboard/build_dashboard.py` / `scripts/build_guide.py` are updated for the v2
+schema:
+
+```bash
+python scripts/build_dashboard.py
+python scripts/build_guide.py
+```
+
 ## Layout
 
 | Path | Contents |
 |---|---|
-| `config/` | `experiment.yaml` (full sweep) and `smoke.yaml` |
-| `src/qem/` | The library: config, seeds, circuits, observables, noise, execution, mitigation (`readout.py`, `zne.py`), metrics, experiment, analysis, plotting |
-| `scripts/` | Command-line entry points listed above |
-| `tests/` | Unit and integration tests |
-| `results/raw/` | `runs.csv` (360 rows), plus per-condition counts, circuit instances (angles and QASM) and calibration matrices |
-| `results/summary/` | `summary.csv`, markdown tables, `stats_tests.csv`, `variance_check.csv`, `report_numbers.json` |
-| `results/figures/` | Figures F1–F10 and the circuit diagram |
-| `report/` | `report_template.md` (hand-written prose with placeholders) and the rendered `report.md` |
+| `config/` | `experiment.yaml` (full grid) and `smoke.yaml` |
+| `src/qem/` | config, seeds, circuits, observables, noise, execution, mitigation (`readout.py`, `zne.py`, `pipeline.py`), metrics, `experiment.py` (Track A), `qml/` (Track B: data, classical, vqc, evaluate, runner), `improvement.py` (shot allocation), analysis, plotting |
+| `scripts/` | `run_sweep.py`, `run_qml.py`, `run_improvement.py`, `analyze.py`, `make_plots.py`, `make_design_figures.py`, `smoke_test.py`, `build_report.py` |
+| `tests/` | Unit and integration tests (`pytest -q`) |
+| `results/raw/` | Track A: `runs.csv` (600 rows), counts, circuit instances, full and tensored calibration matrices |
+| `results/qml/` | Track B: `qml_runs.csv` (360 rows), splits, preprocessing params, trained models, per-sample predictions |
+| `results/improvement/` | `zne_allocation.csv` (120 rows) |
+| `results/summary/` | Both summary CSVs, every markdown table, `stats_tests.csv`, `report_numbers.json` |
+| `results/figures/` | Figures A1–A13 (Track A), B1–B6 (Track B), D1–D5 (circuit/pipeline diagrams), I1 (shot allocation) |
+| `report/` | `report_template.md` (hand-written, placeholders only), the rendered `report.md`, `literature_notes.md`, `screenshots/` |
+| `docs/` | `viva_prep.md` |
 
 The report template contains no result numbers. `scripts/build_report.py` fills every
 number and table from `results/summary/`, so the report always matches the data.

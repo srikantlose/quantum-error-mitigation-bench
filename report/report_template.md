@@ -225,6 +225,8 @@ Python {{num:env.python}}; qiskit {{num:env.qiskit}}; qiskit-aer {{num:env.qiski
 
 *A8. Output distribution at n = 4, L = 4, moderate noise.*
 
+REM improves the whole output distribution, not only the parity expectation value: mean Hellinger fidelity rises for `rem` over `none` in {{num:fid.better.low}} of 6 (n, L) cells at low noise and {{num:fid.better.moderate}} at moderate noise (mean gain {{num:fid.gain.low}} and {{num:fid.gain.moderate}}), and total variation distance falls in {{num:tvd.better.low}} and {{num:tvd.better.moderate}} cells respectively (mean drop {{num:tvd.drop.low}} and {{num:tvd.drop.moderate}}).
+
 ### 5.3 ZNE in detail
 
 ![A5](../results/figures/fig_A5_zne_extrapolation_example.png)
