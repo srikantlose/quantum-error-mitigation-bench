@@ -1,0 +1,1475 @@
+<title>Mitigation Bench Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a revision desk. A sticky mode bar on top (Study, Flashcards, Mock viva, Cheat sheet);
+   in Study mode a syllabus rail tracks each module's state and the main column holds one module. */
+:root {
+  --bg: #EDF1F6; --grid: rgba(19, 32, 58, 0.045);
+  --surface: #FFFFFF; --surface-2: #F4F6FA; --line: #D4DBE6; --line-2: #B7C1D2;
+  --ink: #13203A; --muted: #4C5A75; --faint: #75819A;
+  --amber: #9C5A00; --amber-fill: #E8A93A; --amber-ink: #1C1305; --amber-wash: rgba(232, 169, 58, 0.15); --amber-line: rgba(176, 110, 10, 0.45);
+  --cyan: #0A6F82; --cyan-wash: rgba(10, 111, 130, 0.08);
+  --good: #1B7A4C; --good-wash: rgba(27, 122, 76, 0.10); --bad: #B63A25; --bad-wash: rgba(182, 58, 37, 0.09);
+  --m-none: #6E7480; --m-rem: #2F6FDB; --m-rem_tensored: #7351E6; --m-zne: #CC5A1E; --m-zne_rem: #1E8A57;
+  --plate: #FFFFFF; --scrim: rgba(8, 12, 22, 0.84);
+  --shadow: 0 1px 2px rgba(19, 32, 58, 0.06), 0 8px 24px rgba(19, 32, 58, 0.06);
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1426; --grid: rgba(152, 165, 191, 0.05);
+    --surface: #111D33; --surface-2: #172540; --line: #21304D; --line-2: #34466C;
+    --ink: #E9EEF7; --muted: #A3AFC7; --faint: #6F7C97;
+    --amber: #E8A93A; --amber-fill: #E8A93A; --amber-ink: #1C1305; --amber-wash: rgba(232, 169, 58, 0.10); --amber-line: rgba(232, 169, 58, 0.40);
+    --cyan: #43D3EA; --cyan-wash: rgba(67, 211, 234, 0.08);
+    --good: #35C486; --good-wash: rgba(53, 196, 134, 0.12); --bad: #F06A55; --bad-wash: rgba(240, 106, 85, 0.12);
+    --m-none: #8A909B; --m-rem: #4B93FF; --m-rem_tensored: #9A7DFF; --m-zne: #EB7638; --m-zne_rem: #2DB577;
+    --plate: #F3F5F9; --scrim: rgba(3, 6, 12, 0.86);
+    --shadow: none;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1426; --grid: rgba(152, 165, 191, 0.05);
+  --surface: #111D33; --surface-2: #172540; --line: #21304D; --line-2: #34466C;
+  --ink: #E9EEF7; --muted: #A3AFC7; --faint: #6F7C97;
+  --amber: #E8A93A; --amber-fill: #E8A93A; --amber-ink: #1C1305; --amber-wash: rgba(232, 169, 58, 0.10); --amber-line: rgba(232, 169, 58, 0.40);
+  --cyan: #43D3EA; --cyan-wash: rgba(67, 211, 234, 0.08);
+  --good: #35C486; --good-wash: rgba(53, 196, 134, 0.12); --bad: #F06A55; --bad-wash: rgba(240, 106, 85, 0.12);
+  --m-none: #8A909B; --m-rem: #4B93FF; --m-rem_tensored: #9A7DFF; --m-zne: #EB7638; --m-zne_rem: #2DB577;
+  --plate: #F3F5F9; --scrim: rgba(3, 6, 12, 0.86);
+  --shadow: none;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; color: var(--ink); background-color: var(--bg);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font: 400 16px/1.6 var(--body); -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, p, ul, ol, figure, blockquote, dl, dd { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+a { color: var(--cyan); }
+code { font: 500 0.86em/1 var(--mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 3px; padding: 1px 4px; color: var(--ink); white-space: nowrap; }
+b.num { font-family: var(--mono); font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* mode bar */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 1240px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
+.brand { display: grid; gap: 1px; min-width: 0; }
+.brand b { font: 700 19px/1.1 var(--display); letter-spacing: 0.01em; }
+.brand span { font: 500 10.5px/1.3 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); }
+.sitenav { font: 500 12px/1.2 var(--mono); color: var(--cyan); text-decoration: none; border: 1px solid var(--line-2); border-radius: 4px; padding: 6px 9px; }
+.sitenav:hover { border-color: var(--cyan); }
+.modes { display: flex; flex-wrap: wrap; gap: 2px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 3px; }
+.modes button { border: 0; background: transparent; padding: 7px 12px; border-radius: 4px; cursor: pointer; font: 600 14px/1 var(--display); letter-spacing: 0.02em; color: var(--muted); }
+.modes button:hover { color: var(--ink); }
+.modes button[aria-selected="true"] { background: var(--amber-fill); color: var(--amber-ink); }
+.overall { margin-left: auto; display: flex; align-items: center; gap: 10px; font: 400 12px/1.2 var(--mono); color: var(--faint); }
+.meter { width: 120px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: var(--amber-fill); }
+
+.shell { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 80px; }
+
+/* study mode */
+.study { display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 44px; align-items: start; }
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px); max-height: calc(100vh - 96px); overflow-y: auto; display: grid; gap: 16px; padding-bottom: 12px; }
+.part { display: grid; gap: 1px; }
+.part h4 { font: 500 10.5px/1.2 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); padding: 0 8px 5px; }
+.rail a { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 8px; border-radius: 4px; color: var(--muted); text-decoration: none; font-size: 14px; line-height: 1.3; }
+.rail a:hover { background: var(--surface); color: var(--ink); }
+.rail a[aria-current="page"] { background: var(--surface); color: var(--ink); font-weight: 500; box-shadow: inset 0 0 0 1px var(--line); }
+.rail .no { font: 500 12px/1 var(--mono); color: var(--faint); }
+.rail .st { font: 500 11px/1 var(--mono); color: var(--faint); white-space: nowrap; }
+.rail .st.done { color: var(--good); }
+.mod-pick { display: none; gap: 6px; }
+.mod-pick select { background: var(--surface); border: 1px solid var(--line-2); border-radius: 5px; padding: 8px 10px; font-size: 15px; width: 100%; }
+
+.mod { display: grid; gap: 30px; max-width: 790px; min-width: 0; }
+.mod-head { display: grid; gap: 12px; }
+.eyebrow { font: 500 12px/1.4 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+.eyebrow b { color: var(--amber); font-weight: 500; }
+.mod h2 { font: 700 clamp(1.9rem, 4vw, 2.6rem)/1.06 var(--display); letter-spacing: -0.005em; text-wrap: balance; }
+.lede { font-size: 18px; line-height: 1.55; color: var(--muted); max-width: 64ch; }
+.blk { display: grid; gap: 12px; min-width: 0; }
+.blk > h3 { font: 600 12px/1.2 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); }
+.ideas { list-style: none; padding: 0; display: grid; gap: 12px; }
+.ideas li { padding-left: 20px; position: relative; color: var(--muted); max-width: 70ch; }
+.ideas li::before { content: ""; position: absolute; left: 2px; top: 0.6em; width: 7px; height: 7px; background: var(--amber-fill); transform: rotate(45deg); }
+.ideas b { color: var(--ink); font-weight: 600; }
+.ideas i { font-style: italic; }
+.eqs { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 10px; }
+.eq { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.eq .k { font: 500 10.5px/1.3 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+.eq .x { font: 500 15px/1.5 var(--mono); color: var(--ink); overflow-wrap: anywhere; }
+.eq .w { font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+
+.bench { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: grid; gap: 14px; box-shadow: var(--shadow); min-width: 0; }
+.bench-h { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 14px; align-items: baseline; }
+.bench-h h4 { font: 600 17px/1.2 var(--display); letter-spacing: 0.01em; }
+.bench-h span { font: 500 11px/1.3 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+.ctl { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: end; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.flabel { font: 500 11px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+.flabel output { color: var(--amber); letter-spacing: 0; text-transform: none; margin-left: 6px; font-size: 12.5px; font-weight: 600; }
+input[type="range"] { width: 230px; max-width: 100%; accent-color: var(--amber-fill); }
+input[type="number"], input[type="text"], input[type="search"] { background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 4px; padding: 7px 9px; font: 500 14px/1.2 var(--mono); width: 100%; min-width: 0; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line-2); border-radius: 4px; overflow: hidden; }
+.seg button { background: transparent; border: 0; border-right: 1px solid var(--line-2); padding: 6px 11px; cursor: pointer; font: 500 13px/1.1 var(--mono); color: var(--muted); }
+.seg button:last-child { border-right: 0; }
+.seg button:hover { color: var(--ink); background: var(--surface-2); }
+.seg button[aria-pressed="true"] { background: var(--amber-fill); color: var(--amber-ink); }
+.out { font: 400 14px/1.65 var(--mono); color: var(--muted); }
+.out b { color: var(--ink); font-weight: 600; }
+.note { font-size: 13.5px; color: var(--faint); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+
+.line { position: relative; height: 46px; margin: 4px 6px 0; }
+.line .axis { position: absolute; left: 0; right: 0; top: 18px; height: 2px; background: var(--line-2); }
+.line .band { position: absolute; top: 10px; height: 18px; background: var(--amber-wash); border: 1px solid var(--amber-line); border-radius: 3px; }
+.line .dot { position: absolute; top: 12px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--amber-fill); box-shadow: 0 0 0 2px var(--surface); }
+.line .tick { position: absolute; top: 30px; font: 400 11px/1 var(--mono); color: var(--faint); transform: translateX(-50%); }
+
+.stack { display: flex; height: 30px; border-radius: 4px; overflow: hidden; gap: 2px; background: var(--surface); }
+.stack div { height: 100%; display: flex; align-items: center; padding-left: 8px; font: 600 12px/1 var(--mono); color: var(--amber-ink); white-space: nowrap; overflow: hidden; }
+.keyrow { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 400 12.5px/1.4 var(--mono); color: var(--muted); }
+.keyrow i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+.bars { display: grid; gap: 12px; }
+.bar { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 4px 12px; align-items: center; }
+.bar .lab { font: 500 13px/1.2 var(--mono); color: var(--ink); text-align: right; }
+.bar .trk { position: relative; height: 20px; background: var(--surface-2); border-radius: 3px; }
+.bar .zero { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--line-2); }
+.bar .fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.bar .cap { grid-column: 2; font: 400 12.5px/1.35 var(--mono); color: var(--muted); }
+.bar .cap b { color: var(--ink); }
+
+figure.fig { display: grid; gap: 8px; min-width: 0; }
+figure.fig button { padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--plate); cursor: zoom-in; display: block; width: 100%; overflow: hidden; }
+figure.fig img { display: block; width: 100%; height: auto; }
+figure.fig figcaption { font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+
+.nums { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.nums div { background: var(--surface); padding: 11px 13px; display: grid; gap: 4px; align-content: start; }
+.nums b { font: 600 21px/1.1 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.nums span { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+
+.say { border: 1px solid var(--amber-line); background: var(--amber-wash); padding: 14px 16px; border-radius: 6px; display: grid; gap: 6px; }
+.say span { font: 500 11px/1.2 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber); }
+.say p { font: italic 400 16.5px/1.55 var(--body); color: var(--ink); }
+
+.quiz { display: grid; gap: 12px; }
+.quiz-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.score { font: 600 13px/1 var(--mono); color: var(--amber); }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 10px; }
+.qt { font: 500 15.5px/1.45 var(--body); color: var(--ink); }
+.opts { display: grid; gap: 6px; }
+.opts button { text-align: left; padding: 8px 12px; border-radius: 5px; border: 1px solid var(--line-2); background: transparent; cursor: pointer; color: var(--muted); font-size: 15px; line-height: 1.4; }
+.opts button:hover:not([disabled]) { border-color: var(--ink); color: var(--ink); }
+.opts button[disabled] { cursor: default; }
+.opts button.right { border-color: var(--good); background: var(--good-wash); color: var(--ink); }
+.opts button.wrong { border-color: var(--bad); background: var(--bad-wash); color: var(--ink); }
+.why { font-size: 14.5px; line-height: 1.5; color: var(--muted); }
+.why b { color: var(--ink); }
+
+.modfoot { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 18px; }
+.btn { padding: 9px 14px; border-radius: 5px; cursor: pointer; font: 600 14px/1.1 var(--display); letter-spacing: 0.02em; background: var(--amber-fill); color: var(--amber-ink); border: 1px solid var(--amber-fill); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { filter: brightness(1.06); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+.btn.ghost:hover { border-color: var(--amber-fill); filter: none; }
+.btn[aria-pressed="true"] { background: var(--good-wash); color: var(--good); border-color: var(--good); }
+.btn[disabled] { opacity: 0.45; cursor: default; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th { text-align: left; font: 500 10.5px/1.25 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); padding: 9px 12px; border-bottom: 1px solid var(--line-2); background: var(--surface-2); white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--muted); line-height: 1.45; }
+td b { color: var(--ink); font-weight: 600; }
+td.num, th.num { text-align: right; }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink); }
+tr:last-child td { border-bottom: 0; }
+.kv td:first-child { width: 46%; }
+.kv td.num { white-space: normal; overflow-wrap: anywhere; text-align: left; }
+.verdict { font: 600 10.5px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 7px; border-radius: 3px; white-space: nowrap; display: inline-block; }
+.verdict.sup { color: var(--good); background: var(--good-wash); }
+.verdict.par { color: var(--amber); background: var(--amber-wash); }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 7px; vertical-align: -1px; }
+
+.papers { display: grid; gap: 10px; }
+.paper { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 5px; }
+.paper .ph { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.paper .pn { font: 600 12px/1 var(--mono); color: var(--amber); }
+.paper .pt { font-weight: 600; color: var(--ink); font-size: 15px; line-height: 1.35; }
+.paper .pv { font: 400 12.5px/1.4 var(--mono); color: var(--faint); }
+.paper p { font-size: 14.5px; line-height: 1.5; color: var(--muted); }
+.paper p b { color: var(--ink); font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 6px 10px; border-radius: 4px; border: 1px solid var(--line-2); background: var(--surface); cursor: pointer; font: 500 12.5px/1.1 var(--mono); color: var(--muted); }
+.chip:hover { color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--amber-fill); border-color: var(--amber-fill); color: var(--amber-ink); }
+
+/* flashcards */
+.center { max-width: 780px; margin: 0 auto; display: grid; gap: 18px; }
+.page-h { display: grid; gap: 8px; }
+.page-h h2 { font: 700 clamp(1.8rem, 4vw, 2.4rem)/1.08 var(--display); text-wrap: balance; }
+.page-h p { color: var(--muted); max-width: 64ch; }
+.flash { min-height: 290px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 10px; padding: 26px 28px; display: grid; gap: 16px; align-content: center; cursor: pointer; box-shadow: var(--shadow); text-align: left; width: 100%; color: var(--ink); }
+.flash .tag { font: 500 11px/1.3 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+.flash .front { font: 600 clamp(1.3rem, 3vw, 1.7rem)/1.28 var(--display); color: var(--ink); }
+.flash .back { font-size: 16.5px; line-height: 1.62; color: var(--muted); border-top: 1px dashed var(--line-2); padding-top: 14px; }
+.flash .back b { color: var(--ink); }
+.flash .hint { font: 400 12px/1.2 var(--mono); color: var(--faint); }
+.boxes { display: flex; gap: 8px; flex-wrap: wrap; }
+.boxes span { font: 500 12px/1 var(--mono); padding: 7px 10px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+.boxes b { color: var(--ink); }
+
+/* viva */
+.vpanel { background: var(--surface); border: 1px solid var(--line-2); border-radius: 10px; padding: 22px 24px; display: grid; gap: 16px; box-shadow: var(--shadow); }
+.vtop { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.vno { font: 500 12px/1.2 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+.timer { font: 600 24px/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.timer.low { color: var(--bad); }
+.vq { font: 600 clamp(1.3rem, 3vw, 1.7rem)/1.28 var(--display); text-wrap: balance; }
+.ans { color: var(--muted); font-size: 16px; line-height: 1.65; display: grid; gap: 10px; border-top: 1px dashed var(--line-2); padding-top: 14px; }
+.ans b { color: var(--ink); }
+.vlist { list-style: none; padding: 0; display: grid; gap: 2px; counter-reset: v; }
+.vlist button { width: 100%; text-align: left; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 4px; border: 0; background: transparent; cursor: pointer; color: var(--muted); font-size: 14.5px; line-height: 1.4; }
+.vlist button:hover { background: var(--surface); color: var(--ink); }
+.vlist .i { font: 500 12px/1 var(--mono); color: var(--faint); }
+.rate { font: 600 10.5px/1 var(--mono); letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 6px; border-radius: 3px; white-space: nowrap; }
+.rate.good { color: var(--good); background: var(--good-wash); }
+.rate.part { color: var(--amber); background: var(--amber-wash); }
+.rate.miss { color: var(--bad); background: var(--bad-wash); }
+.rate.none { color: var(--faint); }
+
+/* cheat sheet */
+.sheet { display: grid; gap: 34px; }
+.sheet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; align-items: start; }
+.sheet section { display: grid; gap: 12px; min-width: 0; }
+.sheet h3 { font: 700 20px/1.2 var(--display); }
+.gloss { display: grid; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); overflow: hidden; }
+.gloss div { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 4px 14px; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+.gloss div:last-child { border-bottom: 0; }
+.gloss dt { font: 600 13.5px/1.4 var(--mono); color: var(--ink); }
+.gloss dd { font-size: 14.5px; line-height: 1.5; color: var(--muted); }
+
+.lb { position: fixed; inset: 0; z-index: 60; background: var(--scrim); display: grid; place-items: center; padding: 20px; cursor: zoom-out; }
+.lb img { max-width: min(1250px, 100%); max-height: 88vh; background: var(--plate); border-radius: 6px; }
+.lb p { color: #E9EEF7; font-size: 14px; max-width: 900px; text-align: center; margin-top: 10px; }
+
+@media (max-width: 920px) {
+  .study { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .rail { display: none; }
+  .mod-pick { display: grid; }
+  .overall { margin-left: 0; }
+  .sheet-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .bar { grid-template-columns: 86px minmax(0, 1fr); }
+  .modes button { padding: 7px 9px; font-size: 13px; }
+  .gloss div { grid-template-columns: minmax(0, 1fr); }
+  .flash, .vpanel { padding: 20px 18px; }
+  .meter { width: 80px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .seg button, .chip, .opts button, .modes button, .rail a { transition: background-color 120ms, border-color 120ms, color 120ms; }
+}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><b>Mitigation Bench</b><span>Group 20 study guide</span></div><!--SITE_NAV-->
+    <nav class="modes" role="tablist" aria-label="Study modes">
+      <button type="button" role="tab" id="tab-study" data-mode="study">Study</button>
+      <button type="button" role="tab" id="tab-cards" data-mode="cards">Flashcards</button>
+      <button type="button" role="tab" id="tab-viva" data-mode="viva">Mock viva</button>
+      <button type="button" role="tab" id="tab-sheet" data-mode="sheet">Cheat sheet</button>
+    </nav>
+    <div class="overall" aria-live="polite"><div class="meter"><i id="meter"></i></div><span id="overall-txt"></span></div>
+  </div>
+</header>
+
+<div class="shell"><main id="view"></main></div>
+<div class="lb" id="lb" hidden><div><img id="lb-img" alt=""><p id="lb-cap"></p></div></div>
+
+<script type="application/json" id="study-data">"__STUDY_DATA__"</script>
+<script>
+(function () {
+  "use strict";
+
+  var D = JSON.parse(document.getElementById("study-data").textContent);
+  var N = D.numbers, C = D.counts, FIG = D.figures, EX = D.example, SHOTS = D.shots;
+
+  function n(k) {
+    if (!(k in N)) { console.warn("missing number", k); return "?"; }
+    return N[k];
+  }
+  function b(k, suffix) { return '<b class="num">' + n(k) + (suffix || "") + "</b>"; }
+  function bv(v) { return '<b class="num">' + v + "</b>"; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  var KEY = "qem-study-v1", S = {};
+  try { S = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { S = {}; }
+  ["done", "quiz", "cards", "viva"].forEach(function (k) { if (!S[k] || typeof S[k] !== "object") S[k] = {}; });
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage unavailable */ } }
+
+  var LABEL = { none: "none", rem: "rem", rem_tensored: "rem_tensored", zne: "zne", zne_rem: "zne_rem" };
+  function mcol(m) { return "var(--m-" + m + ")"; }
+
+  /* ================= content ================= */
+
+  var PARTS = [
+    { name: "Foundations", ids: ["overview", "basics", "noise", "rem", "zne"] },
+    { name: "Track A: the testbed", ids: ["design-a", "results-a"] },
+    { name: "Track B: the classifier", ids: ["design-b", "results-b"] },
+    { name: "Beyond the baseline", ids: ["improve"] },
+    { name: "Context", ids: ["build", "papers", "limits"] }
+  ];
+
+  var HYP = [
+    ["H1", "sup", "Unmitigated error grows with noise level, qubit count and depth.", "Mean error " + n("err.mean.none.ideal") + " → " + n("err.mean.none.low") + " → " + n("err.mean.none.moderate") + " → " + n("err.mean.none.high") + " from ideal to high noise; the same growth with n and L in every panel of A4."],
+    ["H2", "sup", "REM removes most of the readout bias, improves fidelity and success probability, and leaves the gate-noise bias.", "REM's remaining error at moderate noise (" + n("err.mean.rem.moderate") + ") is close to the gate part of the bias (" + n("bias.gate.moderate") + "); Hellinger fidelity and P_succ ratio both improve over none."],
+    ["H3", "sup", "ZNE removes much of the gate-noise bias but not the readout bias, because measurements are not folded.", "No significant benefit at low noise, where readout is " + n("bias.readout_share.low") + "% of the bias; a large one at moderate noise, where gate noise dominates."],
+    ["H4", "par", "zne_rem is best at low and moderate noise; ZNE degrades at high noise.", "True at moderate (best in " + n("best.count.zne_rem.moderate") + " cells) and high (median " + n("imp.median.zne_rem.high") + "%). At low noise plain rem wins more often (" + n("best.count.rem.low") + " vs " + n("best.count.zne_rem.low") + "). No runaway ZNE failure at high noise: Richardson out-of-range " + n("oor.zne") + ", though more exponential fits fail."],
+    ["H5", "sup", "ZNE has higher variance than none; at the ideal level it is no better.", "Std ratio " + n("var.ratio.emp.high") + "×–" + n("var.ratio.emp.moderate") + "× (theory " + n("var.ratio.theory") + "×); worse than doing nothing at the ideal level in " + n("ideal.zne_worse") + " runs."],
+    ["H6", "sup", "REM uses 1+2ⁿ circuits, tensored REM 3, ZNE 3 with 9× CNOTs and ≈5× depth, zne_rem the sum.", "Measured " + n("circuits.rem.n2") + "/" + n("circuits.rem.n4") + "/" + n("circuits.rem.n6") + " for rem, " + n("circuits.rem_tensored.n2") + " for rem_tensored, " + n("circuits.zne.n2") + " for zne with " + n("zne.cx_ratio") + "× CNOTs and " + n("zne.depth_ratio.max") + "× depth, " + n("circuits.zne_rem.n2") + "/" + n("circuits.zne_rem.n4") + "/" + n("circuits.zne_rem.n6") + " for zne_rem."],
+    ["H7", "sup", "Exact VQC accuracy is comparable to or below LR and SVM; no advantage is claimed.", "Exact VQC " + n("qml.vqc_exact.acc.mean") + " vs LR " + n("qml.logreg.acc.n2") + "/" + n("qml.logreg.acc.n4") + " and SVM " + n("qml.svm.acc.n2") + "/" + n("qml.svm.acc.n4") + " (n = 2 / n = 4) on identical inputs."],
+    ["H8", "sup", "Noise shrinks margins but mostly keeps their sign; accuracy moves less than expectation error; mitigation restores margins more than accuracy.", "High noise, unmitigated: margin retention " + n("qml.margin.none.high") + ", mean |E| error " + n("qml.meanE.none.high") + ", accuracy " + n("qml.acc.none.high") + " (ideal " + n("qml.acc.none.ideal") + "). zne_rem: margin " + n("qml.margin.zne_rem.high") + ", accuracy " + n("qml.acc.zne_rem.high") + "."],
+    ["H9", "sup", "Tensored REM matches full REM within shot noise.", "Mean |difference| " + n("rem_tensored.mean_abs_diff") + ", maximum " + n("rem_tensored.max_abs_diff") + "."],
+    ["H10", "sup", "Optimal shot allocation cuts ZNE's std by about 11% at equal budget.", "Measured ratio " + n("alloc.ratio.empirical") + " against " + n("alloc.ratio.theory") + " predicted."]
+  ];
+  function hypTable(ids) {
+    var rows = HYP.filter(function (h) { return !ids || ids.indexOf(h[0]) >= 0; });
+    return '<div class="tw"><table><thead><tr><th></th><th>Hypothesis</th><th>Verdict</th><th>Evidence</th></tr></thead><tbody>' +
+      rows.map(function (h) {
+        return "<tr><td><b>" + h[0] + "</b></td><td>" + h[2] + '</td><td><span class="verdict ' + h[1] + '">' + (h[1] === "sup" ? "Supported" : "Partly") + "</span></td><td>" + h[3] + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+
+  var PAPERS = [
+    [1, "a", "J. Preskill", "Quantum Computing in the NISQ era and beyond", "Quantum 2, 79", 2018, "Defines the NISQ regime: devices of roughly 50–100 qubits with no error correction, where gate noise limits how deep and wide a circuit can reliably run.", "Frames the whole project: too noisy for correction, too useful to ignore, so mitigate."],
+    [2, "ab", "K. Temme, S. Bravyi, J. M. Gambetta", "Error mitigation for short-depth quantum circuits", "Phys. Rev. Lett. 119, 180509", 2017, "Introduces extrapolation to the zero-noise limit with Richardson's method, and probabilistic error cancellation (PEC).", "Origin of our Richardson ZNE in mitigation/zne.py. PEC is out of scope."],
+    [3, "b", "Y. Li, S. C. Benjamin", "Efficient variational quantum simulator incorporating active error minimization", "Phys. Rev. X 7, 021050", 2017, "Independently proposes amplifying errors on purpose and extrapolating to zero error, inside a variational quantum/classical loop.", "A second origin of ZNE, aimed at variational models like our VQC."],
+    [4, "a", "S. Endo, S. C. Benjamin, Y. Li", "Practical quantum error mitigation for near-future applications", "Phys. Rev. X 8, 031027", 2018, "Mitigation when the noise model is only imperfectly known; proposes an exponential form of extrapolation.", "Justifies our exponential extrapolator: depolarizing noise decays a signal exponentially, not polynomially."],
+    [5, "b", "A. Kandala et al.", "Error mitigation extends the computational reach of a noisy quantum processor", "Nature 567, 491–495", 2019, "Zero-noise extrapolation measurably improves accuracy on an IBM superconducting processor for chemistry and magnetism problems.", "Hardware evidence that the effect we simulate is real."],
+    [6, "b", "T. Giurgica-Tiron, Y. Hindy, R. LaRose, A. Mari, W. J. Zeng", "Digital zero noise extrapolation for quantum error mitigation", "IEEE QCE, 306–316", 2020, "Unitary folding, U → U(U†U)ᵏ, scales noise purely at the gate level, without pulse control.", "This is exactly our fold_global."],
+    [7, "c", "S. Bravyi, S. Sheldon, A. Kandala, D. C. McKay, J. M. Gambetta", "Mitigating measurement errors in multiqubit experiments", "Phys. Rev. A 103, 042605", 2021, "Tensor-product and correlated Markovian readout models; the tensor-product model is often adequate at a fraction of the calibration cost (up to 20 qubits on IBM hardware).", "Direct origin of our tensored REM (Improvement 1)."],
+    [8, "c", "P. D. Nation, H. Kang, N. Sundaresan, J. M. Gambetta", "Scalable mitigation of measurement errors on quantum computers", "PRX Quantum 2, 040326", 2021, "M3: matrix-free readout mitigation in the subspace of bitstrings actually observed, handling correlated and uncorrelated noise.", "The next step beyond tensored REM, listed as future work."],
+    [9, "b", "R. LaRose et al.", "Mitiq: A software package for error mitigation on noisy quantum computers", "Quantum 6, 774", 2022, "A backend-agnostic Python library implementing ZNE, PEC and Clifford data regression.", "Reference implementation for an optional cross-check of our folding and Richardson code (not run)."],
+    [10, "b", "Y. Kim et al.", "Evidence for the utility of quantum computing before fault tolerance", "Nature 618, 500–505", 2023, "Mitigated expectation values on a 127-qubit processor stayed accurate where the tested classical approximations broke down. The classical comparison was later debated.", "The same mitigate-don't-correct strategy, four orders of magnitude larger than our testbed."],
+    [11, "d", "R. Takagi, S. Endo, S. Minagawa, M. Gu", "Fundamental limits of quantum error mitigation", "npj Quantum Information 8, 114", 2022, "The samples mitigation needs grow exponentially with depth under local depolarizing noise; PEC is optimal in some settings.", "Why our costs grow with n and fold depth is not just an engineering accident."],
+    [12, "d", "Y. Quek, D. Stilck França, S. Khatri, J. J. Meyer, J. Eisert", "Exponentially tighter bounds on limitations of quantum error mitigation", "Nature Physics 20, 1648", 2024, "Worst-case mitigation needs superpolynomially many samples even at modest depth; noise scrambles circuits sooner than earlier bounds suggested.", "Backs the expectation that ZNE strains at high noise (H4)."],
+    [13, "abcd", "Z. Cai et al.", "Quantum error mitigation", "Rev. Mod. Phys. 95, 045005", 2023, "A unifying review: scale noise and extrapolate, invert a known channel at a sampling cost, use symmetries to reject bad shots.", "Our method taxonomy and out-of-scope list follow it."],
+    [14, "e", "V. Havlíček et al.", "Supervised learning with quantum-enhanced feature spaces", "Nature 567, 209–212", 2019, "A variational quantum classifier and a quantum kernel estimator, both run on superconducting hardware.", "The architectural category our VQC belongs to. We claim no feature-space advantage."],
+    [15, "e", "M. Schuld, R. Sweke, J. J. Meyer", "The effect of data encoding on the expressive power of variational quantum machine learning models", "Phys. Rev. A 103, 032430", 2021, "A variational model's output is a Fourier series in the data; one ry encoding per feature gives only frequencies {−1, 0, +1}. Re-uploading the data unlocks more.", "Explains our encoding's limit; data re-uploading is future work."],
+    [16, "e", "S. Wang et al.", "Noise-induced barren plateaus in variational quantum algorithms", "Nature Communications 12, 6961", 2021, "Under local Pauli noise, gradients vanish exponentially in n when depth grows linearly with n.", "Why we train the VQC without noise."],
+    [17, "c", "J. A. Smolin, J. M. Gambetta, G. Smith", "Efficient method for computing the maximum-likelihood quantum state from measurements with additive Gaussian noise", "Phys. Rev. Lett. 108, 070502", 2012, "An unphysical estimate can be projected to the nearest physical state efficiently.", "Same idea as our project_to_simplex, used only for distribution metrics."]
+  ];
+  var THEMES = { a: "Foundations", b: "ZNE", c: "Readout mitigation", d: "Fundamental limits", e: "QML encoding and noise" };
+
+  var MODULES = [
+    {
+      id: "overview", title: "The project in one page",
+      lede: "Noise biases the numbers a quantum circuit returns. We measured how much of that bias five strategies remove, what each one costs, and whether the gains survive into a classifier.",
+      ideas: [
+        "<b>The problem.</b> On today's noisy (NISQ) processors both gates and measurements make mistakes. They bias the expectation values we read out, usually toward zero, and the bias grows with circuit width and depth.",
+        "<b>Mitigation is not correction.</b> Error correction spends extra qubits to fix errors shot by shot. Mitigation needs no extra qubits: it runs extra circuits and post-processes their results to remove bias from an <i>average</i>.",
+        "<b>Five methods, one set of shots.</b> <code>none</code> (baseline), <code>rem</code> (full readout mitigation), <code>rem_tensored</code> (scalable readout mitigation), <code>zne</code> (zero-noise extrapolation) and <code>zne_rem</code> (both). Every method post-processes the same base shots.",
+        "<b>Two tracks and one extra experiment.</b> Track A: a layered parity circuit on 2, 4 and 6 qubits, " + bv(C.track_a_rows) + " result rows. Track B: a variational quantum classifier (VQC) on Iris against Logistic Regression and SVM, " + bv(C.track_b_rows) + " rows. Shot-allocation experiment: " + bv(C.alloc_rows) + " rows.",
+        "<b>Objectives.</b> O1 build a reproducible noisy testbed with the course noise levels. O2 implement REM (full and tensored) and ZNE, alone and combined. O3 measure effect and cost across qubits, depth and noise. O4 test the same methods on a VQC against LR and SVM. O5 propose cheaper variants and test them with data.",
+        "<b>Group 20:</b> G Srikaanth (1MS23CY015) and Devansh Sharma (1MS23CY014)."
+      ],
+      extra: function () {
+        return '<div class="blk"><h3>Research questions and the short answers</h3><div class="tw"><table><thead><tr><th></th><th>Question</th><th>Answer from the data</th></tr></thead><tbody>' +
+          "<tr><td><b>RQ1</b></td><td>Do REM, ZNE and their combination reduce error and improve the output distribution across noise, qubits and depth?</td><td>Yes at moderate and high noise, with zne_rem strongest (median cut " + b("imp.median.zne_rem.moderate", "%") + " at moderate). At low noise REM is the dependable choice; ZNE alone is not significant (p = " + b("wilcoxon.p.zne.low") + ").</td></tr>" +
+          "<tr><td><b>RQ2</b></td><td>What does each method cost, and how does it scale with qubits?</td><td>rem: 1 + 2ⁿ circuits (" + b("circuits.rem.n2") + "/" + b("circuits.rem.n4") + "/" + b("circuits.rem.n6") + "). rem_tensored: " + b("circuits.rem_tensored.n2") + " at any n. zne: " + b("circuits.zne.n2") + " circuits but " + b("zne.cx_ratio") + "× CNOTs and up to " + b("zne.depth_ratio.max") + "× depth. zne_rem: the sum.</td></tr>" +
+          "<tr><td><b>RQ3</b></td><td>Do the gains carry into VQC classification? How does the VQC compare with LR and SVM?</td><td>They show in margin retention (" + b("qml.margin.none.high") + " → " + b("qml.margin.zne_rem.high") + " at high noise) but barely in accuracy. The exact VQC (" + b("qml.vqc_exact.acc.mean") + ") is comparable to LR and SVM; no advantage is claimed.</td></tr>" +
+          "<tr><td><b>RQ4</b></td><td>Do cheaper variants keep most of the benefit?</td><td>Yes. Tensored REM is within " + b("rem_tensored.mean_abs_diff") + " of full REM on average; optimal shot allocation gives a std ratio of " + b("alloc.ratio.empirical") + " (theory " + b("alloc.ratio.theory") + ").</td></tr>" +
+          "</tbody></table></div></div>";
+      },
+      figs: ["D5"],
+      nums: [[bv(C.track_a_rows), "Track A result rows"], [bv(C.track_b_rows), "Track B result rows"], [bv(C.alloc_rows), "shot-allocation rows"], [bv(C.tests_passed), "tests passing"]],
+      say: "We built a controlled Qiskit Aer testbed with the course noise levels and compared no mitigation, full and tensored readout mitigation, zero-noise extrapolation and the combination, all on the same shots. We measured how much error each removes and what it costs, then checked whether the gains carry into a variational classifier, compared fairly against Logistic Regression and SVM.",
+      quiz: [
+        { q: "What does error mitigation improve?", o: ["Each individual shot", "The expectation value, an average over many shots", "The number of usable qubits", "How fast the gates run"], a: 1, w: "Mitigation corrects a statistic computed from many shots, using extra circuits and classical post-processing. Fixing individual shots would need error correction and extra qubits." },
+        { q: "Why does every method post-process the same base shots?", o: ["It is faster", "So any difference between methods comes from the method, not from luckier shots", "Qiskit requires it", "It lowers the baseline's variance"], a: 1, w: "It makes the comparison paired, which is also what makes the paired statistical tests valid." },
+        { q: "Which research question asks whether gains carry into a downstream classifier?", o: ["RQ1", "RQ2", "RQ3", "RQ4"], a: 2, w: "RQ3 covers Track B: VQC metrics under noise and mitigation, and the comparison with LR and SVM." },
+        { q: "What does the report claim about quantum advantage?", o: ["The VQC beats LR and SVM", "Accuracy is comparable on identical inputs; no advantage is claimed", "The VQC is 20 points worse", "It was not compared"], a: 1, w: "Exact VQC mean accuracy " + n("qml.vqc_exact.acc.mean") + " against LR " + n("qml.logreg.acc.n2") + "/" + n("qml.logreg.acc.n4") + " and SVM " + n("qml.svm.acc.n2") + "/" + n("qml.svm.acc.n4") + "." }
+      ],
+      cards: [
+        ["Mitigation vs. correction", "Correction encodes logical qubits in many physical ones and fixes errors shot by shot. Mitigation adds no qubits; it runs extra circuits and post-processes to remove bias from an <b>average</b>."],
+        ["The five Track A methods", "<b>none</b>, <b>rem</b> (full readout mitigation, 1 + 2ⁿ circuits), <b>rem_tensored</b> (2 calibration circuits), <b>zne</b> (fold at λ = 1, 3, 5 and extrapolate), <b>zne_rem</b> (REM at each λ, then extrapolate)."],
+        ["RQ1–RQ4 in one line each", "RQ1 does mitigation reduce error? RQ2 what does it cost? RQ3 does it help a VQC, and how does the VQC compare with LR/SVM? RQ4 do cheaper variants keep the benefit?"],
+        ["The three experiments and their sizes", "Track A " + C.track_a_rows + " rows (120 conditions × 5 methods); Track B " + C.track_b_rows + " rows; shot allocation " + C.alloc_rows + " rows."]
+      ]
+    },
+
+    {
+      id: "basics", title: "Quantum basics you need",
+      lede: "Enough quantum computing to follow every result: qubits, three gates, shots, and the one number we measure.",
+      ideas: [
+        "<b>Qubit and measurement.</b> A qubit's state sets the probabilities of reading 0 or 1. Measuring returns one bit at random with those probabilities; we never see the state directly.",
+        "<b>The three gates.</b> <code>ry(θ)</code> rotates the qubit about the Y axis, changing its 0/1 probabilities. <code>rz(φ)</code> rotates about Z, changing only the phase, which matters once qubits interact. <code>cx</code> (CNOT) flips the target qubit when the control is 1, which creates entanglement. Every circuit in the project, calibration and folded ones included, uses only {ry, rz, cx}.",
+        "<b>Shots.</b> One shot runs the circuit once and returns one bitstring, such as 0110. Every circuit runs " + bv(SHOTS) + " shots.",
+        "<b>Parity, our observable.</b> Score a bitstring +1 if it has an even number of 1s and −1 if odd. The average score is the expectation value E = ⟨Z⊗Z⊗…⊗Z⟩, between −1 and +1. A flip of any single bit flips the score, so parity reacts to noise on every qubit, which makes mitigation effects easy to see.",
+        "<b>Bit order.</b> Qiskit is little-endian: qubit 0 is the rightmost character of a bitstring. Parity does not care about order; the calibration matrix does.",
+        "<b>The exact reference.</b> A statevector simulation gives the noiseless E_exact with no shots. Every error in the project is measured against it, never against another noisy run.",
+        "<b>Bias vs. shot noise.</b> Finite shots add random wobble (shot noise), which more shots shrink. Noise adds bias, a systematic offset that more shots never remove. Mitigation targets the bias."
+      ],
+      eqs: [["Score of one bitstring", "s(b) = (−1)^(number of 1s in b)", "0110 → +1, 0111 → −1."], ["Estimate from N shots", "Ê = (1/N) · Σᵢ s(bᵢ)", "An average of ±1 values, so it lies in [−1, 1]."], ["Shot noise", "σ(Ê) = √((1 − E²) / N)", "≈ 0.031 at E = 0 and N = 1024. Four times the shots halves it."]],
+      widget: "shotnoise",
+      nums: [[bv(SHOTS), "shots per circuit"], [bv((1 / Math.sqrt(SHOTS)).toFixed(3)), "shot-noise σ at E = 0"], [bv("{ry, rz, cx}"), "the entire gate basis"]],
+      say: "Our observable is the parity, the average of plus or minus one over all shots. Any single bit flip changes its sign, so it is the most noise-sensitive thing we could measure, which makes the effect of mitigation clearly visible.",
+      quiz: [
+        { q: "What does the bitstring 1011 score?", o: ["+1", "−1", "0", "3"], a: 1, w: "Three 1s is odd, so the score is −1." },
+        { q: "Going from 1024 to 4096 shots changes the shot noise by…", o: ["Nothing", "It halves", "It quarters", "It doubles"], a: 1, w: "σ ∝ 1/√N, and √4 = 2." },
+        { q: "Which problem can more shots not fix?", o: ["Shot noise", "Bias caused by noise", "Rounding of the average", "Random wobble between seeds"], a: 1, w: "Bias is a systematic offset: the average converges to the wrong value. That is what mitigation targets." },
+        { q: "What does cx do?", o: ["Rotates a qubit about Y", "Flips the target qubit when the control is 1", "Measures a qubit", "Resets a qubit to 0"], a: 1, w: "CNOT entangles qubits; our circuits chain it along the line cx(0,1), cx(1,2), …" }
+      ],
+      cards: [
+        ["What is the parity observable?", "⟨Z⊗…⊗Z⟩: the average of +1 (even number of 1s) or −1 (odd) over all shots. A flip on any qubit flips its sign, so it is maximally sensitive to noise."],
+        ["Shot-noise formula", "σ = √((1 − E²)/N). About <b>0.031</b> at E = 0 and N = 1024."],
+        ["Bias vs. variance", "Shot noise (variance) shrinks with more shots. Noise-induced bias does not; mitigation targets bias, often at the cost of more variance."],
+        ["Qiskit bit order", "Little-endian: qubit 0 is the rightmost bit of the bitstring."]
+      ]
+    },
+
+    {
+      id: "noise", title: "The noise model",
+      lede: "Two kinds of noise, both from the course standard: gates that scramble the state, and a readout that misreports it.",
+      ideas: [
+        "<b>Gate noise: depolarizing.</b> After every ry and rz, a 1-qubit depolarizing channel with probability p₁; after every cx, a 2-qubit channel with probability p₂. With that probability the qubits the gate touched are replaced by a completely random (maximally mixed) state.",
+        "<b>Readout noise.</b> Each measured bit flips with probability p_ro, the same for 0→1 and 1→0, independently on every qubit, once, at measurement.",
+        "<b>From the course's percentages.</b> \"X% single-qubit error\" → <code>depolarizing_error(X/100, 1)</code>; \"Y% two-qubit error\" → <code>depolarizing_error(Y/100, 2)</code>; \"Z% readout error\" → flip probability Z/100. <code>high</code> is the optional stress level and is always reported separately, never averaged into headline numbers.",
+        "<b>What it does to parity.</b> Readout multiplies E by exactly (1 − 2p_ro)ⁿ. Depolarizing noise shrinks E toward 0 by an amount that grows with the number of gates, so with both n and L.",
+        "<b>Splitting the bias.</b> The density-matrix simulator gives E_noisy_exact, the noisy value with unlimited shots. Dividing out (1 − 2p_ro)ⁿ separates the gate part from the readout part. Readout is " + b("bias.readout_share.low", "%") + " of the bias at low noise but " + b("bias.readout_share.moderate", "%") + " at moderate noise, because gate noise grows faster.",
+        "<b>The simulator.</b> Qiskit Aer's <code>density_matrix</code> method, transpiled at optimization level 0 into {ry, rz, cx}. A guard (<code>assert_noise_basis</code>) rejects any other gate before and after transpiling, so no gate can run noise-free by accident.",
+        "<b>Not modeled.</b> Coherent errors, crosstalk, T1/T2 relaxation, drift and leakage. Real devices have all of them."
+      ],
+      extra: function () { return '<div class="blk"><h3>The four noise levels</h3>' + levelTable() + "</div>"; },
+      eqs: [["Depolarizing channel on k qubits", "ε(ρ) = (1 − p)·ρ + p·Tr(ρ)·I / 2ᵏ", "p = p₁ (k = 1) after ry/rz; p = p₂ (k = 2) after cx."], ["Readout attenuation of parity", "E_measured = (1 − 2p_ro)ⁿ · E_before_readout", "Exact for symmetric, independent flips."], ["Bias split", "E_gate = E_noisy_exact / (1 − 2p_ro)ⁿ", "Gate part = |E_gate − E_exact|; readout part = |E_noisy_exact − E_gate|."]],
+      widget: "attenuation",
+      figs: ["A8"],
+      nums: [[b("bias.readout_share.low", "%"), "readout share of bias, low noise"], [b("bias.readout_share.moderate", "%"), "readout share, moderate noise"], [b("bias.gate.moderate"), "mean gate bias, moderate"], [b("bias.readout.moderate"), "mean readout bias, moderate"]],
+      say: "There are two error sources. Gate noise grows with circuit size and depth; readout error depends only on how many qubits we measure. At low noise readout was most of the bias; at moderate noise gate noise took over.",
+      quiz: [
+        { q: "p_ro = 0.03 on n = 4 qubits multiplies the parity by about…", o: ["0.97", "0.88", "0.78", "0.12"], a: 2, w: "(1 − 2·0.03)⁴ = 0.94⁴ ≈ 0.78." },
+        { q: "Why does readout's share of the bias fall from low to moderate noise?", o: ["Readout error gets smaller", "Gate noise grows with gate count and takes over", "More shots are used", "REM was applied"], a: 1, w: "Readout share " + n("bias.readout_share.low") + "% → " + n("bias.readout_share.moderate") + "%. The readout factor depends only on n; gate noise compounds over every gate." },
+        { q: "Which noise level is reported separately as an optional stress test?", o: ["ideal", "low", "moderate", "high"], a: 3, w: "high (3% / 5% / 5%) never enters the headline averages." },
+        { q: "What does a depolarizing error with probability p do?", o: ["Flips one bit", "Replaces the touched qubits with a maximally mixed state", "Adds a fixed phase", "Removes the gate"], a: 1, w: "ε(ρ) = (1 − p)ρ + p·I/2ᵏ: with probability p the state becomes completely random." }
+      ],
+      cards: [
+        ["Depolarizing channel", "ε(ρ) = (1 − p)ρ + p·Tr(ρ)·I/2ᵏ. With probability p the k qubits become maximally mixed."],
+        ["Readout attenuation", "Symmetric flips with probability p_ro multiply the parity by exactly <b>(1 − 2p_ro)ⁿ</b>."],
+        ["Course noise levels", "ideal 0/0/0; low 0.1%/0.5%/1%; moderate 1%/2%/3%; high 3%/5%/5% (p₁ / p₂ / p_ro)."],
+        ["What the model leaves out", "Coherent errors, crosstalk, T1/T2 relaxation, drift, leakage."],
+        ["How was the bias split into gate and readout parts?", "From the exact noisy density matrix: E_gate = E_noisy_exact/(1 − 2p_ro)ⁿ. Readout share " + n("bias.readout_share.low") + "% at low noise, " + n("bias.readout_share.moderate") + "% at moderate."]
+      ]
+    },
+
+    {
+      id: "rem", title: "Readout error mitigation",
+      lede: "Measure how the readout blurs states we know, then undo the blur. Full calibration is exact but costs 2ⁿ circuits; the tensored version costs 2.",
+      ideas: [
+        "<b>Calibration.</b> For each of the 2ⁿ basis states, a circuit prepares it with ry(π) gates (staying inside the noisy gate basis) and measures it " + bv(SHOTS) + " times. Column j of the assignment matrix A is the measured distribution when state j was prepared: A[i, j] = P(measure i | prepared j). Every column sums to 1.",
+        "<b>Correction.</b> Solve A·q = p̃, where p̃ is the measured distribution. Above a condition number of 10⁸ the code falls back to least squares; that happened " + b("lstsq.count") + " times.",
+        "<b>Quasi-probabilities.</b> q sums to 1 but can have small negative entries, because A and p̃ both come from finite shots. Largest negative mass seen: " + b("negmass.max") + " (full), " + b("negmass.max.tensored") + " (tensored).",
+        "<b>Expectation from the raw q.</b> E is computed from the unprojected q, which keeps it linear and unbiased. Only for distribution metrics (Hellinger, TVD) is q projected onto the nearest valid distribution, by Euclidean projection onto the probability simplex (ref. 17).",
+        "<b>Cost.</b> Full REM needs 1 + 2ⁿ circuits per estimate: " + b("circuits.rem.n2") + ", " + b("circuits.rem.n4") + " and " + b("circuits.rem.n6") + " at n = 2, 4, 6, and " + b("shots.rem.n6") + " shots at n = 6.",
+        "<b>Tensored REM.</b> If each qubit's readout error is independent of the others, A factors into n per-qubit 2×2 matrices: A = A₍ₙ₋₁₎ ⊗ … ⊗ A₀. Two calibration circuits (all |0⟩ and all |1⟩) measure all n at once, so tensored REM costs " + b("circuits.rem_tensored.n2") + " circuits at any n. It matched full REM to within " + b("rem_tensored.mean_abs_diff") + " on average.",
+        "<b>Limits.</b> REM does nothing about gate noise and assumes readout is stable over time. At the ideal level A is the identity and REM changes nothing (largest change " + b("ideal.rem_none_maxdiff") + ")."
+      ],
+      eqs: [["Assignment matrix", "A[i, j] = P(measure i | prepared j)", "Columns sum to 1. Built from 2ⁿ calibration circuits."], ["Inversion", "q = A⁻¹ p̃", "Quasi-probabilities: sum to 1, may be slightly negative."], ["Mitigated parity", "E_REM = Σₓ qₓ · s(x)", "Taken from the unprojected q."], ["Tensored model", "A = A₍ₙ₋₁₎ ⊗ … ⊗ A₀,  Aₖ = [[1−e₀, e₁], [e₀, 1−e₁]]", "e₀ = P(read 1 | 0), e₁ = P(read 0 | 1) for qubit k."]],
+      widget: "remcost",
+      figs: ["D3", "A2"],
+      nums: [[b("circuits.rem.n6"), "circuits per estimate, full REM, n = 6"], [b("circuits.rem_tensored.n6"), "circuits, tensored REM, any n"], [b("imp.median.rem.moderate", "%"), "median error cut, moderate noise"], [b("rem_tensored.mean_abs_diff"), "mean |tensored − full|"]],
+      say: "REM calibrates the readout by preparing every basis state, builds the assignment matrix and inverts it. It removes readout bias well but cannot touch gate noise, and full calibration grows as two to the n, so we also ran a tensored version with two calibration circuits, which matched it within shot noise.",
+      quiz: [
+        { q: "Why are calibration states prepared with ry(π) instead of an x gate?", o: ["x is slower", "It keeps every circuit inside the noisy gate basis {ry, rz, cx}", "x carries no noise", "Qiskit has no x gate"], a: 1, w: "An x gate would be rewritten or would run outside the gates the noise model covers." },
+        { q: "Each column of the assignment matrix sums to…", o: ["0", "1", "n", "2ⁿ"], a: 1, w: "Column j is a probability distribution: what you read when state j was prepared." },
+        { q: "Why compute E from the unprojected quasi-probabilities?", o: ["It is faster", "It is linear and unbiased; projecting adds bias", "Qiskit requires it", "Negative values cannot occur"], a: 1, w: "The projection is only used where a real distribution is needed: Hellinger fidelity and TVD." },
+        { q: "What does tensored REM assume?", o: ["No gate noise", "Readout errors are independent between qubits", "n ≤ 6", "Unlimited shots"], a: 1, w: "Independence is what lets A factor into a Kronecker product of 2×2 matrices." },
+        { q: "How many circuits does full REM need per estimate at n = 6?", o: ["7", "13", n("circuits.rem.n6"), "128"], a: 2, w: "2⁶ = 64 calibration circuits plus the circuit itself." }
+      ],
+      cards: [
+        ["Assignment matrix", "A[i, j] = P(measure i | prepared j). One calibration circuit per basis state; columns sum to 1."],
+        ["Why can REM give negative probabilities?", "A and p̃ are finite-shot estimates, so A⁻¹p̃ can overshoot below 0. Largest negative mass: " + n("negmass.max") + "."],
+        ["Simplex projection", "Euclidean projection of q onto valid distributions (ref. 17): sort, find the threshold, subtract, clip at 0. Used only for Hellinger and TVD, never for E."],
+        ["Full vs. tensored REM cost", "Full: 1 + 2ⁿ circuits (" + n("circuits.rem.n2") + "/" + n("circuits.rem.n4") + "/" + n("circuits.rem.n6") + "). Tensored: " + n("circuits.rem_tensored.n2") + " at any n, assuming independent readout."],
+        ["What REM cannot fix", "Gate noise. It also assumes the readout is stable between calibration and use."]
+      ]
+    },
+
+    {
+      id: "zne", title: "Zero-noise extrapolation",
+      lede: "We cannot turn noise down, so we turn it up by known factors and extrapolate the trend back to zero.",
+      ideas: [
+        "<b>Global folding.</b> Replace the circuit U with U·(U†U)ᵏ. U†U is the identity on paper, so the ideal output is unchanged, but the device runs λ = 2k + 1 times the gates and roughly λ times the noise. Each U†U pair adds 2, so only odd λ are reachable; we use λ = 1, 3, 5. U† negates every rotation angle and cx is its own inverse, so folded circuits stay in the noisy basis.",
+        "<b>Optimization level 0.</b> A higher transpiler level would spot U†U and delete it, and ZNE would silently do nothing.",
+        "<b>Readout is not folded.</b> The measurement happens once, after folding, at every λ, so the readout bias is the same at every λ and the extrapolation cannot see it. That is why <code>zne_rem</code> applies REM to the counts at each λ first, then extrapolates.",
+        "<b>Three extrapolators.</b> Richardson (primary) is the exact polynomial through the three points. Linear is a least-squares line. Exponential (ref. 4) fits a decay and fails when E(λ) changes sign or becomes too small for a log: it failed in " + b("expnan.zne") + " zne conditions and " + b("expnan.zne_rem") + " zne_rem conditions.",
+        "<b>The price is variance.</b> Richardson's weights are large and of mixed sign, so the shot noise of the three points adds up: the standard deviation grows by √Σγᵢ² ≈ " + b("var.ratio.theory") + ". Measured: " + b("var.ratio.emp.high") + "×–" + b("var.ratio.emp.moderate") + "× across noise levels.",
+        "<b>Cost.</b> " + b("circuits.zne.n2") + " circuits at any n, but " + b("zne.cx_ratio") + "× the CNOTs (1 + 3 + 5) and up to " + b("zne.depth_ratio.max") + "× the depth.",
+        "<b>At the ideal level</b> there is no bias to remove, so ZNE only adds noise: it was worse than doing nothing in " + b("ideal.zne_worse") + " runs. At low noise ZNE alone had a median cut of " + b("imp.median.zne.low", "%") + " (p = " + b("wilcoxon.p.zne.low") + ")."
+      ],
+      eqs: [["Global folding", "U_λ = U · (U†U)ᵏ,  λ = 2k + 1", "λ = 1, 3, 5. Same ideal output, λ× the gates."], ["Richardson extrapolation", "E₀ = Σᵢ γᵢ E(λᵢ),  γᵢ = Πⱼ≠ᵢ λⱼ / (λⱼ − λᵢ)", "For (1, 3, 5): γ = (15/8, −5/4, 3/8), summing to 1."], ["Variance cost", "Var(E₀) = Σᵢ γᵢ² σᵢ² / Nᵢ", "Equal shots: std × √Σγᵢ² = √5.22 ≈ 2.28."], ["CNOT overhead", "1 + 3 + 5 = 9× the base circuit's CNOTs", "Depth up to 5× at λ = 5."]],
+      widget: "richardson",
+      figs: ["D2", "A5"],
+      nums: [[b("var.ratio.theory", "×"), "theoretical std amplification"], [b("var.ratio.emp.moderate", "×"), "measured, moderate noise"], [b("imp.median.zne.moderate", "%"), "median error cut, moderate"], [b("ideal.zne_worse"), "ideal-level runs where ZNE was worse"]],
+      say: "ZNE runs the circuit at one, three and five times the noise by folding it, then extrapolates back to zero with Richardson extrapolation. It removes most of the gate-noise bias, but it amplifies shot noise by about two and a quarter times, costs nine times the CNOTs, and leaves readout error untouched because the measurement is never folded.",
+      quiz: [
+        { q: "Why are only odd scale factors possible with global folding?", o: ["Even ones are too noisy", "Each U†U pair adds 2 to λ", "Richardson only works with odd numbers", "A Qiskit limit"], a: 1, w: "λ = 1 + 2k for k appended U†U pairs." },
+        { q: "Why must folded circuits be transpiled at optimization level 0?", o: ["It is faster", "Higher levels cancel U†U, so the noise would not grow", "The density-matrix method requires it", "It lowers shot noise"], a: 1, w: "An optimizer recognizes U†U as the identity and deletes it." },
+        { q: "Why can ZNE alone not remove readout error?", o: ["Readout error is too small", "The measurement is not folded, so readout bias is identical at every λ", "REM must legally run first", "It can, with enough shots"], a: 1, w: "The extrapolation only sees what changes with λ. That is the reason for zne_rem." },
+        { q: "The Richardson weights for λ = (1, 3, 5) sum to…", o: ["0", "1", "2.28", "3.5"], a: 1, w: "15/8 − 5/4 + 3/8 = 1, so a constant signal extrapolates to itself." },
+        { q: "Roughly how much does Richardson amplify the shot-noise standard deviation?", o: ["1×", "1.5×", "2.3×", "9×"], a: 2, w: "√(1.875² + 1.25² + 0.375²) = √5.22 ≈ 2.28; measured " + n("var.ratio.emp.high") + "–" + n("var.ratio.emp.moderate") + "×." }
+      ],
+      cards: [
+        ["Global folding", "U → U(U†U)ᵏ, λ = 2k + 1. Same ideal unitary, λ× the gates and roughly λ× the noise."],
+        ["Richardson weights for (1, 3, 5)", "γ = (15/8, −5/4, 3/8). γᵢ = Πⱼ≠ᵢ λⱼ/(λⱼ − λᵢ). They sum to 1."],
+        ["Why does ZNE increase variance?", "E₀ = Σγᵢ E(λᵢ) with large, mixed-sign γ, so Var = Σγᵢ²σᵢ²/Nᵢ: std × √5.22 ≈ 2.28 at equal shots."],
+        ["Why zne_rem exists", "Folding never touches the measurement, so ZNE cannot see readout bias. zne_rem applies REM at each λ, then extrapolates."],
+        ["When the exponential fit fails", "When E(λ) changes sign or gets too small to take a log. Failed in " + n("expnan.zne") + " zne conditions."]
+      ]
+    },
+
+    {
+      id: "design-a", title: "Track A: experiment design",
+      lede: "A controlled grid where every method sees the same shots, every random number has a seed, and every error is measured against the exact answer.",
+      ideas: [
+        "<b>The circuit.</b> n qubits, L layers. Each layer applies ry(θ) then rz(φ) to every qubit, then the CNOT chain cx(0,1), cx(1,2), …. Angles are uniform on [0, 2π). That is 2nL one-qubit gates and (n − 1)L CNOTs.",
+        "<b>Choosing instances.</b> A random parity is often near 0, where shot noise (≈0.031) hides everything and relative error is undefined. Angles are redrawn from a seeded stream until |E_exact| ≥ 0.3: a median of " + b("attempts.median") + " draws, at most " + b("attempts.max") + "; selected |E_exact| runs from " + b("E_exact.absmin") + " to " + b("E_exact.absmax") + ". This selection bias is listed as a limitation.",
+        "<b>The grid.</b> n ∈ {2, 4, 6} × L ∈ {2, 4} × 4 noise levels × 5 seeds = " + b("grid.conditions") + " conditions, × 5 methods = " + b("grid.rows") + " rows, from " + b("grid.instances") + " circuit instances (one per n, L and seed, each run at all four noise levels).",
+        "<b>Paired design.</b> Within a condition every method post-processes the same base shots; zne and zne_rem share the folded runs; rem and zne_rem share the calibration. Differences between methods come from the mitigation, not from luckier shots.",
+        "<b>Seeds.</b> Every random number comes from <code>derive_seed(*parts)</code>: the parts are joined with \"|\", hashed with SHA-256, and the first 8 hex digits are taken mod 2³¹ − 1. One seed per purpose (angles, simulator, transpiler, …). A rerun reproduces every CSV value except the two wall-clock columns, and a test checks it.",
+        "<b>Per-run metrics.</b> Absolute and signed error against E_exact; improvement % and error reduction factor against none; Hellinger fidelity and TVD of the output distribution; success probability of the most likely ideal bitstring; circuits, shots, depth and CNOTs.",
+        "<b>Statistics.</b> Mean ± std (ddof = 1), median, and a 95% CI of mean ± 2.776·std/√5. Per condition: a paired t-test, because a Wilcoxon test on 5 pairs cannot go below p = 0.0625. Headline significance: Wilcoxon signed-rank on 30 pooled pairs per noise level (3 qubit counts × 2 depths × 5 seeds)."
+      ],
+      eqs: [["Improvement", "improvement % = 100 · (1 − err / err_none)", "Negative means the method made it worse."], ["Error reduction factor", "ERF = err_none / err", "Above 1 is better."], ["Hellinger fidelity", "F = (Σₓ √(pₓ qₓ))²", "1 for identical distributions."], ["Total variation distance", "TVD = ½ Σₓ |pₓ − qₓ|", "0 for identical distributions."], ["Success probability", "P_succ = p̂(x*),  x* = argmaxₓ p_exact(x)", "Reported as P_succ_hat / P_succ_exact."], ["95% confidence interval", "mean ± t₀.₉₇₅,₄ · s / √5,  t = 2.776", "5 seeds per condition."]],
+      widget: "seed",
+      figs: ["D1"],
+      nums: [[b("grid.conditions"), "Track A conditions"], [b("grid.rows"), "result rows"], [b("grid.instances"), "circuit instances"], [b("attempts.median"), "median draws to pass |E| ≥ 0.3"]],
+      say: "We ran a grid of 120 conditions: three qubit counts, two depths, four noise levels and five seeds. All five methods post-process the same shots, so the comparison is paired, and because every random number comes from a derived seed, the whole sweep reproduces exactly.",
+      quiz: [
+        { q: "How many CNOTs are in one base circuit with n = 4, L = 4?", o: ["8", "12", "16", "32"], a: 1, w: "(n − 1)·L = 3·4 = 12." },
+        { q: "Why keep only circuits with |E_exact| ≥ 0.3?", o: ["They run faster", "So the signal sits above shot noise and relative error is defined", "Qiskit requires it", "It lowers the noise"], a: 1, w: "The price is a selection bias: near-zero-parity circuits are not covered." },
+        { q: "Why a paired t-test per condition instead of Wilcoxon?", o: ["The t-test is newer", "With 5 pairs, Wilcoxon's smallest possible p is 0.0625", "Wilcoxon needs normal data", "They are the same test"], a: 1, w: "Wilcoxon is used where it has power: pooled over 30 pairs per noise level." },
+        { q: "What makes the method comparison paired?", o: ["Only the angles share a seed", "Every method uses the same base shots", "Each method gets separate shots", "Methods are compared across noise levels"], a: 1, w: "Folded and calibration runs are shared too." }
+      ],
+      cards: [
+        ["Track A ansatz", "Per layer: ry on every qubit, rz on every qubit, then cx(0,1), cx(1,2), …. 2nL one-qubit gates, (n − 1)L CNOTs."],
+        ["Why |E_exact| ≥ 0.3?", "Keeps the signal above shot noise (σ ≈ 0.031) and keeps relative error defined. Cost: selection bias."],
+        ["derive_seed", "SHA-256 of the parts joined with \"|\", first 8 hex digits, mod 2³¹ − 1. One seed per purpose, so reruns match exactly."],
+        ["Why paired t-test per condition?", "Wilcoxon on 5 pairs can never reach p < 0.05 (minimum 0.0625). Pooled over 30 pairs, Wilcoxon is used."],
+        ["Hellinger fidelity vs. TVD", "Hellinger (Σ√(pq))² is 1 for identical distributions; TVD ½Σ|p − q| is 0. Both compare whole output distributions."]
+      ]
+    },
+
+    {
+      id: "results-a", title: "Track A: results",
+      lede: "Every method helps once gate noise is significant; the combination is best there. At low noise, readout mitigation alone is the safer bet.",
+      ideas: [
+        "<b>Error grows with noise.</b> Unmitigated mean error " + b("err.mean.none.ideal") + " (ideal) → " + b("err.mean.none.low") + " (low) → " + b("err.mean.none.moderate") + " (moderate) → " + b("err.mean.none.high") + " (high), and with n and L too.",
+        "<b>Moderate noise.</b> Median error cuts: rem " + b("imp.median.rem.moderate", "%") + ", rem_tensored " + b("imp.median.rem_tensored.moderate", "%") + ", zne " + b("imp.median.zne.moderate", "%") + ", zne_rem " + b("imp.median.zne_rem.moderate", "%") + ", all pooled-significant (Wilcoxon p ≤ " + b("wilcoxon.p.zne_rem.moderate") + "). zne_rem had the lowest error in " + b("best.count.zne_rem.moderate") + " (n, L) cells.",
+        "<b>Low noise.</b> REM still helps (median " + b("imp.median.rem.low", "%") + ", p = " + b("wilcoxon.p.rem.low") + ") and was best in " + b("best.count.rem.low") + " cells. ZNE alone shows no significant benefit (median " + b("imp.median.zne.low", "%") + ", p = " + b("wilcoxon.p.zne.low") + "): its variance cost outweighs a small gate bias.",
+        "<b>High noise (stress test).</b> Every method still helps (rem " + b("imp.median.rem.high", "%") + ", rem_tensored " + b("imp.median.rem_tensored.high", "%") + ", zne " + b("imp.median.zne.high", "%") + ", zne_rem " + b("imp.median.zne_rem.high", "%") + "). Richardson estimates never left [−1, 1] (" + b("oor.zne") + "), but exponential fits failed more often.",
+        "<b>Ideal level.</b> REM is an exact no-op; ZNE was worse than doing nothing in " + b("ideal.zne_worse") + " runs.",
+        "<b>Why the pattern.</b> Readout is " + b("bias.readout_share.low", "%") + " of the bias at low noise and " + b("bias.readout_share.moderate", "%") + " at moderate. REM fixes only readout and ZNE only gate noise, so REM matters more at low noise, ZNE at moderate, and only the combination addresses both.",
+        "<b>Whole distributions.</b> REM raised Hellinger fidelity in " + b("fid.better.moderate") + " cells at moderate noise (mean gain " + b("fid.gain.moderate") + ") and lowered TVD in " + b("tvd.better.moderate") + " (mean drop " + b("tvd.drop.moderate") + ").",
+        "<b>Cost per estimate.</b> none 1 circuit; rem " + b("circuits.rem.n2") + "/" + b("circuits.rem.n4") + "/" + b("circuits.rem.n6") + "; rem_tensored " + b("circuits.rem_tensored.n2") + "; zne " + b("circuits.zne.n2") + " with " + b("zne.cx_ratio") + "× CNOTs; zne_rem " + b("circuits.zne_rem.n2") + "/" + b("circuits.zne_rem.n4") + "/" + b("circuits.zne_rem.n6") + ". Simulator wall time is not hardware time, so circuits and shots are the cost that matters."
+      ],
+      widget: "results",
+      extra: function () { return '<div class="blk"><h3>Track A hypotheses</h3>' + hypTable(["H1", "H2", "H3", "H4", "H5", "H6"]) + "</div>"; },
+      figs: ["A1", "A9", "A6", "A10"],
+      nums: [[b("imp.median.zne_rem.moderate", "%"), "zne_rem median cut, moderate"], [b("imp.median.rem.low", "%"), "rem median cut, low"], [b("wilcoxon.p.zne.low"), "p for zne at low noise"], [b("err.mean.none.moderate"), "unmitigated mean error, moderate"]],
+      say: "At moderate noise every method helped and combining both was best, with a median error cut of sixty-eight percent. At low noise readout mitigation alone was the dependable choice, because readout was most of the bias and ZNE's extra variance cancelled its small gain. With no noise, ZNE only added variance.",
+      quiz: [
+        { q: "Which method was best at moderate noise?", o: ["none", "rem", "zne", "zne_rem"], a: 3, w: "Median cut " + n("imp.median.zne_rem.moderate") + "%, lowest error in " + n("best.count.zne_rem.moderate") + " cells." },
+        { q: "At low noise, ZNE alone…", o: ["was the best method", "showed no significant benefit (p = " + n("wilcoxon.p.zne.low") + ")", "was worse than none everywhere", "was not tested"], a: 1, w: "Its variance amplification outweighs the small gate bias at low noise." },
+        { q: "Why does REM do relatively well at low noise?", o: ["REM has no cost", "Readout is most of the bias there, and ZNE's variance cost dominates", "Low noise has no gate errors", "REM uses more shots"], a: 1, w: "Readout share " + n("bias.readout_share.low") + "% at low noise." },
+        { q: "Which hypothesis was only partly supported?", o: ["H1", "H2", "H4", "H6"], a: 2, w: "zne_rem was best at moderate and high noise, but plain rem won more often at low noise." },
+        { q: "How many circuits does zne_rem need per estimate at n = 6?", o: ["7", "19", n("circuits.zne_rem.n6"), "65"], a: 2, w: "1 + 2⁶ calibration-and-base circuits plus the two folded circuits." }
+      ],
+      cards: [
+        ["Unmitigated error by noise level", n("err.mean.none.ideal") + " → " + n("err.mean.none.low") + " → " + n("err.mean.none.moderate") + " → " + n("err.mean.none.high") + " (ideal → high)."],
+        ["Median cuts at moderate noise", "rem " + n("imp.median.rem.moderate") + "%, rem_tensored " + n("imp.median.rem_tensored.moderate") + "%, zne " + n("imp.median.zne.moderate") + "%, zne_rem " + n("imp.median.zne_rem.moderate") + "%."],
+        ["Low-noise result", "REM median " + n("imp.median.rem.low") + "% (p = " + n("wilcoxon.p.rem.low") + "); ZNE alone " + n("imp.median.zne.low") + "%, p = " + n("wilcoxon.p.zne.low") + " (not significant)."],
+        ["High-noise result", "All methods help; zne_rem strongest (" + n("imp.median.zne_rem.high") + "%). Richardson out-of-range " + n("oor.zne") + "; more exponential-fit failures."],
+        ["Measured ZNE variance ratio", n("var.ratio.emp.ideal") + "×, " + n("var.ratio.emp.low") + "×, " + n("var.ratio.emp.moderate") + "×, " + n("var.ratio.emp.high") + "× (ideal → high); theory " + n("var.ratio.theory") + "×."]
+      ]
+    },
+
+    {
+      id: "design-b", title: "Track B: the classifier",
+      lede: "A variational quantum classifier on Iris, trained once without noise, then evaluated under every noise level and mitigation method against two classical baselines on identical inputs.",
+      ideas: [
+        "<b>Dataset.</b> Iris versicolor (+1) vs. virginica (−1): 100 samples, 4 features. Setosa is excluded because it is linearly separable from the other two, which would make the task trivial. Source: Fisher (1936).",
+        "<b>Split.</b> Stratified 80:20 (80 train, 20 test) per seed. The VQC, Logistic Regression and SVM all use the identical index arrays.",
+        "<b>Preprocessing, fit on training data only.</b> StandardScaler → PCA to 2 components (for n = 2 only) → MinMaxScaler to [0, π]. The test split is only transformed and then clipped. A test proves no leakage: refitting on train + test gives different parameters.",
+        "<b>One feature per qubit.</b> n = 2 uses the 2 PCA components; n = 4 uses all 4 features.",
+        "<b>Encoding.</b> Feature xₖ becomes ry(xₖ) on qubit k, so ⟨Zₖ⟩ = cos xₖ before the ansatz. The range [0, π] maps the minimum to |0⟩ and the maximum to |1⟩ with no wrap-around. One encoding layer limits the model to Fourier frequencies {−1, 0, +1} per feature (ref. 15).",
+        "<b>Ansatz and output.</b> The same ry–rz–CX layers as Track A, with 2nL trainable weights (8, 16, 16, 32). The output is f(x) = ⟨Z⊗…⊗Z⟩ ∈ [−1, 1]; the prediction is sign f(x), with 0 going to +1.",
+        "<b>Training.</b> Noiseless and exact (StatevectorEstimator, all 80 samples batched per call), COBYLA minimizing the mean squared error against ±1 labels, maxiter = max(300, 25 × parameters). Noiseless training isolates noise to inference and avoids noise-induced barren plateaus (ref. 16). Qiskit orders parameters by name, so each sample's x and w positions are read from the circuit, never assumed.",
+        "<b>Evaluation.</b> Every test sample is run at each noise level with none, rem, zne and zne_rem (tensored REM is evaluated in Track A only), " + bv(SHOTS) + " shots per circuit. One calibration is shared by all 20 test samples, so REM's cost is amortized.",
+        "<b>Baselines.</b> Logistic Regression (C = 1, max_iter = 1000) and SVM (RBF kernel, C = 1, gamma = \"scale\"), with fixed hyperparameters: nothing is tuned on the test set.",
+        "<b>Metrics.</b> Accuracy, precision, recall, F1 and the confusion matrix; plus mean |E_hat − E_exact| over the test set, margin retention, and agreement with the exact model's predictions."
+      ],
+      eqs: [["Angle encoding", "xₖ ∈ [0, π] → ry(xₖ)|0⟩,  ⟨Zₖ⟩ = cos xₖ", "Half a Bloch meridian, no wrap-around."], ["Decision rule", "ŷ = sign f(x),  f(x) = ⟨Z^⊗n⟩", "A tie at 0 goes to +1."], ["Training loss", "L(w) = (1/80) Σᵢ (f(xᵢ; w) − yᵢ)²", "COBYLA, maxiter = max(300, 25·params)."], ["Margin retention", "mean(Ê · sign E_exact) / mean |E_exact|", "1 = margins intact; 0 = flattened to 0."]],
+      widget: "encoding",
+      figs: ["D4", "B6"],
+      nums: [[bv("100"), "Iris samples used"], [bv("80 / 20"), "stratified train / test"], [bv("8–32"), "trainable weights (2nL)"], [bv("[0, π]"), "feature range"]],
+      say: "Track B trains a variational classifier on the Iris versicolor-versus-virginica task with angle encoding and the same layered ansatz. It is trained without noise, then evaluated under each noise level and mitigation method, against Logistic Regression and SVM that see exactly the same split and the same preprocessed features.",
+      quiz: [
+        { q: "Why are the scalers and PCA fit on the training split only?", o: ["It is faster", "To avoid leaking test-set information into the model", "scikit-learn requires it", "To normalize the test labels"], a: 1, w: "Fitting on all data lets the model implicitly see the test distribution and inflates accuracy." },
+        { q: "Why is setosa excluded?", o: ["Too few samples", "It is linearly separable from the other two, so the task would be trivial", "It has missing features", "It breaks PCA"], a: 1, w: "Versicolor vs. virginica is the harder, overlapping pair." },
+        { q: "Why scale features to [0, π]?", o: ["The minimum maps to |0⟩ and the maximum to |1⟩ with no wrap-around", "PCA needs it", "COBYLA needs it", "It doubles the frequencies"], a: 0, w: "With [0, 2π), two different values could map to nearly the same state." },
+        { q: "How many trainable weights for n = 4, L = 4?", o: ["16", "24", "32", "48"], a: 2, w: "2nL = 2·4·4 = 32 (one ry and one rz weight per qubit per layer)." },
+        { q: "Why is the VQC trained without noise?", o: ["It is faster", "It isolates noise to inference and avoids noise-induced vanishing gradients", "Noise cannot be simulated during training", "COBYLA cannot handle noise"], a: 1, w: "Wang et al. (ref. 16) prove noise alone can make gradients vanish." }
+      ],
+      cards: [
+        ["Track B dataset and split", "Iris versicolor (+1) vs virginica (−1), 100 samples; stratified 80/20; identical indices for VQC, LR and SVM."],
+        ["Preprocessing order", "StandardScaler → PCA(2) for n = 2 → MinMaxScaler to [0, π]. All fit on training data only; test transformed and clipped."],
+        ["Angle encoding and its limit", "ry(xₖ) on qubit k, ⟨Zₖ⟩ = cos xₖ. One encoding layer → frequencies {−1, 0, +1} per feature (ref. 15); data re-uploading would lift this."],
+        ["VQC training", "Noiseless StatevectorEstimator, COBYLA on MSE vs ±1, maxiter = max(300, 25·params). Avoids noise-induced barren plateaus."],
+        ["Margin retention", "mean(Ê·sign E_exact)/mean|E_exact|. Measures how much of the classifier's confidence survives noise."]
+      ]
+    },
+
+    {
+      id: "results-b", title: "Track B: results",
+      lede: "Noise shrinks the classifier's margins long before it flips enough labels to move accuracy. Mitigation restores the margins; accuracy barely notices either.",
+      ideas: [
+        "<b>Fair comparison.</b> The exact VQC averages " + b("qml.vqc_exact.acc.mean") + " accuracy (range " + b("qml.vqc_exact.acc.min") + "–" + b("qml.vqc_exact.acc.max") + "), against Logistic Regression " + b("qml.logreg.acc.n2") + " / " + b("qml.logreg.acc.n4") + " and SVM " + b("qml.svm.acc.n2") + " / " + b("qml.svm.acc.n4") + " (n = 2 / n = 4). Comparable, with no systematic gap; no quantum advantage is claimed.",
+        "<b>Noise hits the margin.</b> Unmitigated margin retention falls from " + b("qml.margin.none.ideal") + " (ideal) to " + b("qml.margin.none.high") + " (high), and mean |E| error rises to " + b("qml.meanE.none.high") + ". Accuracy only moves from " + b("qml.acc.none.ideal") + " to " + b("qml.acc.none.high") + ".",
+        "<b>Mitigation restores the margin.</b> With zne_rem at high noise, mean error falls to " + b("qml.meanE.zne_rem.high") + " and margin retention recovers to " + b("qml.margin.zne_rem.high") + ", while accuracy is " + b("qml.acc.zne_rem.high") + ".",
+        "<b>Why accuracy barely moves.</b> A prediction depends only on the sign of E. Depolarizing noise shrinks |E| toward 0 but rarely flips its sign for a confidently classified point. With 20 test samples, accuracy also moves in 5% steps, too coarse to resolve what the continuous metrics show.",
+        "<b>The lesson.</b> Judge mitigation on a classifier by expectation error and margins, not by accuracy alone."
+      ],
+      widget: "margins",
+      extra: function () { return '<div class="blk"><h3>Track B hypotheses</h3>' + hypTable(["H7", "H8"]) + "</div>"; },
+      figs: ["B1", "B5"],
+      nums: [[b("qml.vqc_exact.acc.mean"), "exact VQC accuracy"], [b("qml.margin.none.high"), "margin retention, high, none"], [b("qml.margin.zne_rem.high"), "margin retention, high, zne_rem"], [b("qml.acc.none.high"), "accuracy, high, none"]],
+      say: "Mitigation clearly helps the classifier's raw outputs: at high noise, margin retention goes from about forty percent to about eighty-five percent. But accuracy barely moves, because a prediction only depends on the sign, noise mostly shrinks rather than flips it, and twenty test samples give five-percent steps. So accuracy alone is too coarse to judge mitigation.",
+      quiz: [
+        { q: "How does the exact VQC compare with LR and SVM?", o: ["Much better", "Comparable on identical inputs", "Much worse", "Not compared"], a: 1, w: "VQC " + n("qml.vqc_exact.acc.mean") + " vs LR " + n("qml.logreg.acc.n2") + "/" + n("qml.logreg.acc.n4") + ", SVM " + n("qml.svm.acc.n2") + "/" + n("qml.svm.acc.n4") + "." },
+        { q: "Why does accuracy barely change under noise?", o: ["Noise flips most signs", "Predictions use only the sign; noise mostly shrinks |E| without flipping it, and 20 test samples give 5% steps", "The VQC ignores noise", "Mitigation is applied automatically"], a: 1, w: "That is hypothesis H8, supported." },
+        { q: "Margin retention at high noise, none → zne_rem:", o: [n("qml.margin.none.high") + " → " + n("qml.margin.zne_rem.high"), "0.900 → 0.903", "0.997 → 0.411", "0.301 → 0.121"], a: 0, w: "0.900 → 0.903 is accuracy; 0.301 → 0.121 is mean |E| error." },
+        { q: "Which metric shows mitigation's benefit most clearly in Track B?", o: ["Accuracy", "Margin retention", "Training loss", "Number of parameters"], a: 1, w: "Continuous metrics (margins, mean |E| error) resolve what accuracy cannot." }
+      ],
+      cards: [
+        ["Exact VQC vs baselines", "VQC " + n("qml.vqc_exact.acc.mean") + "; LR " + n("qml.logreg.acc.n2") + "/" + n("qml.logreg.acc.n4") + "; SVM " + n("qml.svm.acc.n2") + "/" + n("qml.svm.acc.n4") + ". Comparable; no advantage claimed."],
+        ["High noise, unmitigated", "Margin retention " + n("qml.margin.none.high") + ", mean |E| error " + n("qml.meanE.none.high") + ", accuracy " + n("qml.acc.none.high") + "."],
+        ["High noise, zne_rem", "Margin retention " + n("qml.margin.zne_rem.high") + ", mean |E| error " + n("qml.meanE.zne_rem.high") + ", accuracy " + n("qml.acc.zne_rem.high") + "."],
+        ["Why accuracy is a coarse lens", "It depends only on sign(E); noise shrinks |E| without flipping the sign; 20 test samples move in 5% steps."]
+      ]
+    },
+
+    {
+      id: "improve", title: "The two improvements",
+      lede: "Two cheaper variants of the baseline recipe, each tested with data: a calibration that no longer grows as 2ⁿ, and a smarter split of ZNE's shot budget.",
+      ideas: [
+        "<b>The research gap.</b> Readout mitigation and extrapolation are mostly studied separately, at hardware scale, rarely side by side under one cost-normalized protocol, and rarely connected to downstream QML metrics against classical baselines. This project does that at small, fully controlled scale and tests two lower-cost variants.",
+        "<b>Improvement 1: tensored REM.</b> 2 calibration circuits instead of 2ⁿ (ref. 7). Paired by circuit and noise level, its error differs from full REM's by " + b("rem_tensored.mean_abs_diff") + " on average and " + b("rem_tensored.max_abs_diff") + " at worst, at 3 circuits instead of up to 65. Caveat: our noise model has independent readout errors by construction, which favors tensored REM; correlated readout was not tested.",
+        "<b>Improvement 2: variance-optimal shot allocation.</b> Richardson's weights are unequal, so splitting a fixed budget evenly across λ = 1, 3, 5 is not variance-optimal. Minimizing Σγᵢ²σᵢ²/Nᵢ subject to ΣNᵢ = N gives Nᵢ ∝ |γᵢ|σᵢ. With σᵢ ≈ 1 (no pilot run), 3072 shots split as " + b("alloc.shots.optimal") + ".",
+        "<b>Result.</b> Over " + b("alloc.repetitions") + " repetitions per condition at low and moderate noise, the measured std ratio (optimal ÷ uniform) is " + b("alloc.ratio.empirical") + ", against " + b("alloc.ratio.theory") + " predicted: about an 11% smaller standard deviation at the same total cost.",
+        "<b>Deviation, stated openly.</b> This experiment uses a shot split other than 1024 per circuit, but keeps the total (3 × 1024 = 3072) equal; it is reported separately and never mixed into the Track A grid.",
+        "<b>Engineering note.</b> The repeated circuits are batched into one Aer call per (condition, scheme, scale). Aer gives each position in a batch its own deterministic, independent random draw, which was verified before relying on it."
+      ],
+      eqs: [["Objective", "minimize Σᵢ γᵢ² σᵢ² / Nᵢ   subject to Σᵢ Nᵢ = N", "Lagrange multipliers give the optimum."], ["Optimal allocation", "Nᵢ = N · |γᵢ| σᵢ / Σⱼ |γⱼ| σⱼ", "σᵢ ≈ 1 → Nᵢ ∝ |γᵢ| = 15/8, 5/4, 3/8."], ["Predicted std ratio", "Σ|γᵢ| / √(3 Σγᵢ²) = 3.5 / √15.66 ≈ 0.885", "Optimal ÷ uniform, same total N."]],
+      widget: "allocation",
+      extra: function () { return '<div class="blk"><h3>Improvement hypotheses</h3>' + hypTable(["H9", "H10"]) + "</div>"; },
+      figs: ["A12", "I1"],
+      nums: [[b("rem_tensored.mean_abs_diff"), "mean |tensored − full| error"], [b("rem_tensored.max_abs_diff"), "worst case"], [b("alloc.ratio.empirical"), "measured std ratio"], [b("alloc.ratio.theory"), "predicted std ratio"]],
+      say: "We tested two cheaper variants. Tensored REM cuts calibration from two to the n circuits to two by assuming independent readout errors, and matched full REM within shot noise. Variance-optimal shot allocation gives each scale factor shots in proportion to its Richardson weight, which cut ZNE's standard deviation to 0.874 of the uniform split, close to the 0.885 theory predicts, at the same total budget.",
+      quiz: [
+        { q: "Optimal shots at scale factor λᵢ are proportional to…", o: ["λᵢ", "|γᵢ| · σᵢ", "1 / λᵢ", "γᵢ²"], a: 1, w: "From minimizing Σγᵢ²σᵢ²/Nᵢ at fixed ΣNᵢ." },
+        { q: "The measured std ratio (optimal ÷ uniform) was…", o: ["0.50", n("alloc.ratio.empirical"), "1.00", "2.28"], a: 1, w: "Theory predicts " + n("alloc.ratio.theory") + "." },
+        { q: "What did the allocation experiment hold fixed?", o: ["Shots per circuit", "The total budget of 3072 shots", "The Richardson weights' signs", "Nothing"], a: 1, w: "Only the split across λ changed: " + n("alloc.shots.optimal") + " vs 1024 each." },
+        { q: "Why might tensored REM look better here than on real hardware?", o: ["We used more shots", "Our readout errors are independent by construction", "Tensored REM uses more circuits", "Hardware has no readout error"], a: 1, w: "Correlated readout (crosstalk) would break the Kronecker-product assumption." }
+      ],
+      cards: [
+        ["Tensored REM result", "Mean |diff| " + n("rem_tensored.mean_abs_diff") + ", max " + n("rem_tensored.max_abs_diff") + "; 3 circuits instead of up to 65."],
+        ["Optimal shot allocation rule", "Nᵢ ∝ |γᵢ|σᵢ. For (1, 3, 5) at 3072 shots: " + n("alloc.shots.optimal") + "."],
+        ["Shot allocation result", "Std ratio " + n("alloc.ratio.empirical") + " measured vs " + n("alloc.ratio.theory") + " theory (≈11% less std at equal budget)."],
+        ["The research gap", "REM and ZNE rarely compared side by side under one cost-normalized protocol, and rarely carried through to QML metrics against classical baselines."]
+      ]
+    },
+
+    {
+      id: "build", title: "Implementation and reproducibility",
+      lede: "How the code is organized, how it is checked, and why every number in the report can be regenerated exactly.",
+      ideas: [
+        "<b>The package <code>qem</code></b> (in <code>src/qem/</code>): <code>config.py</code> (validated YAML), <code>seeds.py</code> (derive_seed), <code>circuits.py</code> (ansatz, fold_global), <code>observables.py</code> (parity, exact reference), <code>noise.py</code>, <code>execution.py</code> (Aer executor and gate guard), <code>mitigation/</code> (<code>readout.py</code>, <code>zne.py</code>, <code>pipeline.py</code>), <code>metrics.py</code>, <code>experiment.py</code> (Track A), <code>qml/</code> (data, vqc, classical, evaluate, runner), <code>improvement.py</code>, <code>analysis.py</code>, <code>plotting.py</code>.",
+        "<b>Tests.</b> " + bv(C.tests_passed) + " tests pass (<code>pytest -q</code>). They check, among other things: folded circuits have the same statevector and exactly λ× the gates; Richardson weights; REM recovers the truth within 4σ where doing nothing does not; the overhead formulas; byte-identical reruns; no preprocessing leakage; and the VQC's parameter binding order.",
+        "<b>Decisions logged in DECISIONS.md.</b> Python 3.11 via uv (the system Python was 3.13); <code>pylatexenc</code> added for circuit drawings; the gate guard runs before and after transpiling; a dedicated transpiler seed; CSVs written with fixed float format and \\n line endings so reruns are byte-identical; E_noisy_exact from the density matrix (no shots, no randomness).",
+        "<b>No hand-typed numbers.</b> <code>report/report.md</code> is rendered by <code>scripts/build_report.py</code> from a template whose every number and table comes from <code>results/summary/</code>. This study guide, the dashboard and the field guide read the same files.",
+        "<b>Versions.</b> Python " + b("env.python") + ", qiskit " + b("env.qiskit") + ", qiskit-aer " + b("env.qiskit-aer") + ", numpy " + b("env.numpy") + ", scipy " + b("env.scipy") + ", pandas " + b("env.pandas") + ", matplotlib " + b("env.matplotlib") + ", scikit-learn " + b("env.scikit-learn") + ". Full <code>pip freeze</code> in <code>results/environment.txt</code>."
+      ],
+      extra: function () {
+        var steps = [
+          ["python scripts/run_sweep.py --config config/experiment.yaml", "Track A sweep: 600 rows, counts, circuits, calibration matrices."],
+          ["python scripts/run_qml.py --config config/experiment.yaml", "Track B: trains (or loads) the VQCs, evaluates under noise, fits LR and SVM."],
+          ["python scripts/run_improvement.py --config config/experiment.yaml", "Shot-allocation experiment."],
+          ["python scripts/analyze.py --config config/experiment.yaml", "Summary CSVs, every markdown table, statistical tests, report_numbers.json."],
+          ["python scripts/make_plots.py --config config/experiment.yaml", "Figures A1–A13, B1–B6, I1."],
+          ["python scripts/make_design_figures.py --config config/experiment.yaml", "Circuit and pipeline diagrams D1–D5."],
+          ["python scripts/build_report.py", "Renders report/report.md from the template."]
+        ];
+        return '<div class="blk"><h3>Reproduce everything, in order</h3><div class="tw"><table><thead><tr><th>Step</th><th>Command</th><th>What it produces</th></tr></thead><tbody>' +
+          steps.map(function (s, i) { return '<tr><td class="num">' + (i + 1) + "</td><td><code>" + esc(s[0]) + "</code></td><td>" + s[1] + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
+      },
+      nums: [[bv(C.tests_passed), "tests passing"], [b("env.qiskit"), "qiskit"], [b("env.qiskit-aer"), "qiskit-aer"], [b("env.python"), "Python"]],
+      say: "The code is a small Python package with a test suite of 186 tests. Every random number comes from a derived seed, every output is written byte-stably, and the report is generated from a template, so rerunning the scripts reproduces every number in it.",
+      quiz: [
+        { q: "Why is the report rendered from a template?", o: ["It looks nicer", "So no number is typed by hand and the report always matches the data", "Markdown requires it", "To hide the code"], a: 1, w: "build_report.py fills every {{num}} and {{table}} placeholder from results/summary/." },
+        { q: "What stops a gate from silently running without noise?", o: ["Nothing", "assert_noise_basis checks every circuit before and after transpiling", "The density-matrix method", "Optimization level 3"], a: 1, w: "Any gate outside {ry, rz, cx, measure, barrier} is rejected." },
+        { q: "Which columns may differ between two reruns of a sweep?", o: ["None", "Only the two wall-clock timing columns", "All error columns", "The seeds"], a: 1, w: "time_quantum_s and time_classical_s; a test compares everything else exactly." },
+        { q: "Why are the VQC's x and w parameter positions read from the circuit?", o: ["Speed", "Qiskit orders parameters by name, so their order must not be assumed", "COBYLA needs it", "It reduces noise"], a: 1, w: "Assuming an order would silently bind features to weights." }
+      ],
+      cards: [
+        ["Where does folding live?", "<code>fold_global</code> in <code>src/qem/circuits.py</code>."],
+        ["Where does REM live?", "<code>apply_rem</code>, <code>build_assignment_matrix</code>, <code>build_tensored_assignment_matrix</code>, <code>project_to_simplex</code> in <code>src/qem/mitigation/readout.py</code>."],
+        ["How is reproducibility guaranteed?", "derive_seed for every random number, a transpiler seed, byte-stable CSV/JSON writing, and a test that reruns the smoke sweep and compares outputs."],
+        ["Why Python 3.11 via uv?", "The system Python was 3.13, outside the plan's 3.10–3.12 range."]
+      ]
+    },
+
+    {
+      id: "papers", title: "Literature review",
+      lede: "Seventeen papers, each read from its own abstract, grouped by what they contribute to this project.",
+      ideas: [
+        "<b>Foundations and ZNE.</b> Richardson extrapolation and PEC were proposed in 2017 (refs. 2, 3), shown on hardware by 2019 (ref. 5), made purely digital by unitary folding (ref. 6), and run at 127-qubit scale by 2023 (ref. 10).",
+        "<b>Readout mitigation.</b> Full calibration is exact but exponential; the tensor-product model trades a small accuracy loss for linear cost (ref. 7); matrix-free M3 scales further (ref. 8). Projecting unphysical estimates (ref. 17) recurs in both density-matrix and probability settings.",
+        "<b>Fundamental limits.</b> Mitigation's sampling cost must eventually grow exponentially with depth (refs. 11, 12). Our high-noise stress level is a small empirical window onto this.",
+        "<b>QML encoding and noise.</b> Variational classifiers are trainable on near-term hardware (ref. 14), but single-layer encoding limits expressivity (ref. 15) and noise can destroy trainability (ref. 16). Both shaped our design: one encoding layer, noiseless training."
+      ],
+      widget: "papers",
+      say: "Our ZNE follows Temme et al. and Giurgica-Tiron et al.: Richardson extrapolation over unitary folding. Our tensored REM follows Bravyi et al. The fundamental-limits papers explain why costs grow with depth, and Schuld et al. and Wang et al. explain our encoding limit and why we trained without noise.",
+      quiz: [
+        { q: "Which paper introduced Richardson-style zero-noise extrapolation and PEC?", o: ["Preskill 2018", "Temme, Bravyi, Gambetta 2017", "Kim et al. 2023", "Cai et al. 2023"], a: 1, w: "Ref. 2, PRL 119, 180509." },
+        { q: "Our fold_global implements the method from…", o: ["Giurgica-Tiron et al. 2020", "Nation et al. 2021", "Smolin et al. 2012", "Havlíček et al. 2019"], a: 0, w: "Digital ZNE by unitary folding, IEEE QCE 2020." },
+        { q: "Tensored REM comes from…", o: ["Bravyi, Sheldon, Kandala, McKay, Gambetta 2021", "Kandala et al. 2019", "Endo, Benjamin, Li 2018", "LaRose et al. 2022"], a: 0, w: "Ref. 7, PRA 103, 042605." },
+        { q: "Which paper explains why one encoding layer limits the VQC?", o: ["Wang et al. 2021", "Schuld, Sweke, Meyer 2021", "Takagi et al. 2022", "Quek et al. 2024"], a: 1, w: "Frequencies {−1, 0, +1} per feature for a single ry encoding." },
+        { q: "Which paper justifies training the VQC without noise?", o: ["Wang et al. 2021 (noise-induced barren plateaus)", "Preskill 2018", "Nation et al. 2021", "Smolin et al. 2012"], a: 0, w: "Noise alone can make gradients vanish exponentially." }
+      ],
+      cards: PAPERS.map(function (p) { return ["[" + p[0] + "] " + p[2].split(",")[0] + (p[2].indexOf(",") >= 0 || / et al\./.test(p[2]) ? " et al." : "") + " " + p[5], "<b>" + p[3] + "</b>. " + p[6] + " <b>For us:</b> " + p[7]]; }).map(function (c) { c[0] = c[0].replace(" et al. et al.", " et al."); return c; })
+    },
+
+    {
+      id: "limits", title: "Limits, recommendation, future work",
+      lede: "What the study cannot tell you, what to do with what it can, and where to take it next.",
+      ideas: [
+        "<b>Mitigation is not correction.</b> It improves averages only; individual shots, and in Track B individual predictions, stay noisy.",
+        "<b>ZNE.</b> Amplifies variance (measured " + b("var.ratio.emp.high") + "×–" + b("var.ratio.emp.moderate") + "×, above the 2.28× theory at moderate noise, suggesting the folded circuits' shots are less independent than the simple model assumes). Its extrapolation model can mismatch the true decay. It assumes noise scales cleanly with folding, which holds for this incoherent model but less on hardware. It never removes readout error. The deepest folded circuit is " + b("zne.depth.max") + " deep, which could exceed coherence times on hardware.",
+        "<b>REM.</b> Full calibration costs 2ⁿ circuits. It assumes stable readout. It can produce negative quasi-probabilities. Tensored REM additionally assumes independent readout, untested against correlated noise here.",
+        "<b>Simulation only.</b> The depolarizing-plus-readout model is incoherent and memoryless; hardware adds coherent errors, crosstalk, T1/T2, drift and leakage.",
+        "<b>Statistics.</b> 3 qubit counts, 2 depths and 5 seeds per condition limit power; 20 test samples per seed make accuracy move in 5% steps.",
+        "<b>Selection bias.</b> Track A keeps only |E_exact| ≥ 0.3. <b>VQC.</b> Trained noise-free with one encoding layer. <b>Time.</b> Simulator wall time is not hardware time.",
+        "<b>Recommendation.</b> Use REM by default (tensored once full calibration becomes impractical). Add ZNE, preferably with REM, when gate noise is large relative to shot noise and the extra depth and shots are affordable; skip ZNE when noise is already low. For classifiers, judge mitigation by expectation error and margins, not accuracy alone.",
+        "<b>Future work.</b> Probabilistic error cancellation (unbiased but exponential sampling cost, needs noise tomography); Clifford data regression; dynamical decoupling; M3-style matrix-free REM (ref. 8); data re-uploading (ref. 15); noise-aware VQC training (ref. 16 caveats); real-hardware validation."
+      ],
+      nums: [[b("zne.depth.max"), "deepest folded circuit (gates deep)"], [b("negmass.max"), "largest REM negative mass"], [bv("5"), "seeds per condition"], [bv("20"), "test samples per seed"]],
+      say: "The main limits are that this is a simulation with an incoherent noise model, small samples, and a VQC trained without noise. On real hardware we would expect both methods to help less and need recalibration more often. Our recommendation is REM by default, ZNE added when gate noise is large, and judging classifiers by margins rather than accuracy alone.",
+      quiz: [
+        { q: "Why would results differ on real hardware?", o: ["They would not", "Hardware adds coherent errors, crosstalk, T1/T2, drift and leakage, and folding may not scale noise cleanly", "Hardware has no readout error", "Shots are free on hardware"], a: 1, w: "Our model is incoherent and memoryless by design." },
+        { q: "Why is PEC left as future work?", o: ["It is biased", "Its sampling cost grows exponentially and it needs noise tomography", "Qiskit cannot run it", "It only fixes readout"], a: 1, w: "Impractical across 120 conditions and 4 noise levels." },
+        { q: "What is the recommended default mitigation?", o: ["ZNE alone", "REM, tensored once full calibration is impractical", "No mitigation", "PEC"], a: 1, w: "Add ZNE when gate noise is large and the cost is affordable." }
+      ],
+      cards: [
+        ["Main limitations", "Simulation only (incoherent, memoryless noise); small samples (5 seeds, 20 test points); selection bias |E| ≥ 0.3; noise-free VQC training; wall time ≠ hardware time."],
+        ["Recommendation", "REM by default (tensored at scale); add ZNE (with REM) when gate noise is large; skip ZNE at low noise; judge classifiers by margins."],
+        ["Future work", "PEC, Clifford data regression, dynamical decoupling, M3 REM, data re-uploading, noise-aware training, real hardware."]
+      ]
+    }
+  ];
+
+  var MOD_BY_ID = {};
+  MODULES.forEach(function (m, i) { m.no = i + 1; MOD_BY_ID[m.id] = m; });
+  PARTS.forEach(function (p) { p.ids.forEach(function (id) { MOD_BY_ID[id].part = p.name; }); });
+
+  var VIVA = [
+    ["What is the difference between error mitigation and error correction?", "Error correction encodes one logical qubit redundantly across many physical qubits and fixes errors on every shot, which needs extra qubits and fault-tolerant hardware. Mitigation needs no extra qubits: it runs a handful of extra circuits (calibration circuits, or the same circuit at amplified noise) and corrects the <b>average</b> classically afterwards. It never touches an individual shot."],
+    ["Why must global-folding scale factors be odd? What is U(U†U)ᵏ?", "Folding replaces U with U·(U†U)ᵏ for λ = 2k + 1. U† is the exact inverse of U, so U†U is the identity on paper and the ideal output is unchanged, but every extra gate adds real noise. Each U†U pair adds 2 to λ, so only odd λ (1, 3, 5) are reachable by appending whole pairs."],
+    ["Why doesn't ZNE remove readout error in your setup?", "Folding repeats the gates; the measurement happens exactly once, after folding, at every λ. The readout error is identical at every λ, so the extrapolation, which relies on seeing the signal change with λ, cannot see it. Dividing the exact readout attenuation (1 − 2p_ro)ⁿ out of the infinite-shot ZNE result removes most of the remaining bias, which confirms the leftover is readout. That is why zne_rem exists."],
+    ["Derive the Richardson coefficients for λ = (1, 3, 5). Where does the ≈2.3× variance factor come from?", "γᵢ = Πⱼ≠ᵢ λⱼ/(λⱼ − λᵢ): γ₁ = (3·5)/((3−1)(5−1)) = 15/8; γ₂ = (1·5)/((1−3)(5−3)) = −5/4; γ₃ = (1·3)/((1−5)(3−5)) = 3/8. They sum to 1. With independent ±1 averages, Var(E₀) = Σγᵢ²(1 − Eᵢ²)/N, so the std scales by √Σγᵢ² = √5.22 ≈ 2.28. We measured " + n("var.ratio.emp.high") + "×–" + n("var.ratio.emp.moderate") + "×, slightly above theory, which we attribute to folded circuits' shots not being perfectly independent."],
+    ["Why did you use optimization_level = 0?", "Any higher level would recognize U† followed by U as the identity and delete the pair, which removes exactly the gates added to scale the noise. At level 0 nothing is cancelled, so the folded circuit really runs λ times the gates."],
+    ["Why can REM produce negative probabilities, and what did you do about it?", "A and p̃ are both finite-shot estimates, so A⁻¹p̃ can push entries below zero: a quasi-probability vector. We record the negative mass (worst " + n("negmass.max") + " full, " + n("negmass.max.tensored") + " tensored). The expectation value comes from the raw vector, which is linear and unbiased; we project onto the simplex only when a real distribution is needed, for Hellinger fidelity and TVD."],
+    ["Why does full REM need 2ⁿ circuits? What does tensored REM assume, and when does it fail?", "Full calibration measures the readout response to every one of the 2ⁿ basis states, one circuit each. Tensored REM assumes each qubit's readout error is independent, builds a 2×2 matrix per qubit from two circuits (all 0, all 1) and combines them by Kronecker product. It fails, or needs augmenting, when readout errors are correlated between qubits; our noise model has none, which is exactly why tensored REM matches full REM here (mean |diff| " + n("rem_tensored.mean_abs_diff") + ")."],
+    ["What does the depolarizing parameter mean in Qiskit? How did you map the course's \"% error\"?", "depolarizing_error(λ, k) implements ε(ρ) = (1 − λ)ρ + λ·Tr(ρ)·I/2ᵏ: with probability λ the k qubits become maximally mixed. \"X% single-qubit error\" became depolarizing_error(X/100, 1) on every ry and rz, \"Y% two-qubit error\" depolarizing_error(Y/100, 2) on every cx, and \"Z% readout\" a symmetric bit flip with probability Z/100 on every qubit, logged in DECISIONS.md."],
+    ["Why parity as the observable? Why |E| ≥ 0.3, and what bias does it introduce?", "Parity is global: a flip on any qubit from any source flips its sign, so it is maximally sensitive to every noise channel and makes mitigation visible. A random parity is often near zero, where shot noise (σ ≈ 0.031) swamps the signal and relative error is undefined, so instances must reach |E_exact| ≥ 0.3. The cost: the instances are not a uniform sample of random circuits, a selection bias we list."],
+    ["Explain your encoding. Why scale features to [0, π]? What limits expressivity?", "Each feature xₖ is encoded as ry(xₖ) on qubit k, so ⟨Zₖ⟩ = cos xₖ before the ansatz. [0, π] is half a Bloch meridian: the minimum maps to |0⟩, the maximum to |1⟩, no wrap-around. By Schuld, Sweke and Meyer, one encoding layer restricts the model to frequencies {−1, 0, +1} per feature; data re-uploading would lift that and is future work."],
+    ["Why were the scalers and PCA fit only on training data? What is data leakage?", "Leakage is when test-set information influences fitting, even indirectly, for example a scaler whose mean and variance come from the full dataset. It inflates accuracy. We fit StandardScaler, PCA and MinMaxScaler on the 80 training samples only and only transform (then clip) the 20 test samples. A test shows refitting on train + test gives different parameters."],
+    ["Why might accuracy barely change under noise while expectation error grows?", "Accuracy depends only on sign(E_hat). Depolarizing noise shrinks |E| toward zero roughly uniformly but rarely flips the sign of a confidently classified point, and 20 test samples move accuracy in 5% steps. Unmitigated margin retention fell from " + n("qml.margin.none.ideal") + " to " + n("qml.margin.none.high") + " while accuracy only went from " + n("qml.acc.none.ideal") + " to " + n("qml.acc.none.high") + " (figures B4, B5)."],
+    ["Is there any quantum advantage in your results?", "No, and none is claimed. The exact VQC's accuracy (" + n("qml.vqc_exact.acc.mean") + ") is comparable to LR and SVM on the identical split and features, sometimes slightly higher, sometimes lower. At 2–4 qubits and 100 samples, nothing can be said about advantage either way."],
+    ["How did you make the comparison with LR and SVM fair?", "All three models see exactly the same stratified 80:20 split (same indices from the same seed) and the same preprocessed features, after identical train-only scaling. No model saw test labels during fitting, and LR and SVM hyperparameters are fixed in the config, never tuned on the test set."],
+    ["Are 5 seeds enough? How did you compute confidence intervals, and what can the tests detect?", "Five is small and we say so. Per condition we report mean, std (ddof = 1), median and a 95% CI of mean ± 2.776·std/√5. Per condition we use a paired t-test, because Wilcoxon on 5 pairs cannot go below p = 0.0625. Pooling 30 pairs per noise level gives a Wilcoxon test with real power, used for the headline claims."],
+    ["What happens at high noise, and why might ZNE struggle there?", "At the optional high level every method's error is larger, but every mitigated method still beats none, and zne_rem stays strongest (median " + n("imp.median.zne_rem.high") + "%). ZNE shows strain: more exponential fits fail as the folded signal crosses zero or gets too small to log, though Richardson estimates never left [−1, 1]. This is a small echo of the theoretical limits (refs. 11, 12)."],
+    ["What is your research gap and proposed improvement? What did the data show?", "Readout mitigation and extrapolation are mostly studied separately, often at hardware scale, and rarely connected to downstream QML metrics against classical baselines. We test two cheaper variants: tensored REM (2 calibration circuits instead of 2ⁿ), within " + n("rem_tensored.mean_abs_diff") + " of full REM on average; and variance-optimal ZNE shot allocation, std ratio " + n("alloc.ratio.empirical") + " against " + n("alloc.ratio.theory") + " predicted, at the same total budget."],
+    ["How would results differ on real hardware?", "Our noise is incoherent and Markovian; hardware adds coherent errors, crosstalk, T1/T2 relaxation, drift and leakage. Folding may not scale coherent noise cleanly, REM's stable-readout assumption can be broken by drift, and the deepest folded circuits (5× base depth) could exceed coherence times. Both methods would likely help less and need recalibration more often."],
+    ["Why not use PEC (probabilistic error cancellation)?", "PEC can be unbiased, but its sampling overhead grows exponentially with noise strength and circuit size, and it needs accurate noise tomography first. That is impractical across 120 conditions and 4 noise levels, so it is future work for a smaller, targeted study."],
+    ["What do Hellinger fidelity and TVD measure, and how do they differ?", "Both compare two distributions over the same 2ⁿ outcomes. Hellinger fidelity (Σ√(pq))² is 1 for identical and 0 for disjoint distributions, and is more sensitive to differences on high-probability outcomes. TVD ½Σ|p − q| is 0 for identical and 1 for disjoint, and weighs every outcome's absolute difference equally. REM improved both (fidelity up in " + n("fid.better.moderate") + " cells at moderate noise, TVD down in " + n("tvd.better.moderate") + ")."],
+    ["Summarize your main findings in under a minute.", "At moderate noise every method helped and zne_rem was best, with a median error cut of " + n("imp.median.zne_rem.moderate") + "%. At low noise, REM alone was the dependable choice and ZNE alone was not significant. Costs scale as expected: 1 + 2ⁿ circuits for REM, 3 for tensored REM, 3 circuits with 9× CNOTs for ZNE. On the classifier, mitigation restored margins strongly but barely moved accuracy, and the VQC was comparable to LR and SVM. Both cheaper variants worked."],
+    ["Walk me through what happens to one circuit, from the config file to the report.", "The config fixes n, L, the noise level and the seed. Angles are drawn from a derived seed until |E_exact| ≥ 0.3; the statevector gives E_exact. Aer runs the base circuit, the folded circuits and the calibration circuits with 1024 shots each. All five methods post-process those same counts. The row goes into runs.csv; analyze.py aggregates and tests; the plotting and report scripts read only those outputs."],
+    ["Why did Track A include a 6-qubit case?", "The group sheet asks for it, beyond the course's 2 and 4. It is also where full REM's 2ⁿ growth becomes visible: " + n("circuits.rem.n6") + " circuits and " + n("shots.rem.n6") + " shots per estimate, against " + n("circuits.rem_tensored.n6") + " circuits for tensored REM."],
+    ["What is success probability and what did it show?", "P_succ is the estimated probability of the most likely ideal bitstring, reported as P_succ_hat / P_succ_exact. Noise pulls the ratio below 1; REM raises it, and zne_rem brings it close to 1 at moderate noise, consistent with REM correcting the whole distribution and ZNE removing gate bias."]
+  ];
+
+  var GLOSS = [
+    ["NISQ", "Noisy Intermediate-Scale Quantum: today's devices, too noisy for error correction (ref. 1)."],
+    ["Error mitigation", "Reducing the bias of averaged results with extra circuits and classical post-processing, without extra qubits."],
+    ["Error correction", "Encoding logical qubits in many physical ones to detect and fix errors shot by shot."],
+    ["Shot", "One run of a circuit, ending in one measured bitstring."],
+    ["Parity ⟨Z⊗…⊗Z⟩", "Average over shots of +1 (even number of 1s) or −1 (odd). Our observable."],
+    ["Expectation value", "The average of an observable over many shots; what mitigation corrects."],
+    ["Shot noise", "Random wobble from finite shots: σ = √((1 − E²)/N), ≈0.031 at 1024 shots."],
+    ["Bias", "A systematic offset that more shots cannot remove."],
+    ["Depolarizing channel", "With probability p, the touched qubits are replaced by a maximally mixed state."],
+    ["Readout error", "A measured bit reported wrongly; here symmetric with probability p_ro."],
+    ["Density-matrix simulation", "Exact noisy simulation (Aer's density_matrix method); gives E_noisy_exact with no shots."],
+    ["Assignment matrix A", "A[i, j] = P(measure i | prepared j); built from calibration circuits; columns sum to 1."],
+    ["Calibration circuit", "A circuit that prepares a known basis state (with ry(π)) and measures it."],
+    ["Quasi-probabilities", "The result of A⁻¹p̃: sums to 1 but may have small negative entries."],
+    ["Negative mass", "The total magnitude of the negative entries of a quasi-probability vector."],
+    ["Simplex projection", "Euclidean projection onto valid probability distributions; used only for Hellinger and TVD."],
+    ["Condition number", "cond(A); above 10⁸ the code would switch to least squares (it never did)."],
+    ["Tensored REM", "REM assuming independent per-qubit readout: A = ⊗ₖ Aₖ from 2 calibration circuits."],
+    ["Kronecker product ⊗", "Builds a big matrix from small ones; combines per-qubit 2×2 matrices into a 2ⁿ×2ⁿ one."],
+    ["ZNE", "Zero-noise extrapolation: measure at amplified noise λ and extrapolate to λ = 0."],
+    ["Global folding", "U → U(U†U)ᵏ, λ = 2k + 1: same ideal output, λ× the gates."],
+    ["Scale factor λ", "How many times the base noise a folded circuit carries; we use 1, 3, 5."],
+    ["Richardson extrapolation", "E₀ = Σγᵢ E(λᵢ) with γᵢ = Πⱼ≠ᵢ λⱼ/(λⱼ − λᵢ); exact polynomial through the points."],
+    ["Exponential extrapolation", "Fits a decaying exponential; fails when E(λ) changes sign or gets too small."],
+    ["zne_rem", "Apply REM to the counts at each λ, then extrapolate."],
+    ["Hellinger fidelity", "(Σ√(pₓqₓ))²: overlap of two distributions, 1 if identical."],
+    ["Total variation distance", "½Σ|pₓ − qₓ|: 0 if identical, 1 if disjoint."],
+    ["Success probability", "Estimated probability of the most likely ideal bitstring."],
+    ["Improvement %", "100·(1 − err/err_none); negative means worse than none."],
+    ["Error reduction factor", "err_none/err; above 1 is better."],
+    ["Paired design", "All methods use the same shots, so differences come from the methods."],
+    ["Paired t-test", "Tests mean paired difference; used per condition (5 pairs)."],
+    ["Wilcoxon signed-rank", "Rank-based paired test; used pooled over 30 pairs (minimum p with 5 pairs is 0.0625)."],
+    ["VQC", "Variational quantum classifier: encoding + trainable ansatz, prediction = sign of ⟨Z^⊗n⟩."],
+    ["Angle encoding", "Feature xₖ → ry(xₖ) on qubit k."],
+    ["Ansatz", "The parameterized circuit block whose weights are trained."],
+    ["COBYLA", "A derivative-free optimizer used to train the VQC."],
+    ["Margin retention", "mean(Ê·sign E_exact)/mean|E_exact|: how much of the classifier's confidence survives."],
+    ["Data leakage", "Test-set information influencing fitting; avoided by fitting preprocessing on training data only."],
+    ["Stratified split", "A split that keeps class proportions equal in train and test."],
+    ["Barren plateau", "Gradients vanishing exponentially, making training intractable; noise can cause it (ref. 16)."],
+    ["PEC", "Probabilistic error cancellation: unbiased in principle, exponential sampling cost."],
+    ["M3", "Matrix-free measurement mitigation in the subspace of observed bitstrings (ref. 8)."],
+    ["derive_seed", "SHA-256-based seed from a tuple of parts; makes every run reproducible."],
+    ["Little-endian", "Qiskit's bit order: qubit 0 is the rightmost bit."]
+  ];
+
+  /* ================= widgets ================= */
+
+  function segmented(host, values, labels, current, onPick) {
+    host.innerHTML = "";
+    var btns = values.map(function (v, i) {
+      var bt = document.createElement("button");
+      bt.type = "button"; bt.textContent = labels ? labels[i] : String(v);
+      bt.setAttribute("aria-pressed", v === current ? "true" : "false");
+      bt.addEventListener("click", function () {
+        btns.forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+        bt.setAttribute("aria-pressed", "true");
+        onPick(v);
+      });
+      host.appendChild(bt);
+      return bt;
+    });
+  }
+  function benchHead(title, tag) { return '<div class="bench-h"><h4>' + title + "</h4><span>" + tag + "</span></div>"; }
+  function fmt(x, d) { return (Math.round(x * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); }
+  function levelTable() {
+    var names = { ideal: "Level 0", low: "Level 1", moderate: "Level 2", high: "Level 3 (optional stress test)" };
+    return '<div class="tw"><table><thead><tr><th>Level</th><th>Course name</th><th class="num">p₁ (1-qubit)</th><th class="num">p₂ (2-qubit)</th><th class="num">p_ro (readout)</th></tr></thead><tbody>' +
+      D.levels.map(function (l) {
+        return "<tr><td><b>" + l.name + "</b></td><td>" + (names[l.name] || "") + '</td><td class="num">' + pc(l.p1) + '</td><td class="num">' + pc(l.p2) + '</td><td class="num">' + pc(l.p_ro) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function pc(p) { return p === 0 ? "0" : (Math.round(p * 1000) / 10) + "%"; }
+  function niceStep(r) { var p = Math.pow(10, Math.floor(Math.log10(r))), f = r / p; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p; }
+  function drawFit(host, ls, E, poly, E0, exact, col) {
+    var W = 560, H = 236, m = { l: 50, r: 16, t: 14, b: 30 };
+    var ys = E.concat([E0, exact]), t, s = "";
+    for (t = 0; t <= 60; t++) ys.push(poly(5 * t / 60));
+    var lo = Math.min.apply(null, ys), hi = Math.max.apply(null, ys), pad = (hi - lo) * 0.1 || 0.1;
+    lo -= pad; hi += pad;
+    var X = function (x) { return m.l + x / 5 * (W - m.l - m.r); }, Y = function (y) { return m.t + (hi - y) / (hi - lo) * (H - m.t - m.b); };
+    var step = niceStep((hi - lo) / 4), y0 = Math.ceil(lo / step) * step;
+    for (var v = y0; v <= hi + 1e-9; v += step) {
+      s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" style="stroke:' + (Math.abs(v) < 1e-9 ? "var(--line-2)" : "var(--line)") + ';stroke-width:1"/>' +
+        '<text x="' + (m.l - 8) + '" y="' + (Y(v) + 4) + '" text-anchor="end" style="fill:var(--faint);font:11px var(--mono)">' + fmt(v, step < 0.1 ? 2 : 1) + "</text>";
+    }
+    [0, 1, 3, 5].forEach(function (l) { s += '<text x="' + X(l) + '" y="' + (H - 8) + '" text-anchor="middle" style="fill:var(--faint);font:11px var(--mono)">λ=' + l + "</text>"; });
+    s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(exact) + '" y2="' + Y(exact) + '" style="stroke:var(--ink);stroke-width:1.2;stroke-dasharray:5 4"/>' +
+      '<text x="' + (W - m.r) + '" y="' + (Y(exact) - 6) + '" text-anchor="end" style="fill:var(--ink);font:11px var(--mono)">exact ' + fmt(exact, 3) + "</text>";
+    var d = "";
+    for (t = 0; t <= 60; t++) { var x = 5 * t / 60; d += (t ? " L" : "M") + X(x).toFixed(1) + "," + Y(poly(x)).toFixed(1); }
+    s += '<path d="' + d + '" style="fill:none;stroke:' + col + ';stroke-width:2;opacity:0.85"/>';
+    ls.forEach(function (l, i) { s += '<circle cx="' + X(l) + '" cy="' + Y(E[i]) + '" r="5.5" style="fill:' + col + ';stroke:var(--surface);stroke-width:2"/>'; });
+    s += '<circle cx="' + X(0) + '" cy="' + Y(E0) + '" r="6.5" style="fill:var(--surface);stroke:var(--amber-fill);stroke-width:2.5"/>' +
+      '<text x="' + (X(0) + 12) + '" y="' + (Y(E0) + 4) + '" style="fill:var(--amber);font:600 12px var(--mono)">E₀ ' + fmt(E0, 3) + "</text>";
+    host.innerHTML = '<div class="tw" style="border:0;background:transparent"><svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Measured E at λ = 1, 3, 5 and the Richardson polynomial extrapolated to λ = 0, against the exact value" style="width:100%;min-width:320px;height:auto;display:block">' + s + "</svg></div>";
+  }
+
+  var WIDGETS = {
+    shotnoise: function (host) {
+      host.innerHTML = benchHead("Shot-noise calculator", "σ = √((1 − E²)/N)") +
+        '<div class="ctl"><label class="field" for="sn-e"><span class="flabel">Exact value E<output id="sn-e-v"></output></span><input type="range" id="sn-e" min="-1" max="1" step="0.01" value="0.4"></label>' +
+        '<div class="field"><span class="flabel">Shots N</span><div class="seg" id="sn-n"></div></div></div>' +
+        '<div class="line" id="sn-line"><div class="axis"></div><div class="band" id="sn-band"></div><div class="dot" id="sn-dot"></div>' +
+        '<span class="tick" style="left:0%">−1</span><span class="tick" style="left:50%">0</span><span class="tick" style="left:100%">+1</span></div>' +
+        '<p class="out" id="sn-out"></p>';
+      var N0 = 1024;
+      function upd() {
+        var E = +document.getElementById("sn-e").value, s = Math.sqrt((1 - E * E) / N0);
+        document.getElementById("sn-e-v").textContent = E.toFixed(2);
+        var x = function (v) { return (Math.max(-1, Math.min(1, v)) + 1) / 2 * 100; };
+        var band = document.getElementById("sn-band");
+        band.style.left = x(E - 1.96 * s) + "%"; band.style.width = (x(E + 1.96 * s) - x(E - 1.96 * s)) + "%";
+        document.getElementById("sn-dot").style.left = x(E) + "%";
+        document.getElementById("sn-out").innerHTML = "σ = <b>" + fmt(s, 4) + "</b>. 95% of estimates land within ±<b>" + fmt(1.96 * s, 3) + "</b> of E. " +
+          (N0 === 1024 ? "This is the wobble every 1024-shot estimate in the project carries." : "That is " + fmt(Math.sqrt(1024 / N0), 2) + "× the 1024-shot value.");
+      }
+      segmented(document.getElementById("sn-n"), [64, 256, 1024, 4096, 16384], null, 1024, function (v) { N0 = v; upd(); });
+      document.getElementById("sn-e").addEventListener("input", upd);
+      upd();
+    },
+
+    attenuation: function (host) {
+      var lv = D.levels.filter(function (l) { return l.name !== "ideal"; });
+      var st = { lv: "moderate", n: 4, L: 4 };
+      host.innerHTML = benchHead("What noise leaves of the parity", "rough model, for intuition") +
+        '<div class="ctl"><div class="field"><span class="flabel">Noise level</span><div class="seg" id="at-l"></div></div>' +
+        '<div class="field"><span class="flabel">Qubits n</span><div class="seg" id="at-n"></div></div>' +
+        '<div class="field"><span class="flabel">Layers L</span><div class="seg" id="at-L"></div></div></div>' +
+        '<div class="stack" id="at-stack"></div>' +
+        '<div class="keyrow"><span><i style="background:var(--amber-fill)"></i>kept</span><span><i style="background:var(--m-rem)"></i>lost to gates (rough)</span><span><i style="background:var(--m-zne)"></i>lost to readout (exact)</span></div>' +
+        '<p class="out" id="at-out"></p><p class="note" id="at-real"></p>';
+      function upd() {
+        var l = lv.filter(function (x) { return x.name === st.lv; })[0];
+        var n1 = 2 * st.n * st.L, ncx = (st.n - 1) * st.L;
+        var g = Math.pow(1 - l.p1, n1) * Math.pow(1 - l.p2, ncx), r = Math.pow(1 - 2 * l.p_ro, st.n);
+        var kept = g * r, lg = 1 - g, lr = g * (1 - r);
+        var segs = [[kept, "var(--amber-fill)"], [lg, "var(--m-rem)"], [lr, "var(--m-zne)"]];
+        document.getElementById("at-stack").innerHTML = segs.map(function (s) {
+          return s[0] > 0.002 ? '<div style="flex:' + s[0] + " 1 0;background:" + s[1] + '">' + (s[0] > 0.08 ? Math.round(s[0] * 100) + "%" : "") + "</div>" : "";
+        }).join("");
+        document.getElementById("at-out").innerHTML = n1 + " one-qubit gates, " + ncx + " CNOTs, " + st.n + " qubits read. Readout factor (1 − 2·" + l.p_ro + ")<sup>" + st.n + "</sup> = <b>" + fmt(r, 3) + "</b>. A parity of 0.5 would read as about <b>" + fmt(0.5 * kept, 3) + "</b>.";
+        var real = { low: ["bias.gate.low", "bias.readout.low", "bias.readout_share.low"], moderate: ["bias.gate.moderate", "bias.readout.moderate", "bias.readout_share.moderate"] }[st.lv];
+        document.getElementById("at-real").innerHTML = real ? "Measured in our sweep, pooled over every circuit at " + st.lv + " noise: gate bias " + b(real[0]) + ", readout bias " + b(real[1]) + " (readout share " + b(real[2], "%") + "). The gate bar above is a crude product over gates; the real gate effect depends on how errors propagate." :
+          "The " + st.lv + " level is the optional stress test; its bias split per circuit is in the report's table_bias_sources.md.";
+      }
+      segmented(document.getElementById("at-l"), lv.map(function (l) { return l.name; }), null, st.lv, function (v) { st.lv = v; upd(); });
+      segmented(document.getElementById("at-n"), [2, 4, 6], ["n=2", "n=4", "n=6"], st.n, function (v) { st.n = v; upd(); });
+      segmented(document.getElementById("at-L"), [2, 4], ["L=2", "L=4"], st.L, function (v) { st.L = v; upd(); });
+      upd();
+    },
+
+    remcost: function (host) {
+      host.innerHTML = benchHead("Calibration cost as qubits grow", "bar length on a log scale") +
+        '<div class="ctl"><label class="field" for="rc-n"><span class="flabel">Qubits n<output id="rc-n-v"></output></span><input type="range" id="rc-n" min="1" max="24" step="1" value="6"></label></div>' +
+        '<div class="bars" id="rc-bars"></div><p class="out" id="rc-out"></p>';
+      function upd() {
+        var k = +document.getElementById("rc-n").value;
+        document.getElementById("rc-n-v").textContent = k;
+        var full = 1 + Math.pow(2, k), tens = 3, max = Math.log2(1 + Math.pow(2, 24));
+        var row = function (lab, c, col) {
+          return '<div class="bar"><span class="lab">' + lab + '</span><div class="trk"><div class="fill" style="left:0;width:' + (Math.max(2, Math.log2(c) / max * 100)) + "%;background:" + col + '"></div></div><span class="cap"><b>' + c.toLocaleString("en-US") + "</b> circuits · " + (c * SHOTS).toLocaleString("en-US") + " shots</span></div>";
+        };
+        document.getElementById("rc-bars").innerHTML = row("rem", full, mcol("rem")) + row("rem_tensored", tens, mcol("rem_tensored"));
+        document.getElementById("rc-out").innerHTML = k <= 6 ? "Our sweep went up to n = 6, where full REM needed " + b("circuits.rem.n6") + " circuits per estimate." :
+          "At n = " + k + ", full REM needs " + full.toLocaleString("en-US") + " circuits per estimate; tensored REM still needs 3. This is why full calibration stops being practical somewhere past 10–15 qubits.";
+      }
+      document.getElementById("rc-n").addEventListener("input", upd);
+      upd();
+    },
+
+    richardson: function (host) {
+      var sets = { "1,3": [1, 3], "1,3,5": [1, 3, 5], "1,3,5,7": [1, 3, 5, 7] };
+      var st = { set: "1,3,5", m: "zne" };
+      var ex = EX.methods;
+      host.innerHTML = benchHead("Richardson weights", "γᵢ = Πⱼ≠ᵢ λⱼ/(λⱼ − λᵢ)") +
+        '<div class="ctl"><div class="field"><span class="flabel">Scale factors λ</span><div class="seg" id="ri-set"></div></div></div>' +
+        '<div class="tw"><table id="ri-tab"></table></div><p class="out" id="ri-sum"></p>' +
+        benchHead("Extrapolate a real circuit", "n = " + EX.n + " · L = " + EX.L + " · " + EX.noise + " · seed " + EX.seed) +
+        '<div class="ctl"><div class="field"><span class="flabel">Counts used</span><div class="seg" id="ri-m"></div></div></div>' +
+        '<div class="grid2"><label class="field" for="ri-e1"><span class="flabel">E(λ = 1)</span><input type="number" id="ri-e1" step="0.001"></label>' +
+        '<label class="field" for="ri-e3"><span class="flabel">E(λ = 3)</span><input type="number" id="ri-e3" step="0.001"></label>' +
+        '<label class="field" for="ri-e5"><span class="flabel">E(λ = 5)</span><input type="number" id="ri-e5" step="0.001"></label></div>' +
+        '<div id="ri-plot"></div><p class="out" id="ri-out"></p>';
+      function gam(ls) { return ls.map(function (li, i) { var g = 1; ls.forEach(function (lj, j) { if (j !== i) g *= lj / (lj - li); }); return g; }); }
+      function frac(x) {
+        for (var d = 1; d <= 64; d++) { var nn = Math.round(x * d); if (Math.abs(nn / d - x) < 1e-9) return d === 1 ? String(nn) : nn + "/" + d; }
+        return fmt(x, 4);
+      }
+      function updSet() {
+        var ls = sets[st.set], g = gam(ls), s2 = g.reduce(function (a, x) { return a + x * x; }, 0), sum = g.reduce(function (a, x) { return a + x; }, 0);
+        document.getElementById("ri-tab").innerHTML = '<thead><tr><th>λ</th>' + ls.map(function (l) { return '<th class="num">' + l + "</th>"; }).join("") + "</tr></thead><tbody><tr><td><b>γ</b></td>" +
+          g.map(function (x) { return '<td class="num">' + frac(x) + "</td>"; }).join("") + "</tr><tr><td><b>decimal</b></td>" + g.map(function (x) { return '<td class="num">' + fmt(x, 4) + "</td>"; }).join("") + "</tr></tbody>";
+        document.getElementById("ri-sum").innerHTML = "Σγ = <b>" + fmt(sum, 3) + "</b> · std amplification √Σγ² = <b>" + fmt(Math.sqrt(s2), 3) + "</b>×" +
+          (st.set === "1,3,5" ? " (the project's choice)." : st.set === "1,3" ? ": cheaper and less noisy, but a straight line cannot follow curvature." : ": more points let the polynomial bend more, at a much higher variance cost.");
+      }
+      function setInputs() {
+        var e = ex[st.m];
+        document.getElementById("ri-e1").value = e.E1; document.getElementById("ri-e3").value = e.E3; document.getElementById("ri-e5").value = e.E5;
+        updFit();
+      }
+      function updFit() {
+        var ls = [1, 3, 5], E = ["ri-e1", "ri-e3", "ri-e5"].map(function (id) { return +document.getElementById(id).value; });
+        var g = gam(ls), E0 = g.reduce(function (a, x, i) { return a + x * E[i]; }, 0);
+        var mx = 3, my = (E[0] + E[1] + E[2]) / 3, sxy = 0, sxx = 0;
+        ls.forEach(function (l, i) { sxy += (l - mx) * (E[i] - my); sxx += (l - mx) * (l - mx); });
+        var lin0 = my - (sxy / sxx) * mx, exact = ex.none.E_exact, raw = ex.none.E_hat;
+        var poly = function (x) { return ls.reduce(function (a, li, i) { var t = E[i]; ls.forEach(function (lj, j) { if (j !== i) t *= (x - lj) / (li - lj); }); return a + t; }, 0); };
+        drawFit(document.getElementById("ri-plot"), ls, E, poly, E0, exact, mcol(st.m));
+        var signChange = E.some(function (v) { return v <= 0; }) && E.some(function (v) { return v > 0; });
+        document.getElementById("ri-out").innerHTML = "Richardson E₀ = <b>" + fmt(E0, 4) + "</b> · linear fit at 0 = <b>" + fmt(lin0, 4) + "</b> · exact = <b>" + fmt(exact, 4) + "</b> · unmitigated = <b>" + fmt(raw, 4) + "</b>.<br>" +
+          "Error: none " + fmt(Math.abs(raw - exact), 4) + " → Richardson <b>" + fmt(Math.abs(E0 - exact), 4) + "</b>." +
+          (signChange ? " E(λ) changes sign, so the exponential fit fails (NaN) here, exactly as recorded in runs.csv." : "") +
+          (st.m === "zne" ? " Switch to zne_rem to see REM-corrected points: the readout part of the gap closes." : "");
+      }
+      segmented(document.getElementById("ri-set"), Object.keys(sets), ["1, 3", "1, 3, 5", "1, 3, 5, 7"], st.set, function (v) { st.set = v; updSet(); });
+      segmented(document.getElementById("ri-m"), ["zne", "zne_rem"], null, st.m, function (v) { st.m = v; setInputs(); });
+      ["ri-e1", "ri-e3", "ri-e5"].forEach(function (id) { document.getElementById(id).addEventListener("input", updFit); });
+      updSet(); setInputs();
+    },
+
+    seed: function (host) {
+      host.innerHTML = benchHead("Derive a seed the way the code does", "SHA-256 → first 8 hex → mod 2³¹ − 1") +
+        '<div class="ctl"><label class="field" for="sd-in" style="flex:1 1 260px"><span class="flabel">Parts joined with |</span><input type="text" id="sd-in" value="transpile|4|4|moderate|0" spellcheck="false" autocomplete="off"></label></div>' +
+        '<p class="out" id="sd-out"></p><p class="note">The sweep calls it with parts such as ("transpile", n, L, noise, seed, purpose). Change one character and the seed changes completely; keep the parts and it never changes, on any machine.</p>';
+      var inp = document.getElementById("sd-in"), out = document.getElementById("sd-out");
+      function upd() {
+        if (!(window.crypto && crypto.subtle && window.TextEncoder)) { out.textContent = "This browser does not expose SHA-256 to the page, so the seed cannot be computed here."; return; }
+        var s = inp.value;
+        crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)).then(function (buf) {
+          if (inp.value !== s) return;
+          var hex = Array.prototype.map.call(new Uint8Array(buf), function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
+          var seed = parseInt(hex.slice(0, 8), 16) % 2147483647;
+          out.innerHTML = "sha256 = " + hex.slice(0, 8) + "<span style=\"color:var(--faint)\">" + hex.slice(8, 24) + "…</span><br>seed = int(\"" + hex.slice(0, 8) + "\", 16) mod 2147483647 = <b>" + seed + "</b>";
+        }).catch(function () { out.textContent = "SHA-256 is unavailable here."; });
+      }
+      inp.addEventListener("input", upd);
+      upd();
+    },
+
+    results: function (host) {
+      var lv = "moderate", MIT = ["rem", "rem_tensored", "zne", "zne_rem"];
+      host.innerHTML = benchHead("Median error cut against no mitigation", "pooled over 30 circuits per level") +
+        '<div class="ctl"><div class="field"><span class="flabel">Noise level</span><div class="seg" id="rs-l"></div></div></div><div class="bars" id="rs-bars"></div><p class="out" id="rs-take"></p>';
+      var take = {
+        ideal: "No noise to remove: REM changes nothing and ZNE only adds variance (worse than none in " + n("ideal.zne_worse") + " runs). Percentages here are unstable because the baseline error is pure shot noise.",
+        low: "REM (full or tensored) is the dependable choice; rem was best in " + n("best.count.rem.low") + " (n, L) cells. ZNE alone is not significant (p = " + n("wilcoxon.p.zne.low") + ").",
+        moderate: "Every method helps; zne_rem is best in " + n("best.count.zne_rem.moderate") + " cells. Mean error falls from " + n("err.mean.none.moderate") + " to " + n("err.mean.zne_rem.moderate") + ".",
+        high: "Stress test, reported separately. Every method still helps and zne_rem keeps the largest cut; exponential fits fail more often."
+      };
+      function upd() {
+        var vals = MIT.map(function (m) { return +n("imp.median." + m + "." + lv); });
+        var lo = Math.min(-10, Math.min.apply(null, vals)), hi = Math.max(100, Math.max.apply(null, vals)), span = hi - lo;
+        var z = (0 - lo) / span * 100;
+        document.getElementById("rs-bars").innerHTML = MIT.map(function (m, i) {
+          var v = vals[i], left = (Math.min(0, v) - lo) / span * 100, w = Math.abs(v) / span * 100;
+          var p = N["wilcoxon.p." + m + "." + lv], better = N["imp.better." + m + "." + lv];
+          return '<div class="bar"><span class="lab">' + m + '</span><div class="trk"><div class="zero" style="left:' + z + '%"></div><div class="fill" style="left:' + left + "%;width:" + Math.max(w, 0.6) + "%;background:" + mcol(m) + '"></div></div>' +
+            '<span class="cap"><b>' + v + "%</b> median cut" + (better ? " · better in " + better : "") + (p ? " · p = " + p : "") + "</span></div>";
+        }).join("");
+        document.getElementById("rs-take").textContent = take[lv];
+      }
+      segmented(document.getElementById("rs-l"), D.levels.map(function (l) { return l.name; }), null, lv, function (v) { lv = v; upd(); });
+      upd();
+    },
+
+    encoding: function (host) {
+      host.innerHTML = benchHead("Angle encoding of one feature", "ry(x) on |0⟩") +
+        '<div class="ctl"><label class="field" for="en-x"><span class="flabel">Scaled feature x<output id="en-x-v"></output></span><input type="range" id="en-x" min="0" max="3.1416" step="0.01" value="1.0"></label></div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:18px;align-items:center"><svg id="en-svg" viewBox="0 0 150 150" width="150" height="150" role="img" aria-label="Bloch circle showing the encoded state"></svg><div class="bars" id="en-bars" style="flex:1 1 240px;min-width:0"></div></div>' +
+        '<p class="out" id="en-out"></p>';
+      function upd() {
+        var x = +document.getElementById("en-x").value, p0 = Math.cos(x / 2) * Math.cos(x / 2), p1 = 1 - p0, z = Math.cos(x);
+        document.getElementById("en-x-v").textContent = fmt(x, 2) + " rad";
+        var cx = 75, cy = 75, r = 56, px = cx + r * Math.sin(x), py = cy - r * Math.cos(x);
+        document.getElementById("en-svg").innerHTML =
+          '<circle cx="75" cy="75" r="56" fill="none" stroke="var(--line-2)" stroke-width="1.5"/>' +
+          '<line x1="75" y1="12" x2="75" y2="138" stroke="var(--line)" stroke-dasharray="3 3"/>' +
+          '<text x="75" y="10" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">|0⟩</text>' +
+          '<text x="75" y="149" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">|1⟩</text>' +
+          '<line x1="75" y1="75" x2="' + px + '" y2="' + py + '" stroke="var(--amber-fill)" stroke-width="2.5"/>' +
+          '<circle cx="' + px + '" cy="' + py + '" r="5" fill="var(--amber-fill)"/>';
+        var row = function (lab, v, col) { return '<div class="bar"><span class="lab">' + lab + '</span><div class="trk"><div class="fill" style="left:0;width:' + (v * 100) + "%;background:" + col + '"></div></div><span class="cap"><b>' + fmt(v, 3) + "</b></span></div>"; };
+        document.getElementById("en-bars").innerHTML = row("P(0)", p0, "var(--cyan)") + row("P(1)", p1, "var(--m-zne)");
+        document.getElementById("en-out").innerHTML = "⟨Z⟩ = cos x = <b>" + fmt(z, 3) + "</b>. At x = 0 the qubit is |0⟩ (⟨Z⟩ = +1); at x = π it is |1⟩ (⟨Z⟩ = −1). A range of [0, 2π) would wrap back toward |0⟩, so two different feature values could look alike.";
+      }
+      document.getElementById("en-x").addEventListener("input", upd);
+      upd();
+    },
+
+    margins: function (host) {
+      var lv = "high", M = ["none", "rem", "zne", "zne_rem"];
+      host.innerHTML = benchHead("Accuracy vs. margin under noise", "VQC test set, mean over n, L and seeds") +
+        '<div class="ctl"><div class="field"><span class="flabel">Noise level</span><div class="seg" id="mg-l"></div></div></div><div class="tw"><table id="mg-tab"></table></div><p class="out" id="mg-out"></p>';
+      function upd() {
+        document.getElementById("mg-tab").innerHTML = '<thead><tr><th>Method</th><th class="num">Accuracy</th><th class="num">Mean |E| error</th><th>Margin retention</th></tr></thead><tbody>' +
+          M.map(function (m) {
+            var mr = +n("qml.margin." + m + "." + lv);
+            return '<tr><td><span class="sw" style="background:' + mcol(m) + '"></span><b>' + m + '</b></td><td class="num">' + n("qml.acc." + m + "." + lv) + '</td><td class="num">' + n("qml.meanE." + m + "." + lv) + "</td>" +
+              '<td style="min-width:170px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:10px;background:var(--surface-2);border-radius:3px;position:relative"><div style="position:absolute;inset:0 auto 0 0;width:' + Math.max(0, Math.min(1, mr)) * 100 + "%;background:" + mcol(m) + ';border-radius:3px"></div></div><span style="font-family:var(--mono);color:var(--ink);font-size:13px">' + n("qml.margin." + m + "." + lv) + "</span></div></td></tr>";
+          }).join("") + "</tbody>";
+        document.getElementById("mg-out").innerHTML = "For reference, the exact VQC averages <b>" + n("qml.vqc_exact.acc.mean") + "</b>; LR <b>" + n("qml.logreg.acc.n2") + "/" + n("qml.logreg.acc.n4") + "</b>, SVM <b>" + n("qml.svm.acc.n2") + "/" + n("qml.svm.acc.n4") + "</b> (n = 2 / 4). Compare how far the margin column moves with how little the accuracy column does.";
+      }
+      segmented(document.getElementById("mg-l"), ["ideal", "low", "moderate", "high"], null, lv, function (v) { lv = v; upd(); });
+      upd();
+    },
+
+    allocation: function (host) {
+      var g = [1.875, -1.25, 0.375], ag = g.map(Math.abs), sa = 3.5, s2 = 5.21875;
+      host.innerHTML = benchHead("Split a shot budget across λ = 1, 3, 5", "assumes σᵢ ≈ 1") +
+        '<div class="ctl"><label class="field" for="al-n"><span class="flabel">Total shots N<output id="al-n-v"></output></span><input type="range" id="al-n" min="3" max="96" step="1" value="' + (D.alloc_total / 96) + '"></label></div>' +
+        '<div class="tw"><table id="al-tab"></table></div><p class="out" id="al-out"></p>';
+      function split(N0) {
+        var exact = ag.map(function (a) { return N0 * a / sa; }), fl = exact.map(Math.floor), left = N0 - fl.reduce(function (a, x) { return a + x; }, 0);
+        exact.map(function (x, i) { return [x - fl[i], i]; }).sort(function (a, c) { return c[0] - a[0]; }).slice(0, left).forEach(function (p) { fl[p[1]] += 1; });
+        return fl;
+      }
+      function upd() {
+        var N0 = +document.getElementById("al-n").value * 96, opt = split(N0), uni = N0 / 3;
+        document.getElementById("al-n-v").textContent = N0.toLocaleString("en-US");
+        var su = Math.sqrt(3 * s2 / N0), so = sa / Math.sqrt(N0);
+        document.getElementById("al-tab").innerHTML = '<thead><tr><th>Scheme</th><th class="num">λ = 1</th><th class="num">λ = 3</th><th class="num">λ = 5</th><th class="num">Predicted std of E₀</th></tr></thead><tbody>' +
+          '<tr><td><b>uniform</b></td><td class="num">' + fmt(uni, 0) + '</td><td class="num">' + fmt(uni, 0) + '</td><td class="num">' + fmt(uni, 0) + '</td><td class="num">' + fmt(su, 4) + "</td></tr>" +
+          '<tr><td><b>optimal</b></td><td class="num">' + opt[0] + '</td><td class="num">' + opt[1] + '</td><td class="num">' + opt[2] + '</td><td class="num">' + fmt(so, 4) + "</td></tr></tbody>";
+        document.getElementById("al-out").innerHTML = "Predicted ratio optimal ÷ uniform = <b>" + fmt(so / su, 3) + "</b> at any N." + (N0 === D.alloc_total ? " At the project's 3,072 shots the split is exactly " + b("alloc.shots.optimal") + ", and the measured ratio was " + b("alloc.ratio.empirical") + "." : "");
+      }
+      document.getElementById("al-n").addEventListener("input", upd);
+      upd();
+    },
+
+    papers: function (host) {
+      var th = "all";
+      host.innerHTML = benchHead("The 17 reviewed papers", "filter by theme") + '<div class="chips" id="pp-f"></div><div class="papers" id="pp-list"></div>';
+      var keys = ["all", "a", "b", "c", "d", "e"];
+      var f = document.getElementById("pp-f");
+      keys.forEach(function (k) {
+        var bt = document.createElement("button");
+        bt.type = "button"; bt.className = "chip"; bt.textContent = k === "all" ? "All" : THEMES[k];
+        bt.setAttribute("aria-pressed", k === th ? "true" : "false");
+        bt.addEventListener("click", function () { th = k; f.querySelectorAll(".chip").forEach(function (x, i) { x.setAttribute("aria-pressed", keys[i] === k ? "true" : "false"); }); list(); });
+        f.appendChild(bt);
+      });
+      function list() {
+        document.getElementById("pp-list").innerHTML = PAPERS.filter(function (p) { return th === "all" || p[1].indexOf(th) >= 0; }).map(function (p) {
+          return '<article class="paper"><div class="ph"><span class="pn">[' + p[0] + ']</span><span class="pt">' + p[3] + '</span></div><div class="pv">' + p[2] + " · <i>" + p[4] + "</i> · " + p[5] + " · " +
+            p[1].split("").map(function (t) { return THEMES[t]; }).join(", ") + "</div><p>" + p[6] + "</p><p><b>For us:</b> " + p[7] + "</p></article>";
+        }).join("");
+      }
+      list();
+    }
+  };
+
+  /* ================= rendering ================= */
+
+  var view = document.getElementById("view");
+  var mode = "study", cur = (S.last && MOD_BY_ID[S.last]) ? S.last : MODULES[0].id;
+
+  function quizScore(m) {
+    var a = S.quiz[m.id] || {}, right = 0, done = 0;
+    m.quiz.forEach(function (q, i) { if (a[i] !== undefined) { done++; if (a[i] === q.a) right++; } });
+    return { right: right, done: done, total: m.quiz.length };
+  }
+
+  function syncOverall() {
+    var done = MODULES.filter(function (m) { return S.done[m.id]; }).length;
+    var qr = 0, qt = 0;
+    MODULES.forEach(function (m) { var s = quizScore(m); qr += s.right; qt += s.total; });
+    document.getElementById("meter").style.width = (done / MODULES.length * 100) + "%";
+    document.getElementById("overall-txt").textContent = done + "/" + MODULES.length + " modules · quiz " + qr + "/" + qt;
+  }
+
+  function figHtml(id) {
+    var f = FIG[id]; if (!f) return "";
+    return '<figure class="fig"><button type="button" class="zoom" data-fig="' + id + '" aria-label="Enlarge figure ' + id + '"><img src="' + f.src + '" alt="' + esc(f.caption) + '" loading="lazy"></button><figcaption>' + f.caption + "</figcaption></figure>";
+  }
+
+  function renderStudy() {
+    var m = MOD_BY_ID[cur];
+    S.last = cur; save();
+    var rail = '<nav class="rail" aria-label="Modules">' + PARTS.map(function (p) {
+      return '<div class="part"><h4>' + p.name + "</h4>" + p.ids.map(function (id) {
+        var mm = MOD_BY_ID[id], s = quizScore(mm), dn = !!S.done[id];
+        var st = dn ? '<span class="st done">done</span>' : (s.done ? '<span class="st">' + s.right + "/" + s.total + "</span>" : '<span class="st"></span>');
+        return '<a href="#' + id + '"' + (id === cur ? ' aria-current="page"' : "") + '><span class="no">' + String(mm.no).padStart(2, "0") + "</span><span>" + mm.title + "</span>" + st + "</a>";
+      }).join("") + "</div>";
+    }).join("") + "</nav>";
+
+    var pick = '<label class="mod-pick" for="mod-select"><span class="flabel">Module</span><select id="mod-select">' + MODULES.map(function (mm) {
+      return '<option value="' + mm.id + '"' + (mm.id === cur ? " selected" : "") + ">" + mm.no + ". " + mm.title + (S.done[mm.id] ? " ✓" : "") + "</option>";
+    }).join("") + "</select></label>";
+
+    var h = '<article class="mod">' + pick +
+      '<header class="mod-head"><p class="eyebrow"><b>Module ' + m.no + " of " + MODULES.length + "</b> · " + m.part + "</p><h2>" + m.title + '</h2><p class="lede">' + m.lede + "</p></header>";
+    h += '<section class="blk"><h3>Key ideas</h3><ul class="ideas">' + m.ideas.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul></section>";
+    if (m.extra) h += m.extra();
+    if (m.eqs) h += '<section class="blk"><h3>Formulas</h3><div class="eqs">' + m.eqs.map(function (e) { return '<div class="eq"><span class="k">' + e[0] + '</span><span class="x">' + e[1] + '</span><span class="w">' + e[2] + "</span></div>"; }).join("") + "</div></section>";
+    if (m.widget) h += '<section class="blk"><h3>Try it</h3><div class="bench" id="widget"></div></section>';
+    if (m.figs) h += '<section class="blk"><h3>Figures from the project</h3><div class="figs">' + m.figs.map(figHtml).join("") + "</div></section>";
+    if (m.nums) h += '<section class="blk"><h3>Numbers to know</h3><div class="nums">' + m.nums.map(function (x) { return "<div>" + x[0] + "<span>" + x[1] + "</span></div>"; }).join("") + "</div></section>";
+    h += '<section class="blk"><blockquote class="say"><span>Say it in the viva</span><p>“' + m.say + '”</p></blockquote></section>';
+    h += '<section class="blk quiz" id="quiz"></section>';
+    var i = MODULES.indexOf(m), prev = MODULES[i - 1], next = MODULES[i + 1];
+    h += '<footer class="modfoot"><button type="button" class="btn ghost" id="mark">' + "</button>" +
+      '<div class="btn-row">' + (prev ? '<a class="btn ghost" href="#' + prev.id + '">← ' + prev.title + "</a>" : "") + (next ? '<a class="btn" href="#' + next.id + '">' + next.title + " →</a>" : '<a class="btn" href="#viva">Go to mock viva →</a>') + "</div></footer></article>";
+
+    view.innerHTML = '<div class="study">' + rail + h + "</div>";
+    if (m.widget) WIDGETS[m.widget](document.getElementById("widget"));
+    renderQuiz(m);
+    var mark = document.getElementById("mark");
+    var syncMark = function () { var dn = !!S.done[m.id]; mark.setAttribute("aria-pressed", dn ? "true" : "false"); mark.textContent = dn ? "Understood ✓" : "Mark as understood"; };
+    syncMark();
+    mark.addEventListener("click", function () { S.done[m.id] = !S.done[m.id]; save(); syncMark(); syncOverall(); refreshRail(); });
+    document.getElementById("mod-select").addEventListener("change", function (e) { location.hash = e.target.value; });
+  }
+
+  function refreshRail() {
+    document.querySelectorAll(".rail a").forEach(function (a) {
+      var id = a.getAttribute("href").slice(1), mm = MOD_BY_ID[id], s = quizScore(mm), st = a.querySelector(".st");
+      if (S.done[id]) { st.className = "st done"; st.textContent = "done"; } else { st.className = "st"; st.textContent = s.done ? s.right + "/" + s.total : ""; }
+    });
+  }
+
+  function renderQuiz(m) {
+    var host = document.getElementById("quiz"), ans = S.quiz[m.id] || (S.quiz[m.id] = {});
+    var s = quizScore(m);
+    var h = '<div class="quiz-h"><h3 style="font:600 12px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)">Check yourself</h3><span class="score">' + s.right + " / " + s.total + " correct" + (s.done < s.total ? " · " + (s.total - s.done) + " left" : "") + "</span></div>";
+    m.quiz.forEach(function (q, qi) {
+      var a = ans[qi];
+      h += '<div class="q"><p class="qt">' + (qi + 1) + ". " + q.q + '</p><div class="opts">' + q.o.map(function (o, oi) {
+        var cls = a === undefined ? "" : (oi === q.a ? "right" : (oi === a ? "wrong" : ""));
+        return '<button type="button" data-q="' + qi + '" data-o="' + oi + '" class="' + cls + '"' + (a !== undefined ? " disabled" : "") + ">" + o + "</button>";
+      }).join("") + "</div>" + (a !== undefined ? '<p class="why"><b>' + (a === q.a ? "Correct." : "Not quite.") + "</b> " + q.w + "</p>" : "") + "</div>";
+    });
+    if (s.done) h += '<div><button type="button" class="btn ghost" id="q-reset">Reset this quiz</button></div>';
+    host.innerHTML = h;
+    host.querySelectorAll(".opts button").forEach(function (bt) {
+      bt.addEventListener("click", function () {
+        ans[+bt.getAttribute("data-q")] = +bt.getAttribute("data-o"); save();
+        renderQuiz(m); syncOverall(); refreshRail();
+      });
+    });
+    var rs = document.getElementById("q-reset");
+    if (rs) rs.addEventListener("click", function () { S.quiz[m.id] = {}; save(); renderQuiz(m); syncOverall(); refreshRail(); });
+  }
+
+  /* flashcards */
+  var ALLCARDS = [];
+  MODULES.forEach(function (m) { (m.cards || []).forEach(function (c, i) { ALLCARDS.push({ id: m.id + ":" + i, mod: m, f: c[0], b: c[1] }); }); });
+  var order = {}; ALLCARDS.forEach(function (c) { order[c.id] = Math.random(); });
+  var cardState = { cur: null, flipped: false };
+  function deck() {
+    var f = S.cardFilter && MOD_BY_ID[S.cardFilter] ? S.cardFilter : "all";
+    return ALLCARDS.filter(function (c) { return f === "all" || c.mod.id === f; });
+  }
+  function nextCard(exclude) {
+    var d = deck().slice().sort(function (a, c) { var ba = S.cards[a.id] || 0, bc = S.cards[c.id] || 0; return ba - bc || order[a.id] - order[c.id]; });
+    var pick = d.filter(function (c) { return c.id !== exclude; })[0] || d[0];
+    cardState.cur = pick ? pick.id : null; cardState.flipped = false;
+  }
+  function renderCards() {
+    if (!cardState.cur || !deck().some(function (c) { return c.id === cardState.cur; })) nextCard();
+    var d = deck(), counts = [0, 0, 0, 0];
+    d.forEach(function (c) { counts[S.cards[c.id] || 0]++; });
+    var c = ALLCARDS.filter(function (x) { return x.id === cardState.cur; })[0];
+    var f = S.cardFilter && MOD_BY_ID[S.cardFilter] ? S.cardFilter : "all";
+    var h = '<div class="center"><header class="page-h"><p class="eyebrow"><b>Flashcards</b> · ' + ALLCARDS.length + " cards from all " + MODULES.length + " modules</p><h2>Recall first, then flip.</h2>" +
+      "<p>Say the answer out loud before you flip. \"Again\" sends a card back to the start of the queue; \"Got it\" moves it up a box. Cards you know least come first. Keys: space flips, 1 is Again, 2 is Got it.</p></header>" +
+      '<label class="field" for="cf"><span class="flabel">Deck</span><select id="cf" style="background:var(--surface);border:1px solid var(--line-2);border-radius:5px;padding:8px 10px;font-size:15px"><option value="all">All modules</option>' +
+      MODULES.map(function (m) { return '<option value="' + m.id + '"' + (f === m.id ? " selected" : "") + ">" + m.no + ". " + m.title + "</option>"; }).join("") + "</select></label>" +
+      '<div class="boxes"><span>New <b>' + counts[0] + "</b></span><span>Again <b>" + counts[1] + "</b></span><span>Learning <b>" + counts[2] + "</b></span><span>Known <b>" + counts[3] + "</b></span></div>";
+    if (c) {
+      h += '<button type="button" class="flash" id="flash" aria-live="polite"><span class="tag">Module ' + c.mod.no + " · " + c.mod.title + '</span><span class="front">' + c.f + "</span>" +
+        (cardState.flipped ? '<span class="back">' + c.b + "</span>" : '<span class="hint">Click or press space to flip</span>') + "</button>" +
+        '<div class="btn-row"><button type="button" class="btn ghost" id="c-again"' + (cardState.flipped ? "" : " disabled") + '>1 · Again</button><button type="button" class="btn" id="c-got"' + (cardState.flipped ? "" : " disabled") + '>2 · Got it</button><button type="button" class="btn ghost" id="c-skip">Skip</button><button type="button" class="btn ghost" id="c-reset">Reset boxes</button></div>';
+    }
+    h += "</div>";
+    view.innerHTML = h;
+    document.getElementById("cf").addEventListener("change", function (e) { S.cardFilter = e.target.value; save(); nextCard(); renderCards(); });
+    if (!c) return;
+    document.getElementById("flash").addEventListener("click", flip);
+    document.getElementById("c-again").addEventListener("click", function () { rate(1); });
+    document.getElementById("c-got").addEventListener("click", function () { rate(2); });
+    document.getElementById("c-skip").addEventListener("click", function () { nextCard(cardState.cur); renderCards(); });
+    document.getElementById("c-reset").addEventListener("click", function () { deck().forEach(function (x) { delete S.cards[x.id]; }); save(); nextCard(); renderCards(); });
+  }
+  function flip() { cardState.flipped = !cardState.flipped; renderCards(); var fl = document.getElementById("flash"); if (fl) fl.focus(); }
+  function rate(k) {
+    if (!cardState.flipped || !cardState.cur) return;
+    var id = cardState.cur, box = S.cards[id] || 0;
+    S.cards[id] = k === 1 ? 1 : Math.min(3, Math.max(box, 1) + 1);
+    order[id] = 1 + Math.random(); save();
+    nextCard(id); renderCards();
+    var fl = document.getElementById("flash"); if (fl) fl.focus();
+  }
+
+  /* mock viva */
+  var vivaState = { i: 0, shown: false, left: 0, timer: null, timed: false };
+  function stopTimer() { if (vivaState.timer) { clearInterval(vivaState.timer); vivaState.timer = null; } }
+  function startTimer() {
+    stopTimer(); if (!vivaState.timed) return;
+    vivaState.left = 90; paintTimer();
+    vivaState.timer = setInterval(function () { vivaState.left--; paintTimer(); if (vivaState.left <= 0) stopTimer(); }, 1000);
+  }
+  function paintTimer() {
+    var t = document.getElementById("v-timer"); if (!t) { stopTimer(); return; }
+    var s = Math.max(0, vivaState.left);
+    t.textContent = vivaState.timed ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : "";
+    t.className = "timer" + (vivaState.timed && s <= 15 ? " low" : "");
+  }
+  function pickViva() {
+    var pri = function (i) { var r = S.viva[i]; return r === undefined ? 0 : r === "miss" ? 1 : r === "part" ? 2 : 3; };
+    var idx = VIVA.map(function (_, i) { return i; }).filter(function (i) { return i !== vivaState.i; });
+    var best = Math.min.apply(null, idx.map(pri));
+    var pool = idx.filter(function (i) { return pri(i) === best; });
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function renderViva() {
+    var i = vivaState.i, q = VIVA[i], r = S.viva[i];
+    var tally = { good: 0, part: 0, miss: 0 };
+    VIVA.forEach(function (_, k) { if (S.viva[k]) tally[S.viva[k]]++; });
+    var lab = { good: "Nailed it", part: "Partly", miss: "Missed" };
+    var h = '<div class="center"><header class="page-h"><p class="eyebrow"><b>Mock viva</b> · ' + VIVA.length + " questions</p><h2>Answer out loud, then compare.</h2>" +
+      "<p>Answer each question in your own words before revealing the model answer, then rate yourself honestly. \"Next question\" picks unrated questions first, then the ones you missed. The timer gives you 90 seconds, about the length of a real viva answer.</p></header>" +
+      '<div class="boxes"><span>Nailed <b>' + tally.good + "</b></span><span>Partly <b>" + tally.part + "</b></span><span>Missed <b>" + tally.miss + "</b></span><span>Unrated <b>" + (VIVA.length - tally.good - tally.part - tally.miss) + "</b></span></div>" +
+      '<section class="vpanel"><div class="vtop"><span class="vno">Question ' + (i + 1) + " of " + VIVA.length + (r ? ' · <span class="rate ' + r + '">' + lab[r] + "</span>" : "") + '</span><span id="v-timer" class="timer"></span></div>' +
+      '<p class="vq">' + q[0] + "</p>" +
+      (vivaState.shown ? '<div class="ans"><p>' + q[1] + "</p></div>" + '<div class="btn-row"><button type="button" class="btn ghost" data-r="miss">Missed it</button><button type="button" class="btn ghost" data-r="part">Partly</button><button type="button" class="btn" data-r="good">Nailed it</button></div>' :
+        '<div class="btn-row"><button type="button" class="btn" id="v-show">Show model answer</button></div>') +
+      '<div class="btn-row"><button type="button" class="btn ghost" id="v-next">Next question</button><button type="button" class="btn ghost" id="v-timed" aria-pressed="' + vivaState.timed + '">' + (vivaState.timed ? "Timer on (90 s)" : "Timer off") + '</button><button type="button" class="btn ghost" id="v-reset">Clear ratings</button></div></section>' +
+      '<section class="blk"><h3 style="font:600 12px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)">All questions</h3><ol class="vlist">' + VIVA.map(function (v, k) {
+        var rr = S.viva[k];
+        return '<li><button type="button" data-k="' + k + '"' + (k === i ? ' aria-current="true" style="background:var(--surface);color:var(--ink)"' : "") + '><span class="i">' + (k + 1) + "</span><span>" + v[0] + '</span><span class="rate ' + (rr || "none") + '">' + (rr ? lab[rr] : "–") + "</span></button></li>";
+      }).join("") + "</ol></section></div>";
+    view.innerHTML = h;
+    paintTimer();
+    var show = document.getElementById("v-show");
+    if (show) show.addEventListener("click", function () { vivaState.shown = true; stopTimer(); renderViva(); });
+    view.querySelectorAll("[data-r]").forEach(function (bt) { bt.addEventListener("click", function () { S.viva[i] = bt.getAttribute("data-r"); save(); go(pickViva()); }); });
+    document.getElementById("v-next").addEventListener("click", function () { go(pickViva()); });
+    document.getElementById("v-timed").addEventListener("click", function () {
+      vivaState.timed = !vivaState.timed;
+      renderViva();
+      if (vivaState.timed && !vivaState.shown) startTimer(); else stopTimer();
+    });
+    document.getElementById("v-reset").addEventListener("click", function () { S.viva = {}; save(); renderViva(); });
+    view.querySelectorAll("[data-k]").forEach(function (bt) { bt.addEventListener("click", function () { go(+bt.getAttribute("data-k")); window.scrollTo(0, 0); }); });
+    function go(k) { vivaState.i = k; vivaState.shown = false; renderViva(); startTimer(); }
+  }
+
+  /* cheat sheet */
+  function renderSheet() {
+    var methods = ["none", "rem", "rem_tensored", "zne", "zne_rem"];
+    var circ = function (m, k) { return m === "none" ? "1" : n("circuits." + m + ".n" + k); };
+    var cost = '<div class="tw"><table><thead><tr><th>Method</th><th class="num">Circuits n=2</th><th class="num">n=4</th><th class="num">n=6</th><th class="num">Shots n=6</th><th class="num">CNOTs</th><th class="num">Max depth</th></tr></thead><tbody>' +
+      methods.map(function (m) {
+        var z = m.indexOf("zne") === 0;
+        return '<tr><td><span class="sw" style="background:' + mcol(m) + '"></span><b>' + m + '</b></td><td class="num">' + circ(m, 2) + '</td><td class="num">' + circ(m, 4) + '</td><td class="num">' + circ(m, 6) + '</td><td class="num">' + n("shots." + m + ".n6") + '</td><td class="num">' + (z ? n("zne.cx_ratio") + "×" : "1×") + '</td><td class="num">' + (z ? n("zne.depth_ratio.max") + "×" : "1×") + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+    var keyRows = [
+      ["Unmitigated mean error, ideal → high", n("err.mean.none.ideal") + " → " + n("err.mean.none.low") + " → " + n("err.mean.none.moderate") + " → " + n("err.mean.none.high")],
+      ["Median cut at moderate: rem / rem_t / zne / zne_rem", n("imp.median.rem.moderate") + "% / " + n("imp.median.rem_tensored.moderate") + "% / " + n("imp.median.zne.moderate") + "% / " + n("imp.median.zne_rem.moderate") + "%"],
+      ["Median cut at low: rem / zne", n("imp.median.rem.low") + "% (p " + n("wilcoxon.p.rem.low") + ") / " + n("imp.median.zne.low") + "% (p " + n("wilcoxon.p.zne.low") + ")"],
+      ["Median cut at high: rem / rem_t / zne / zne_rem", n("imp.median.rem.high") + "% / " + n("imp.median.rem_tensored.high") + "% / " + n("imp.median.zne.high") + "% / " + n("imp.median.zne_rem.high") + "%"],
+      ["Best-method counts", "moderate: zne_rem " + n("best.count.zne_rem.moderate") + "; low: rem " + n("best.count.rem.low") + ", zne_rem " + n("best.count.zne_rem.low")],
+      ["Readout share of bias, low → moderate", n("bias.readout_share.low") + "% → " + n("bias.readout_share.moderate") + "%"],
+      ["ZNE std ratio, measured (theory)", n("var.ratio.emp.ideal") + ", " + n("var.ratio.emp.low") + ", " + n("var.ratio.emp.moderate") + ", " + n("var.ratio.emp.high") + " (" + n("var.ratio.theory") + ")"],
+      ["ZNE worse than none at ideal", n("ideal.zne_worse")],
+      ["Exp-fit failures zne / zne_rem; Richardson out of range", n("expnan.zne") + " / " + n("expnan.zne_rem") + "; " + n("oor.zne")],
+      ["Largest REM negative mass, full / tensored", n("negmass.max") + " / " + n("negmass.max.tensored")],
+      ["Tensored vs full REM, mean / max |diff|", n("rem_tensored.mean_abs_diff") + " / " + n("rem_tensored.max_abs_diff")],
+      ["Shot allocation std ratio, measured / theory", n("alloc.ratio.empirical") + " / " + n("alloc.ratio.theory") + " (split " + n("alloc.shots.optimal") + ")"],
+      ["Exact VQC / LR / SVM accuracy", n("qml.vqc_exact.acc.mean") + " / " + n("qml.logreg.acc.n2") + "–" + n("qml.logreg.acc.n4") + " / " + n("qml.svm.acc.n2") + "–" + n("qml.svm.acc.n4")],
+      ["High noise margin retention none → zne_rem", n("qml.margin.none.high") + " → " + n("qml.margin.zne_rem.high")],
+      ["High noise accuracy none / zne_rem (ideal none)", n("qml.acc.none.high") + " / " + n("qml.acc.zne_rem.high") + " (" + n("qml.acc.none.ideal") + ")"],
+      ["Grid", n("grid.conditions") + " conditions, " + n("grid.rows") + " rows, " + n("grid.instances") + " instances; " + C.tests_passed + " tests"]
+    ];
+    var formulas = [];
+    MODULES.forEach(function (m) { (m.eqs || []).forEach(function (e) { formulas.push([e[0], e[1], m.title]); }); });
+    var h = '<div class="sheet"><header class="page-h"><p class="eyebrow"><b>Cheat sheet</b> · everything on one page</p><h2>The numbers, formulas and terms to have ready.</h2><p>Every value is read from the project\'s analysis output, the same file the report is generated from.</p></header>' +
+      '<div class="sheet-grid"><section><h3>Key numbers</h3><div class="tw"><table class="kv"><tbody>' + keyRows.map(function (r) { return "<tr><td>" + r[0] + '</td><td class="num">' + r[1] + "</td></tr>"; }).join("") + "</tbody></table></div></section>" +
+      "<section><h3>Cost per mitigated estimate</h3>" + cost + "<h3>Noise levels</h3>" + levelTable() + "</section></div>" +
+      "<section><h3>Hypotheses</h3>" + hypTable() + "</section>" +
+      '<section><h3>Formulas</h3><div class="eqs">' + formulas.map(function (f) { return '<div class="eq"><span class="k">' + f[0] + '</span><span class="x">' + f[1] + '</span><span class="w">' + f[2] + "</span></div>"; }).join("") + "</div></section>" +
+      '<section><h3>Glossary</h3><label class="field" for="g-q"><span class="flabel">Search terms</span><input type="search" id="g-q" placeholder="e.g. folding, leakage, TVD" autocomplete="off"></label><dl class="gloss" id="g-list"></dl></section>' +
+      '<section><h3>References</h3><div class="tw"><table><tbody>' + PAPERS.map(function (p) { return '<tr><td class="num">' + p[0] + "</td><td>" + p[2] + ", “" + p[3] + ",” <i>" + p[4] + "</i> (" + p[5] + ").</td></tr>"; }).join("") + "</tbody></table></div></section></div>";
+    view.innerHTML = h;
+    var gq = document.getElementById("g-q"), gl = document.getElementById("g-list");
+    function gloss() {
+      var q = gq.value.trim().toLowerCase();
+      var rows = GLOSS.filter(function (g) { return !q || (g[0] + " " + g[1]).toLowerCase().indexOf(q) >= 0; });
+      gl.innerHTML = rows.length ? rows.map(function (g) { return "<div><dt>" + g[0] + "</dt><dd>" + g[1] + "</dd></div>"; }).join("") : '<div><dt>No match</dt><dd>Try a shorter word, such as "REM" or "noise".</dd></div>';
+    }
+    gq.addEventListener("input", gloss);
+    gloss();
+  }
+
+  /* router */
+  function parseHash() {
+    var h = location.hash.replace("#", "");
+    if (h === "cards" || h === "viva" || h === "sheet") mode = h;
+    else if (MOD_BY_ID[h]) { mode = "study"; cur = h; }
+    else mode = "study";
+  }
+  function render() {
+    stopTimer();
+    document.querySelectorAll(".modes button").forEach(function (bt) { bt.setAttribute("aria-selected", bt.getAttribute("data-mode") === mode ? "true" : "false"); });
+    if (mode === "study") renderStudy();
+    else if (mode === "cards") renderCards();
+    else if (mode === "viva") { renderViva(); startTimer(); }
+    else renderSheet();
+    syncOverall();
+  }
+  document.querySelectorAll(".modes button").forEach(function (bt) {
+    bt.addEventListener("click", function () {
+      var md = bt.getAttribute("data-mode");
+      var target = md === "study" ? cur : md;
+      if (location.hash.replace("#", "") === target) { mode = md; render(); } else location.hash = target;
+    });
+  });
+  window.addEventListener("hashchange", function () { parseHash(); render(); window.scrollTo(0, 0); });
+
+  /* lightbox */
+  var lb = document.getElementById("lb");
+  view.addEventListener("click", function (e) {
+    var z = e.target.closest && e.target.closest(".zoom");
+    if (!z) return;
+    var f = FIG[z.getAttribute("data-fig")];
+    document.getElementById("lb-img").src = f.src;
+    document.getElementById("lb-img").alt = f.caption;
+    document.getElementById("lb-cap").textContent = f.caption;
+    lb.hidden = false;
+  });
+  lb.addEventListener("click", function () { lb.hidden = true; });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !lb.hidden) { lb.hidden = true; return; }
+    if (mode !== "cards") return;
+    var tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "select" || tag === "textarea") return;
+    if (e.key === " " || e.key === "Enter") { if (tag !== "button" || e.target.id === "flash") { e.preventDefault(); flip(); } }
+    else if (e.key === "1") rate(1);
+    else if (e.key === "2") rate(2);
+  });
+
+  parseHash();
+  render();
+})();
+</script>

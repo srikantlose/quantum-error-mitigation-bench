@@ -3,8 +3,9 @@
     python scripts/build_guide.py
 
 Embeds results/summary/report_numbers.json, one example circuit's ZNE points, the
-per-size bias split and one real calibration matrix into guide/template.html, and
-writes guide/learn-qem.html.
+per-size bias split and two real calibration matrices into guide/template.html, and
+writes guide/learn-qem.html plus a standalone copy for the Vercel site
+(dashboard/quantum-error-mitigation-bench/guide/index.html).
 """
 
 from __future__ import annotations
@@ -74,6 +75,8 @@ def main(argv=None) -> int:
     ap.add_argument("--config", default=str(ROOT / "config" / "experiment.yaml"))
     ap.add_argument("--template", default=str(ROOT / "guide" / "template.html"))
     ap.add_argument("--out", default=str(ROOT / "guide" / "learn-qem.html"))
+    ap.add_argument("--site", default=str(ROOT / "dashboard" / "quantum-error-mitigation-bench" / "guide" / "index.html"),
+                    help="standalone copy for the Vercel site")
     args = ap.parse_args(argv)
 
     runs_path = Path(args.runs)
@@ -84,9 +87,26 @@ def main(argv=None) -> int:
     template = Path(args.template).read_text(encoding="utf-8")
     if template.count(PLACEHOLDER) != 1:
         raise SystemExit(f"template must contain {PLACEHOLDER} exactly once")
-    Path(args.out).write_text(template.replace(PLACEHOLDER, blob), encoding="utf-8", newline="\n")
+    page = template.replace(PLACEHOLDER, blob)
+    Path(args.out).write_text(page, encoding="utf-8", newline="\n")
     print("wrote", args.out)
+    site = Path(args.site)
+    site.parent.mkdir(parents=True, exist_ok=True)
+    site.write_text(standalone(page), encoding="utf-8", newline="\n")
+    print("wrote", site)
     return 0
+
+
+def standalone(page: str) -> str:
+    """Wrap the page fragment in a full HTML document for static hosting."""
+    head, sep, body = page.partition("</style>")
+    if not sep:
+        raise SystemExit("template has no </style> to split the head from the body")
+    return (
+        '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+        + head.strip() + "\n" + sep + "\n</head>\n<body>\n" + body.strip() + "\n</body>\n</html>\n"
+    )
 
 
 if __name__ == "__main__":

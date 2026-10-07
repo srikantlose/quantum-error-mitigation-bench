@@ -32,6 +32,9 @@ a { color: var(--cryo); }
   display: inline-block; font-family: var(--mono); font-size: .68rem; color: var(--gold);
   border: 1px solid var(--gold); border-radius: 3px; padding: 1px 6px; margin-right: 8px; letter-spacing: .04em;
 }
+.sitenav { display: inline-flex; gap: 8px; margin-left: 6px; vertical-align: middle; }
+.sitenav a { font: 600 12px/1 var(--mono); color: var(--gold-ink); background: var(--gold); text-decoration: none; padding: 5px 9px; border-radius: 3px; }
+.sitenav a:hover { filter: brightness(1.08); }
 .readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px;
   background: var(--line); border: 1px solid var(--line); margin-top: 18px; }
 .readout { background: var(--panel); padding: 12px 14px; }
@@ -105,7 +108,7 @@ table.lv th { background: var(--panel-2); color: var(--muted); }
 <div class="tooltip" id="tip"></div>
 
 <header class="plate"><div class="wrap">
-  <span class="tag">GROUP 20</span><span class="tag">QISKIT AER</span><span class="tag">TRACK A + TRACK B</span>
+  <span class="tag">GROUP 20</span><span class="tag">QISKIT AER</span><span class="tag">TRACK A + TRACK B</span><!--SITE_NAV-->
   <h1>Quantum circuit noise and error mitigation</h1>
   <div class="sub">Five mitigation methods on a layered parity circuit under depolarizing + readout
     noise (Track A), the same methods applied to a variational quantum classifier against

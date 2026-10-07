@@ -22,6 +22,8 @@ from qem.config import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
 PLACEHOLDER = '"__BENCH_DATA__"'
+SITE_NAV = "<!--SITE_NAV-->"
+SITE_LINKS = '<nav class="sitenav"><a href="study/">Study guide</a><a href="guide/">Field guide</a></nav>'
 
 TRACK_A_COLUMNS = {
     "n_qubits": "n", "depth_layers": "L", "noise_level": "noise", "seed": "seed", "method": "method",
@@ -134,7 +136,7 @@ def main(argv=None) -> int:
 
     site = Path(args.site)
     site.mkdir(parents=True, exist_ok=True)
-    (site / "index.html").write_text(standalone(page), encoding="utf-8", newline="\n")
+    (site / "index.html").write_text(standalone(page.replace(SITE_NAV, SITE_LINKS)), encoding="utf-8", newline="\n")
     print("wrote", site / "index.html")
     return 0
 

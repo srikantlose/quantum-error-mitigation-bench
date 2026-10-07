@@ -63,16 +63,29 @@ pytest -q
 
 186 tests at the time of writing (`results/logs/pytest_output.txt` has the saved output).
 
-## Dashboard and learning guide
+## Dashboard, field guide and study guide
 
-The interactive dashboard (`dashboard/`) and field guide (`guide/`) read the v2 data: all
-five Track A methods (including `rem_tensored`), the `high` noise level, Track B, and the
-shot-allocation improvement experiment. Rebuild either after a resweep:
+Three interactive pages read the same result files as the report:
+
+- `dashboard/`: results explorer for Track A, Track B and the shot-allocation experiment.
+- `guide/learn-qem.html`: field guide with live demos of shots, noise, REM and ZNE.
+- `study/study-guide.html`: study guide covering the whole project in 13 modules, with
+  quizzes, flashcards, a 24-question mock viva and a cheat sheet. It is a single file and
+  opens directly in a browser.
+
+All three are deployed together at https://quantum-error-mitigation-bench.vercel.app
+(dashboard at `/`, study guide at `/study/`, field guide at `/guide/`). Rebuild them after
+a resweep, then redeploy from the site folder:
 
 ```bash
-python scripts/build_dashboard.py   # dashboard/mitigation-bench.html + dashboard/quantum-error-mitigation-bench/index.html
-python scripts/build_guide.py       # guide/learn-qem.html
+python scripts/build_dashboard.py     # dashboard + site index
+python scripts/build_guide.py         # guide/learn-qem.html + site /guide/
+python scripts/build_study_guide.py   # study/study-guide.html + site /study/
+cd dashboard/quantum-error-mitigation-bench && vercel deploy --prod
 ```
+
+`python scripts/package_deliverables.py` bundles every deliverable into
+`dist/Group20_QEM_Deliverables.zip` (git-ignored).
 
 ## Layout
 
@@ -80,7 +93,7 @@ python scripts/build_guide.py       # guide/learn-qem.html
 |---|---|
 | `config/` | `experiment.yaml` (full grid) and `smoke.yaml` |
 | `src/qem/` | config, seeds, circuits, observables, noise, execution, mitigation (`readout.py`, `zne.py`, `pipeline.py`), metrics, `experiment.py` (Track A), `qml/` (Track B: data, classical, vqc, evaluate, runner), `improvement.py` (shot allocation), analysis, plotting |
-| `scripts/` | `run_sweep.py`, `run_qml.py`, `run_improvement.py`, `analyze.py`, `make_plots.py`, `make_design_figures.py`, `smoke_test.py`, `build_report.py` |
+| `scripts/` | `run_sweep.py`, `run_qml.py`, `run_improvement.py`, `analyze.py`, `make_plots.py`, `make_design_figures.py`, `smoke_test.py`, `build_report.py`, `build_dashboard.py`, `build_guide.py`, `build_study_guide.py`, `package_deliverables.py` |
 | `tests/` | Unit and integration tests (`pytest -q`) |
 | `results/raw/` | Track A: `runs.csv` (600 rows), counts, circuit instances, full and tensored calibration matrices |
 | `results/qml/` | Track B: `qml_runs.csv` (360 rows), splits, preprocessing params, trained models, per-sample predictions |
@@ -89,6 +102,7 @@ python scripts/build_guide.py       # guide/learn-qem.html
 | `results/figures/` | Figures A1–A13 (Track A), B1–B6 (Track B), D1–D5 (circuit/pipeline diagrams), I1 (shot allocation) |
 | `report/` | `report_template.md` (hand-written, placeholders only), the rendered `report.md`, `literature_notes.md`, `screenshots/` |
 | `docs/` | `viva_prep.md` |
+| `dashboard/`, `guide/`, `study/` | Interactive pages (templates plus built HTML); `dashboard/quantum-error-mitigation-bench/` is the deployed Vercel site |
 
 The report template contains no result numbers. `scripts/build_report.py` fills every
 number and table from `results/summary/`, so the report always matches the data.
