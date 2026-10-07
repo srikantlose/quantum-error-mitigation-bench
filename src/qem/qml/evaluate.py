@@ -202,7 +202,7 @@ def _save_predictions(path: Path, prep: PreprocessedData, exact: ExactReference,
     fieldnames = ["sample_idx", "y_true", "E_exact"] + \
         [f"E_hat_{m}" for m in methods] + [f"yhat_{m}" for m in methods]
     with open(path, "w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=fieldnames)
+        writer = csv.DictWriter(fh, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for i in range(len(prep.y_test)):
             row = {"sample_idx": i, "y_true": int(prep.y_test[i]), "E_exact": f"{exact.E[i]:.10g}"}
