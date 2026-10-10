@@ -6,7 +6,7 @@ Reads results/raw/runs.csv (Track A), results/qml/qml_runs.csv (Track B),
 results/improvement/zne_allocation.csv and results/summary/report_numbers.json, embeds them
 as JSON into dashboard/template.html, and writes dashboard/mitigation-bench.html (the
 artifact page) plus dashboard/quantum-error-mitigation-bench/index.html (a standalone page
-for Vercel).
+for Vercel). If report/Group20_Report.docx exists, it is copied into the site and linked.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import shutil
 from pathlib import Path
 
 import pandas as pd
@@ -23,7 +24,8 @@ from qem.config import load_config
 ROOT = Path(__file__).resolve().parents[1]
 PLACEHOLDER = '"__BENCH_DATA__"'
 SITE_NAV = "<!--SITE_NAV-->"
-SITE_LINKS = '<nav class="sitenav"><a href="study/">Study guide</a><a href="guide/">Field guide</a></nav>'
+SITE_LINKS = '<nav class="sitenav"><a href="study/">Study guide</a><a href="guide/">Field guide</a>{report}</nav>'
+REPORT_DOCX = ROOT / "report" / "Group20_Report.docx"
 
 TRACK_A_COLUMNS = {
     "n_qubits": "n", "depth_layers": "L", "noise_level": "noise", "seed": "seed", "method": "method",
@@ -136,7 +138,13 @@ def main(argv=None) -> int:
 
     site = Path(args.site)
     site.mkdir(parents=True, exist_ok=True)
-    (site / "index.html").write_text(standalone(page.replace(SITE_NAV, SITE_LINKS)), encoding="utf-8", newline="\n")
+    report_link = ""
+    if REPORT_DOCX.exists():
+        shutil.copyfile(REPORT_DOCX, site / REPORT_DOCX.name)
+        report_link = f'<a href="{REPORT_DOCX.name}" download>Report (Word)</a>'
+        print("copied", REPORT_DOCX.name, "into the site")
+    links = SITE_LINKS.format(report=report_link)
+    (site / "index.html").write_text(standalone(page.replace(SITE_NAV, links)), encoding="utf-8", newline="\n")
     print("wrote", site / "index.html")
     return 0
 
