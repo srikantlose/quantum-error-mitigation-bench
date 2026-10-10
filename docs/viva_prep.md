@@ -43,9 +43,9 @@ result removes most of the remaining bias, which is exactly the part that is gat
 3/8 = 0.375. They sum to 1 (needed so a constant signal extrapolates to itself). Treating
 each E(λᵢ) as an independent ±1-valued average, Var(E₀) = Σγᵢ²(1−Eᵢ²)/N, so the standard
 deviation scales by √Σγᵢ² = √(1.875² + 1.25² + 0.375²) = √5.21875 ≈ 2.285. Measured in our
-sweep, the ratio runs a little higher than this (2.07×–2.70× across noise levels; theory
-2.28×), which we attribute to the folded circuits' shots not behaving as perfectly
-independent as the simple model assumes.
+sweep, the ratio is 2.07×–2.70× across noise levels (theory 2.28×). Each measured ratio
+compares two standard deviations estimated from 30 runs, which carries roughly ±19% relative
+uncertainty, so these deviations (−9% to +18%) are consistent with sampling noise.
 
 **5. Why did you use `optimization_level=0`?**
 

@@ -693,28 +693,26 @@ def fig_qml_training_curves(models_dir: Path, qubits, depths, seeds, out, dpi):
 
 def fig_zne_allocation(alloc: pd.DataFrame, out, dpi):
     groups = alloc.groupby(["n_qubits", "depth_layers", "noise_level"], sort=False)
-    labels, uni, opt = [], [], []
+    labels, uni, opt, uni_sd, opt_sd = [], [], [], [], []
     for (n, L, nz), g in groups:
         labels.append(f"n={int(n)}\nL={int(L)}\n{nz}")
-        uni.append(g[g.scheme == "uniform"].empirical_std.iloc[0])
-        opt.append(g[g.scheme == "optimal"].empirical_std.iloc[0])
+        u, o = g[g.scheme == "uniform"].empirical_std, g[g.scheme == "optimal"].empirical_std
+        uni.append(u.mean()); uni_sd.append(u.std())
+        opt.append(o.mean()); opt_sd.append(o.std())
     x = np.arange(len(labels))
     fig, ax = plt.subplots(figsize=(max(8, 0.5 * len(labels)), 4.3), constrained_layout=True)
     width = 0.35
-    ax.bar(x - width / 2, uni, width, color=MUTED, label="uniform (1024 each)")
-    ax.bar(x + width / 2, opt, width, color="#2a78d6", label="optimal (∝ |γᵢ|)")
+    err = dict(capsize=2.5, error_kw={"elinewidth": 0.8, "ecolor": INK})
+    ax.bar(x - width / 2, uni, width, yerr=uni_sd, color=MUTED, label="uniform (1024 each)", **err)
+    ax.bar(x + width / 2, opt, width, yerr=opt_sd, color="#2a78d6", label="optimal (∝ |γᵢ|)", **err)
     theory_ratio = (alloc[alloc.scheme == "optimal"].theoretical_std.iloc[0]
                     / alloc[alloc.scheme == "uniform"].theoretical_std.iloc[0])
-    ax2 = ax.twinx()
-    ax2.axhline(theory_ratio, color=INK, linestyle="--", linewidth=1,
-               label=f"theoretical ratio ({theory_ratio:.3f})")
-    ax2.set_ylim(0, 1.3)
-    ax2.set_ylabel("—", alpha=0)
-    ax2.set_yticks([])
+    emp_ratio = (alloc[alloc.scheme == "optimal"].empirical_std.mean()
+                 / alloc[alloc.scheme == "uniform"].empirical_std.mean())
+    n_seeds = alloc.seed.nunique()
     ax.set_xticks(x, labels, fontsize=6.5)
-    ax.set_ylabel("empirical std of the Richardson estimate")
-    handles1, labels1 = ax.get_legend_handles_labels()
-    handles2, labels2 = ax2.get_legend_handles_labels()
-    ax.legend(handles1 + handles2, labels1 + labels2, loc="upper right", fontsize=8)
-    ax.set_title("I1. Variance-optimal shot allocation vs. uniform, at equal total shots")
+    ax.set_ylabel(f"empirical std of the Richardson estimate\n(mean ± SD over {n_seeds} circuit instances)")
+    ax.legend(loc="upper left", fontsize=8)
+    ax.set_title("I1. Variance-optimal shot allocation vs. uniform, at equal total shots\n"
+                 f"pooled std ratio optimal / uniform = {emp_ratio:.3f} (theory {theory_ratio:.3f})", fontsize=10.5)
     return _save(fig, out / "fig_I1_zne_allocation.png", dpi)

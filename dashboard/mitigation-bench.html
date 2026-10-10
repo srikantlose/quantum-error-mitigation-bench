@@ -195,8 +195,8 @@ table.lv th { background: var(--panel-2); color: var(--muted); }
     estimator's standard deviation at the same total cost.</div>
   <div class="bay one">
     <div class="panel"><h3>Empirical std: uniform vs. optimal</h3>
-      <div class="cap">Standard deviation of the Richardson ZNE estimate over repetitions, at
-        equal total shot budget, by condition.</div>
+      <div class="cap">Standard deviation of the Richardson ZNE estimate over 50 repetitions, at
+        equal total shot budget, by condition (mean over the 5 circuit instances).</div>
       <svg id="c-alloc" viewBox="0 0 520 260"></svg>
     </div>
   </div>
@@ -658,7 +658,13 @@ function renderAlloc() {
     if (!seen[key]) { seen[key] = true; conds.push(key); }
   });
   var groupW = plotW / conds.length;
-  var ymax = Math.max.apply(null, idxWhere(ALLOC, function () { return true; }).map(function (i) { return ALLOC.std[i]; })) * 1.2;
+  function meanStd(key, scheme) {
+    var idx = idxWhere(ALLOC, function (i) { return (ALLOC.n[i] + "/" + ALLOC.L[i] + "/" + ALLOC.noise[i]) === key && ALLOC.scheme[i] === scheme; });
+    return idx.length ? mean(idx.map(function (i) { return ALLOC.std[i]; })) : null;
+  }
+  var means = [];
+  conds.forEach(function (key) { ["uniform", "optimal"].forEach(function (sc) { var v = meanStd(key, sc); if (v != null) means.push(v); }); });
+  var ymax = Math.max.apply(null, means) * 1.2;
   function y(v) { return pad.t + plotH - (v / ymax) * plotH; }
   for (var gi = 0; gi <= 4; gi++) {
     var yy = pad.t + plotH * gi / 4;
@@ -671,9 +677,8 @@ function renderAlloc() {
     el("text", { x: x0 + groupW / 2, y: dims.h - 32, "text-anchor": "middle", class: "gl" }, g).textContent = "n" + parts[0] + " L" + parts[1];
     el("text", { x: x0 + groupW / 2, y: dims.h - 20, "text-anchor": "middle", class: "gl" }, g).textContent = parts[2];
     ["uniform", "optimal"].forEach(function (scheme, si) {
-      var idx = idxWhere(ALLOC, function (i) { return (ALLOC.n[i] + "/" + ALLOC.L[i] + "/" + ALLOC.noise[i]) === key && ALLOC.scheme[i] === scheme; });
-      if (!idx.length) return;
-      var sval = ALLOC.std[idx[0]];
+      var sval = meanStd(key, scheme);
+      if (sval == null) return;
       var bw = groupW * 0.32;
       var x = x0 + groupW * 0.15 + si * (bw + groupW * 0.08);
       var bar = el("rect", { x: x, y: y(sval), width: bw, height: plotH - (y(sval) - pad.t), fill: si ? "var(--cryo)" : "var(--faint)" }, g);
@@ -687,8 +692,8 @@ function renderAlloc() {
 
 /* ---------- verdicts ---------- */
 var V = [
-  { id: "H1", verdict: "supported", claim: "Unmitigated error grows with noise level, n and L.",
-    ev: "Mean error rises " + num("err.mean.none.ideal", 4) + " &rarr; " + num("err.mean.none.low", 4) + " &rarr; " + num("err.mean.none.moderate", 4) + " &rarr; " + num("err.mean.none.high", 4) + " across noise levels." },
+  { id: "H1", verdict: "partial", claim: "Unmitigated error grows with noise level, n and L.",
+    ev: "Rises with noise level in every (n, L) cell (pooled " + num("err.mean.none.ideal", 4) + " &rarr; " + num("err.mean.none.low", 4) + " &rarr; " + num("err.mean.none.moderate", 4) + " &rarr; " + num("err.mean.none.high", 4) + "). On average it is lowest at n = 2 and higher at L = 4, but not in every cell." },
   { id: "H2", verdict: "supported", claim: "REM removes most of the readout contribution and leaves the gate-noise bias.",
     ev: "REM's remaining error at moderate noise (" + num("err.mean.rem.moderate", 4) + ") sits close to the gate-noise share of the bias (" + num("bias.gate.moderate", 4) + ")." },
   { id: "H3", verdict: "supported", claim: "ZNE removes much of the gate-noise bias but not the readout bias.",

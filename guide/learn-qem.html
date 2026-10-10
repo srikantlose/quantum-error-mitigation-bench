@@ -1291,8 +1291,8 @@ footer.end { color: var(--faint); font-size: 13px; border-top: 1px solid var(--l
       rows.map(function (r) { return '<tr><td><i class="sw ' + r[0] + '"></i>' + r[0] + "</td>" + r.slice(1).map(function (c) { return '<td class="num">' + c + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table>";
   }
   var HYP = [
-    ["H1", "sup", "Unmitigated error grows with noise level, qubit count and depth.", "Mean error rises " + num("err.mean.none.ideal") + " → " + num("err.mean.none.low") + " → " + num("err.mean.none.moderate") + " → " + num("err.mean.none.high") +
-      " across noise levels, and on average with n and L too, though not in every single circuit size, because the bias scales with each circuit's exact value."],
+    ["H1", "par", "Unmitigated error grows with noise level, qubit count and depth.", "Mean error rises " + num("err.mean.none.ideal") + " → " + num("err.mean.none.low") + " → " + num("err.mean.none.moderate") + " → " + num("err.mean.none.high") +
+      " across noise levels in every circuit size; it is lowest at n = 2 and higher at L = 4 than at L = 2 on average, but not in every single circuit size, because each size uses different circuit instances."],
     ["H2", "sup", "REM removes most of the readout error, improves fidelity and success probability, and leaves the gate-noise bias.", "REM's remaining error (" + num("err.mean.rem.moderate") + " at moderate noise) is close to the gate-noise bias (" +
       num("bias.gate.moderate") + "). Fidelity improves in " + num("fid.better.moderate") + " circuit sizes."],
     ["H3", "sup", "ZNE removes much of the gate-noise bias, but not the readout bias, because measurements are not folded.", "ZNE's relative benefit tracks the gate-noise share of the bias: little benefit at low noise where readout dominates (" +

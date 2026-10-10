@@ -50,13 +50,13 @@ Full reading notes for every paper, with the specific sentence(s) each one justi
 | 4 | Endo, Benjamin, Li, PRX 8, 031027 | 2018 | ZNE | Exponential-fit extrapolation; imperfectly known noise models | Justifies our `exp` extrapolator |
 | 5 | Kandala et al., *Nature* 567, 491 | 2019 | ZNE, hardware | Extrapolation measurably extends hardware accuracy | Hardware proof our simulated story generalizes |
 | 6 | Giurgica-Tiron et al., IEEE QCE | 2020 | ZNE | Unitary folding as a digital noise-scaling method | Directly our `fold_global` |
-| 7 | Bravyi, Sheldon, Kandala, McKay, Gambetta, PRA 103, 042605 | 2021 | REM | Tensor-product calibration approximates full calibration | Origin of our tensored REM (Improvement 1) |
+| 7 | Bravyi, Sheldon, Kandala, McKay, Gambetta, PRA 103, 042605 | 2021 | REM | Tensor-product and correlated readout models, calibrated from data, mitigate measurement error on up to 20 qubits | Origin of our tensored REM (Improvement 1) |
 | 8 | Nation, Kang, Sundaresan, Gambetta, PRX Quantum 2, 040326 | 2021 | REM | Matrix-free (M3) readout mitigation at large qubit counts | Listed future work beyond tensored REM |
 | 9 | LaRose et al., *Quantum* 6, 774 | 2022 | ZNE software | Mitiq: a reference ZNE/PEC/CDR implementation | Optional cross-check target (Appendix A.5) |
 | 10 | Kim et al., *Nature* 618, 500 | 2023 | ZNE, 127 qubits | Mitigated hardware results beyond tested classical methods | Our strategy at a much larger scale |
 | 11 | Takagi, Endo, Minagawa, Gu, npj QI 8, 114 | 2022 | Fundamental limits | Sampling cost grows exponentially with depth | Theoretical reason our own costs scale this way |
 | 12 | Quek, Stilck França, Khatri, Meyer, Eisert, *Nat. Phys.* 20, 1648 | 2024 | Fundamental limits | Tighter bounds; noise scrambles circuits at shallower depth than thought | Supports our high-noise ZNE breakdown (H4) |
-| 13 | Cai et al., Rev. Mod. Phys. 95, 045005 | 2023 | Comprehensive review | Unifies the field's recurring ideas | Frames our method taxonomy |
+| 13 | Cai et al., Rev. Mod. Phys. 95, 045005 | 2023 | Comprehensive review | Surveys methods and hardware demonstrations; method choice should follow the dominant noise type | Frames our method taxonomy |
 | 14 | Havlíček et al., *Nature* 567, 209 | 2019 | QML | Variational classifier and quantum kernel on hardware | The architectural category our VQC belongs to |
 | 15 | Schuld, Sweke, Meyer, PRA 103, 032430 | 2021 | QML encoding | Single-layer encoding limits accessible Fourier frequencies | Direct justification for our encoding limitation |
 | 16 | Wang et al., *Nat. Commun.* 12, 6961 | 2021 | QML + noise | Noise alone can cause vanishing training gradients | Justifies training the VQC noiselessly |
@@ -642,34 +642,34 @@ Full calibration uses 2ⁿ circuits; tensored calibration uses 2, assuming uncor
 
 *A12. Full vs. tensored REM error: points on the line mean they agree.*
 
-Same total budget (3072 shots) split uniformly (1024 each) or proportional to |γ_i| (the variance-minimizing allocation). Each row aggregates 50 repetitions at a fixed (n, L, noise). Theoretical std assumes σ_i ≈ 1 at every scale.
+Same total budget (3072 shots) split uniformly (1024 each) or proportional to |γ_i| (the variance-minimizing allocation). For each circuit instance the empirical std is taken over 50 repetitions; each row is the mean ± SD of that std over the 5 circuit instances (seeds) of a fixed (n, L, noise). The optimal split has the lower mean std in 12 of 12 conditions. Theoretical std assumes σ_i ≈ 1 at every scale.
 
-| n | L | noise | scheme | shots (λ1,λ3,λ5) | bias | empirical std | rmse | theoretical std |
+| n | L | noise | scheme | shots (λ1,λ3,λ5) | mean bias | empirical std (mean ± SD) | mean rmse | theoretical std |
 | ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| 2 | 2 | low | optimal | 1646,1097,329 | -0.0308 | 0.0446 | 0.0538 | 0.0631 |
-| 2 | 2 | low | uniform | 1024,1024,1024 | -0.0300 | 0.0524 | 0.0599 | 0.0714 |
-| 2 | 2 | moderate | optimal | 1646,1097,329 | -0.0812 | 0.0486 | 0.0944 | 0.0631 |
-| 2 | 2 | moderate | uniform | 1024,1024,1024 | -0.0882 | 0.0616 | 0.1072 | 0.0714 |
-| 2 | 4 | low | optimal | 1646,1097,329 | +0.0202 | 0.0529 | 0.0562 | 0.0631 |
-| 2 | 4 | low | uniform | 1024,1024,1024 | +0.0201 | 0.0610 | 0.0636 | 0.0714 |
-| 2 | 4 | moderate | optimal | 1646,1097,329 | +0.0733 | 0.0511 | 0.0891 | 0.0631 |
-| 2 | 4 | moderate | uniform | 1024,1024,1024 | +0.0711 | 0.0695 | 0.0989 | 0.0714 |
-| 4 | 2 | low | optimal | 1646,1097,329 | -0.0304 | 0.0544 | 0.0618 | 0.0631 |
-| 4 | 2 | low | uniform | 1024,1024,1024 | -0.0488 | 0.0648 | 0.0806 | 0.0714 |
-| 4 | 2 | moderate | optimal | 1646,1097,329 | -0.0891 | 0.0698 | 0.1127 | 0.0631 |
-| 4 | 2 | moderate | uniform | 1024,1024,1024 | -0.0810 | 0.0712 | 0.1074 | 0.0714 |
-| 4 | 4 | low | optimal | 1646,1097,329 | -0.0229 | 0.0666 | 0.0698 | 0.0631 |
-| 4 | 4 | low | uniform | 1024,1024,1024 | -0.0401 | 0.0514 | 0.0648 | 0.0714 |
-| 4 | 4 | moderate | optimal | 1646,1097,329 | -0.1093 | 0.0596 | 0.1242 | 0.0631 |
-| 4 | 4 | moderate | uniform | 1024,1024,1024 | -0.1264 | 0.0706 | 0.1445 | 0.0714 |
-| 6 | 2 | low | optimal | 1646,1097,329 | -0.0466 | 0.0586 | 0.0744 | 0.0631 |
-| 6 | 2 | low | uniform | 1024,1024,1024 | -0.0508 | 0.0737 | 0.0889 | 0.0714 |
-| 6 | 2 | moderate | optimal | 1646,1097,329 | -0.1436 | 0.0561 | 0.1540 | 0.0631 |
-| 6 | 2 | moderate | uniform | 1024,1024,1024 | -0.1375 | 0.0781 | 0.1577 | 0.0714 |
-| 6 | 4 | low | optimal | 1646,1097,329 | +0.0401 | 0.0568 | 0.0691 | 0.0631 |
-| 6 | 4 | low | uniform | 1024,1024,1024 | +0.0385 | 0.0741 | 0.0828 | 0.0714 |
-| 6 | 4 | moderate | optimal | 1646,1097,329 | +0.1293 | 0.0614 | 0.1428 | 0.0631 |
-| 6 | 4 | moderate | uniform | 1024,1024,1024 | +0.1332 | 0.0631 | 0.1471 | 0.0714 |
+| 2 | 2 | low | optimal | 1646,1097,329 | -0.0041 | 0.0473 ± 0.0167 | 0.0583 | 0.0631 |
+| 2 | 2 | low | uniform | 1024,1024,1024 | -0.0105 | 0.0502 ± 0.0091 | 0.0602 | 0.0714 |
+| 2 | 2 | moderate | optimal | 1646,1097,329 | -0.0110 | 0.0514 ± 0.0063 | 0.0986 | 0.0631 |
+| 2 | 2 | moderate | uniform | 1024,1024,1024 | -0.0114 | 0.0567 ± 0.0085 | 0.0987 | 0.0714 |
+| 2 | 4 | low | optimal | 1646,1097,329 | +0.0090 | 0.0533 ± 0.0078 | 0.0576 | 0.0631 |
+| 2 | 4 | low | uniform | 1024,1024,1024 | +0.0146 | 0.0632 ± 0.0091 | 0.0681 | 0.0714 |
+| 2 | 4 | moderate | optimal | 1646,1097,329 | +0.0381 | 0.0542 ± 0.0042 | 0.0856 | 0.0631 |
+| 2 | 4 | moderate | uniform | 1024,1024,1024 | +0.0396 | 0.0709 ± 0.0033 | 0.0988 | 0.0714 |
+| 4 | 2 | low | optimal | 1646,1097,329 | +0.0009 | 0.0531 ± 0.0026 | 0.0665 | 0.0631 |
+| 4 | 2 | low | uniform | 1024,1024,1024 | -0.0029 | 0.0653 ± 0.0066 | 0.0793 | 0.0714 |
+| 4 | 2 | moderate | optimal | 1646,1097,329 | -0.0003 | 0.0616 ± 0.0048 | 0.1396 | 0.0631 |
+| 4 | 2 | moderate | uniform | 1024,1024,1024 | +0.0012 | 0.0647 ± 0.0073 | 0.1411 | 0.0714 |
+| 4 | 4 | low | optimal | 1646,1097,329 | +0.0034 | 0.0601 ± 0.0049 | 0.0689 | 0.0631 |
+| 4 | 4 | low | uniform | 1024,1024,1024 | +0.0045 | 0.0631 ± 0.0087 | 0.0763 | 0.0714 |
+| 4 | 4 | moderate | optimal | 1646,1097,329 | +0.0119 | 0.0616 ± 0.0096 | 0.1322 | 0.0631 |
+| 4 | 4 | moderate | uniform | 1024,1024,1024 | +0.0098 | 0.0673 ± 0.0038 | 0.1352 | 0.0714 |
+| 6 | 2 | low | optimal | 1646,1097,329 | -0.0193 | 0.0559 ± 0.0023 | 0.0705 | 0.0631 |
+| 6 | 2 | low | uniform | 1024,1024,1024 | -0.0260 | 0.0669 ± 0.0052 | 0.0811 | 0.0714 |
+| 6 | 2 | moderate | optimal | 1646,1097,329 | -0.0693 | 0.0611 ± 0.0051 | 0.1476 | 0.0631 |
+| 6 | 2 | moderate | uniform | 1024,1024,1024 | -0.0713 | 0.0723 ± 0.0042 | 0.1456 | 0.0714 |
+| 6 | 4 | low | optimal | 1646,1097,329 | -0.0300 | 0.0611 ± 0.0039 | 0.0760 | 0.0631 |
+| 6 | 4 | low | uniform | 1024,1024,1024 | -0.0329 | 0.0698 ± 0.0058 | 0.0852 | 0.0714 |
+| 6 | 4 | moderate | optimal | 1646,1097,329 | -0.1035 | 0.0615 ± 0.0055 | 0.1670 | 0.0631 |
+| 6 | 4 | moderate | uniform | 1024,1024,1024 | -0.1054 | 0.0702 ± 0.0055 | 0.1735 | 0.0714 |
 
 **Pooled over every condition**
 
@@ -682,13 +682,13 @@ Empirical std ratio (optimal / uniform): **0.874**. Theoretical ratio: **0.885**
 
 ![I1](../results/figures/fig_I1_zne_allocation.png)
 
-*I1. Empirical std of the Richardson estimate, uniform vs. optimal allocation, at equal total shots.*
+*I1. Empirical std of the Richardson estimate, uniform vs. optimal allocation, at equal total shots (mean ± SD over the 5 circuit instances of each condition).*
 
 ## 6. Comparative analysis
 
 **RQ1 — does each method reduce error, by how much, and what happens at high noise?** At moderate noise every method helps: median improvements of 43% (rem), 48% (rem_tensored), 44% (zne) and 68% (zne_rem), all pooled-significant (Wilcoxon p = 1.9e-09, 1.9e-09, 3.7e-09, 4.7e-08). At low noise the picture is less uniform: REM still helps clearly (median 42%, p = 8.0e-08), but ZNE alone shows **no significant benefit** (median 1%, p = 0.984 — far from significant), because its variance amplification outweighs a small bias at this noise level. At the optional `high` stress level every method still helps relative to the unmitigated baseline (medians 29%, 25%, 19%, 58%), and `zne_rem` remains the strongest method; out-of-range Richardson estimates stayed rare even here (0 at `high` out of 0/120 overall for `zne`), though the exponential fit failed more often (10/120 for zne, 13/120 for zne_rem, pooled over all noise levels).
 
-**RQ1 — qubits and depth.** `table_error.md` and A4 show error growing with both n and L for every method, most steeply for the unmitigated baseline. REM's relative benefit is largest at small n and shrinks as calibration becomes noisier at larger n; ZNE's relative benefit is more uniform across n but costs 9× the CNOTs regardless of size.
+**RQ1 — qubits and depth.** Growth with circuit size holds on average but not in every cell. Averaged over depth, the unmitigated error is lowest at n = 2 at every non-ideal noise level, and averaged over qubit count it is higher at L = 4 than at L = 2; but it is not always monotone between n = 4 and n = 6, nor in every single (n, L) cell (for example, at moderate noise the n = 4, L = 2 instances have a larger error than n = 6, L = 2; `table_error.md`, A4). Each cell uses different random circuit instances, and the bias scales with each instance's exact parity, so cell-to-cell differences mix circuit size with the particular instances drawn. The relative benefit of each method also varies from cell to cell (`table_improvement.md`, A9) without a consistent trend in n.
 
 **RQ1 — readout vs. gate noise.** `table_bias_sources.md` splits the unmitigated bias exactly (using the noise-model exact density matrix): at low noise 60% of the bias is readout, falling to 40% at moderate noise as gate noise, which grows with circuit size, takes over. This matches the method comparison: REM (which fixes only readout) is relatively more valuable at low noise, ZNE (which fixes only gate noise, not readout — because folding never touches the measurement) is relatively more valuable at moderate noise, and only the combination addresses both.
 
@@ -696,7 +696,7 @@ Empirical std ratio (optimal / uniform): **0.874**. Theoretical ratio: **0.885**
 
 **RQ2 — ideal-noise sanity check.** With A = I at the ideal level, REM is an exact no-op (largest observed change: 0). ZNE, with no bias to remove, only adds shot-noise variance: it was worse than doing nothing in 26/30 of 30 runs.
 
-**RQ2 — does ZNE amplify variance as predicted?** Measured against each estimate's own exact infinite-shot value (so the comparison contains shot noise only), the ZNE standard deviation is 2.38×, 2.42×, 2.70× and 2.07× the baseline's at the four noise levels, against a Richardson-weight theoretical prediction of 2.28× (`zne_std`'s own per-run prediction averaged 2.29×–2.32×). The measured ratios run somewhat above the √5.22 ≈ 2.28 theoretical figure, particularly at moderate and high noise, which points to the folded circuits' shots not behaving as perfectly independent ±1 draws at larger λ — plausible given the readout and residual gate correlations the simple variance model ignores; this is flagged as a limitation (§7.4).
+**RQ2 — does ZNE amplify variance as predicted?** Measured against each estimate's own exact infinite-shot value (so the comparison contains shot noise only), the ZNE standard deviation is 2.38×, 2.42×, 2.70× and 2.07× the baseline's at the four noise levels, against a Richardson-weight theoretical prediction of 2.28× (`zne_std`'s own per-run prediction averaged 2.29×–2.32×). The measured ratios sit above the √5.22 ≈ 2.28 figure at the ideal, low and moderate levels and below it at high noise. Each ratio compares two standard deviations estimated from 30 runs, which carries roughly ±19% relative uncertainty (1/√(2·29) ≈ 13% per standard deviation), so deviations of −9% to +18% from theory are consistent with sampling noise; the data do not show a systematic departure from the simple variance model.
 
 **RQ3 — does mitigation improve VQC metrics, and does accuracy move as much as expectation error?** No: accuracy is far coarser. At high noise, unmitigated mean |E_hat − E_exact| is 0.301 and margin retention collapses to 0.411, while accuracy only drifts from 0.920 (ideal) to 0.900 (high). With `zne_rem`, mean error falls to 0.121 and margin retention recovers to 0.847, while accuracy is 0.903 — barely different from the unmitigated figure. With only 20 test samples, accuracy moves in 5% steps and cannot resolve differences that the continuous expectation-value and margin metrics show clearly (B4, B5). This directly supports H8.
 
@@ -704,17 +704,17 @@ Empirical std ratio (optimal / uniform): **0.874**. Theoretical ratio: **0.885**
 
 **RQ4 — does tensored REM match full REM?** Yes, closely: paired by circuit instance and noise level, the mean absolute difference between full and tensored REM's error is 0.0063, with a worst case of 0.0388 (`table_rem_full_vs_tensored.md`, A12) — at a cost of 3 circuits instead of up to 65. This favors the tensored method because our noise model has uncorrelated readout errors by construction (§7.4).
 
-**RQ4 — does variance-optimal shot allocation help?** Yes, and closely matching theory: at the same 3072-shot total budget, the optimal allocation (1646,1097,329 shots at λ = 1, 3, 5, over 50 repetitions per condition) gives a mean empirical standard deviation 0.874× the uniform allocation's, against a 0.885× theoretical prediction (`table_zne_allocation.md`, I1).
+**RQ4 — does variance-optimal shot allocation help?** Yes, and closely matching theory: at the same 3072-shot total budget, the optimal allocation (1646,1097,329 shots at λ = 1, 3, 5, over 50 repetitions per circuit instance, 5 instances per condition) gives a mean empirical standard deviation 0.874× the uniform allocation's, against a 0.885× theoretical prediction (`table_zne_allocation.md`, I1).
 
 ### Hypothesis verdicts
 
 | | Hypothesis | Verdict | Evidence |
 |---|---|---|---|
-| H1 | Unmitigated error grows with noise level, n and L. | **Supported** | 0.021 → 0.062 → 0.181 → 0.310 with noise level; `table_error.md` and A4 show the same monotone growth with n and L in every panel. |
+| H1 | Unmitigated error grows with noise level, n and L. | **Partially supported** | Error grows with noise level in every (n, L) cell (0.021 → 0.062 → 0.181 → 0.310 pooled). Averaged over the other parameter, it is lowest at n = 2 and higher at L = 4 than at L = 2 at every non-ideal level, but not in every cell (§6, RQ1 "qubits and depth"; `table_error.md`, A4). |
 | H2 | REM removes most of the readout contribution, improves fidelity and success probability, and leaves the gate-noise bias. | **Supported** | REM's remaining error (0.105 at moderate noise) sits close to the gate-noise part of the bias (0.111, `table_bias_sources.md`); Hellinger fidelity and `P_succ_ratio` both improve for `rem`/`rem_tensored` over `none` (A2, A3). |
 | H3 | ZNE removes much of the gate-noise bias but not the readout bias, because measurements are not folded. | **Supported** | ZNE's relative benefit tracks the gate-noise share of the bias (§6, RQ1 "readout vs. gate noise"); it shows no significant benefit at low noise, where readout dominates the bias, but a large one at moderate noise, where gate noise dominates. |
 | H4 | `zne_rem` has the lowest error at low and moderate noise; ZNE degrades at high noise. | **Partially supported** | True at moderate noise (best in 4/6) and at high noise (best median improvement, 58%). At **low** noise, plain `rem` is actually the most frequent winner (best in 4/6, vs. 1/6 for `zne_rem`), because ZNE's variance cost dominates there. ZNE does not show runaway failure at high noise in this study (`extrapolation_out_of_range` stays at 0 even at `high`), though more exponential fits fail. |
-| H5 | ZNE has higher variance than `none`; at the ideal level it is no better. | **Supported** | Measured standard-deviation ratio 2.42×–2.07× across noise levels (theory 2.28×); at the ideal level ZNE was worse than doing nothing in 26/30 runs. |
+| H5 | ZNE has higher variance than `none`; at the ideal level it is no better. | **Supported** | Measured standard-deviation ratio 2.07×–2.70× across noise levels (theory 2.28×); at the ideal level ZNE was worse than doing nothing in 26/30 runs. |
 | H6 | REM uses 1+2ⁿ circuits; tensored REM uses 3; ZNE uses 3 with 9× CNOTs and ≈5× max depth; `zne_rem` uses the sum. | **Supported** | Measured 5/17/65 for `rem`, a constant 3 for `rem_tensored`, 3 for `zne` with 9× CNOTs and 5.00× depth, and 7/19/67 for `zne_rem` — all checked against the formulas in the test suite. |
 | H7 | Exact VQC accuracy is comparable to or below LR and SVM; no advantage is expected or claimed. | **Supported** | Exact VQC mean accuracy 0.920 vs. LR 0.920/0.930 and SVM 0.920/0.910 on identical inputs (`table_qml_classification.md`). |
 | H8 | Noise shrinks margins while mostly preserving sign; accuracy degrades less than expectation error, and mitigation restores margins more visibly than accuracy. | **Supported** | At high noise, unmitigated margin retention falls to 0.411 and mean absolute expectation error rises to 0.301, while accuracy only drops to 0.900 from 0.920; `zne_rem` restores margin retention to 0.847 with almost no accuracy change (0.903). See B4, B5. |
@@ -738,7 +738,7 @@ As detailed in §2 and `report/literature_notes.md`: prior work mostly studies r
 ### 7.4 Limitations
 
 - **Mitigation is not correction.** It improves average expectation values only; individual shots, and in Track B individual predictions, stay noisy.
-- **ZNE.** Amplifies variance (theory ≈ 2.28×; measured 2.42×–2.07×, somewhat above theory — see §6, RQ2). Its extrapolation model can mismatch the true decay (the exponential fit failed on 10/120 of 120 `zne` conditions). It assumes noise scales faithfully with folding, clean in this incoherent simulated model but less clean on hardware. It never removes readout error, because measurements are not folded. The deepest folded circuit reaches 95 gates (5.00× the base), which on real hardware risks exceeding coherence times. It shows no significant benefit at low noise (§6, RQ1).
+- **ZNE.** Amplifies variance (theory ≈ 2.28×; measured 2.07×–2.70× across noise levels, within sampling uncertainty of theory — see §6, RQ2). Its extrapolation model can mismatch the true decay (the exponential fit failed on 10/120 `zne` conditions). It assumes noise scales faithfully with folding, clean in this incoherent simulated model but less clean on hardware. It never removes readout error, because measurements are not folded. The deepest folded circuit reaches depth 95 (5.00× the base), which on real hardware risks exceeding coherence times. It shows no significant benefit at low noise (§6, RQ1).
 - **REM.** Full calibration costs 2ⁿ circuits. It assumes readout noise is stable over time and independent of state preparation. It can produce negative quasi-probabilities (largest observed mass: 0.0186 full, 0.0169 tensored). It does nothing for gate noise. The tensored variant additionally assumes uncorrelated readout, untested against a correlated-noise stress case here.
 - **Simulation only.** The depolarizing-plus-readout model is incoherent and Markovian; real devices add coherent errors, crosstalk, T1/T2 relaxation, drift and leakage.
 - **Statistics.** Three qubit counts, two depths and 5 seeds per condition limit statistical power; the Track B test set has only 20 samples per seed, so accuracy moves in 5% steps.

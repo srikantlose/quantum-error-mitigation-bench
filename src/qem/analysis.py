@@ -682,25 +682,36 @@ def stats_tests_track_b(runs: pd.DataFrame, noise_order: Sequence[str]) -> pd.Da
 # ======================================================================================
 
 
+def allocation_by_condition(alloc: pd.DataFrame) -> pd.DataFrame:
+    """Mean and std over circuit instances (seeds) of each (n, L, noise, scheme)."""
+    g = alloc.groupby(["n_qubits", "depth_layers", "noise_level", "scheme"], sort=False)
+    out = g.agg(n_seeds=("seed", "nunique"), shots_lambda1=("shots_lambda1", "first"),
+                shots_lambda3=("shots_lambda3", "first"), shots_lambda5=("shots_lambda5", "first"),
+                bias=("bias", "mean"), std_mean=("empirical_std", "mean"), std_sd=("empirical_std", "std"),
+                rmse=("rmse", "mean"), theoretical_std=("theoretical_std", "first"))
+    return out.reset_index()
+
+
 def table_zne_allocation(alloc: pd.DataFrame) -> str:
-    headers = ["n", "L", "noise", "scheme", "shots (λ1,λ3,λ5)", "bias", "empirical std",
-               "rmse", "theoretical std"]
+    headers = ["n", "L", "noise", "scheme", "shots (λ1,λ3,λ5)", "mean bias", "empirical std (mean ± SD)",
+               "mean rmse", "theoretical std"]
+    by = allocation_by_condition(alloc)
     rows = []
-    for (n, L, nz), g in alloc.groupby(["n_qubits", "depth_layers", "noise_level"], sort=False):
-        for scheme in ("uniform", "optimal"):
-            r = g[g.scheme == scheme]
-            if not len(r):
-                continue
-            r = r.iloc[0]
-            rows.append([str(int(n)), str(int(L)), nz, scheme,
-                         f"{int(r.shots_lambda1)},{int(r.shots_lambda3)},{int(r.shots_lambda5)}",
-                         f"{r.bias:+.4f}", f"{r.empirical_std:.4f}", f"{r.rmse:.4f}",
-                         f"{r.theoretical_std:.4f}"])
+    for r in by.itertuples():
+        rows.append([str(int(r.n_qubits)), str(int(r.depth_layers)), r.noise_level, r.scheme,
+                     f"{int(r.shots_lambda1)},{int(r.shots_lambda3)},{int(r.shots_lambda5)}",
+                     f"{r.bias:+.4f}", f"{r.std_mean:.4f} ± {r.std_sd:.4f}", f"{r.rmse:.4f}",
+                     f"{r.theoretical_std:.4f}"])
     rows.sort(key=lambda r: (int(r[0]), int(r[1]), r[2], r[3]))
+    n_seeds = int(by.n_seeds.max())
+    wide = by.pivot_table(index=["n_qubits", "depth_layers", "noise_level"], columns="scheme", values="std_mean")
+    lower = int((wide["optimal"] < wide["uniform"]).sum())
     text = ("# Variance-optimal ZNE shot allocation vs. uniform\n\n"
             f"Same total budget (3072 shots) split uniformly (1024 each) or proportional to "
-            "|γ_i| (the variance-minimizing allocation). Each row aggregates "
-            f"{int(alloc.repetitions.iloc[0])} repetitions at a fixed (n, L, noise). "
+            "|γ_i| (the variance-minimizing allocation). For each circuit instance the empirical std is "
+            f"taken over {int(alloc.repetitions.iloc[0])} repetitions; each row is the mean ± SD of that "
+            f"std over the {n_seeds} circuit instances (seeds) of a fixed (n, L, noise). The optimal split "
+            f"has the lower mean std in {lower} of {len(wide)} conditions. "
             "Theoretical std assumes σ_i ≈ 1 at every scale.\n\n")
     text += md_table(headers, rows, "rrllrrrrr")
 

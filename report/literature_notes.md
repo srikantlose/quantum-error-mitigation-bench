@@ -173,8 +173,11 @@ random Clifford states.
 
 **Setting:** Real IBM Quantum hardware.
 
-**Key finding:** A tensor-product (per-qubit) calibration model is often an adequate
-approximation to the full correlated noise model, at a fraction of the calibration cost.
+**Key finding:** Measurement errors can be mitigated by classical post-processing with either
+a tensor-product or a correlated Markovian noise model whose error rates are extracted from
+calibration data by a simple formula; the overhead grows exponentially in εn (ε the maximum
+error rate, n the number of qubits). Demonstrated on graph states with n ≤ 12 qubits and on
+20-qubit states from low-depth random Clifford circuits.
 
 **Relevance to us:** This is the direct origin of our tensored REM (§10.3, Improvement 1):
 the same tensor-product assumption, the same per-qubit assignment-matrix construction, and
@@ -314,9 +317,10 @@ specific techniques (ZNE, PEC, readout mitigation, symmetry verification, and mo
 
 **Setting:** Review article.
 
-**Key finding:** Organizes the field into a small number of recurring ideas (scale noise and
-extrapolate; invert a known noise channel at a sampling cost; use known symmetries to
-reject bad shots) that recur across otherwise different-looking methods.
+**Key finding:** Surveys the proposed mitigation methods, assesses their in-principle
+efficacy and the hardware demonstrations to date, identifies their commonalities and
+limitations, and notes that a mitigation method can be chosen according to the primary type
+of noise present.
 
 **Relevance to us:** Used to frame our own taxonomy in the report's background section
 (§16.2): REM is a readout-mitigation technique, ZNE is an extrapolation technique, and our
