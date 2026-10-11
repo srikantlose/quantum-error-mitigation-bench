@@ -12,9 +12,9 @@ SVM on identical preprocessed features and the identical train/test split. A thi
 experiment tests a variance-optimal shot allocation for ZNE against the usual uniform split.
 
 - The findings are in [report/report.md](report/report.md).
-- The course report template, filled in, is `report/Group20_Report.docx` (also downloadable
-  from the deployed site). Fields only the team can supply (roles and contributions, section,
-  faculty guide, submission date, Drive link, AI-tool declaration) are highlighted in yellow.
+- The submission report is `report/Group20_Quantum_Report.pdf` (cover page plus the course
+  template, filled in); its editable source is `report/Group20_Report.docx`. Both are also
+  served from the deployed site.
 - The full specification is in [plan.md](plan.md); the superseded v1 spec is kept at
   [plan_v1.md](plan_v1.md) for reference.
 - Deviations from the specification are logged in [DECISIONS.md](DECISIONS.md).

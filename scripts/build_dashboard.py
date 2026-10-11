@@ -26,6 +26,7 @@ PLACEHOLDER = '"__BENCH_DATA__"'
 SITE_NAV = "<!--SITE_NAV-->"
 SITE_LINKS = '<nav class="sitenav"><a href="study/">Study guide</a><a href="guide/">Field guide</a>{report}</nav>'
 REPORT_DOCX = ROOT / "report" / "Group20_Report.docx"
+REPORT_PDF = ROOT / "report" / "Group20_Quantum_Report.pdf"
 
 TRACK_A_COLUMNS = {
     "n_qubits": "n", "depth_layers": "L", "noise_level": "noise", "seed": "seed", "method": "method",
@@ -139,10 +140,11 @@ def main(argv=None) -> int:
     site = Path(args.site)
     site.mkdir(parents=True, exist_ok=True)
     report_link = ""
-    if REPORT_DOCX.exists():
-        shutil.copyfile(REPORT_DOCX, site / REPORT_DOCX.name)
-        report_link = f'<a href="{REPORT_DOCX.name}" download>Report (Word)</a>'
-        print("copied", REPORT_DOCX.name, "into the site")
+    for path, label, attr in ((REPORT_PDF, "Report (PDF)", ""), (REPORT_DOCX, "Report (Word)", " download")):
+        if path.exists():
+            shutil.copyfile(path, site / path.name)
+            report_link += f'<a href="{path.name}"{attr}>{label}</a>'
+            print("copied", path.name, "into the site")
     links = SITE_LINKS.format(report=report_link)
     (site / "index.html").write_text(standalone(page.replace(SITE_NAV, links)), encoding="utf-8", newline="\n")
     print("wrote", site / "index.html")
